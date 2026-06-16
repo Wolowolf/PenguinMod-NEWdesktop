@@ -443,6 +443,7 @@ function createWindow(fileToOpen) {
       detail: "You have the __I_KNOW_WHAT_IM_DOING_CLANKER_SO_DANGEROUSLY_ENABLE_NODEJS__ setting enabled in your setting file, this enables electron's nodejs functionality, this means that ANY PROJECTS OR UNSANDBOXED extensions have UNRESTRICTED ACCESS to your computer, nodejs can run commands, delete or create files without asking, and do tons of horrible stuff without you knowing about, please DO NOT load projects you DO NOT trust, as they can do ANYTHING!!!",
       noLink: true,
     }) === 0;
+    if (!choice) app.quit();
   }
 
   mainWindow = new BrowserWindow({
