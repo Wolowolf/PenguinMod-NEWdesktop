@@ -59,6 +59,18 @@ function setStartupSetting(value) {
   }
 }
 
+function getNodeJSSetting() {
+  try {
+    if (fs.existsSync(SETTINGS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf8"));
+      return data.__I_KNOW_WHAT_IM_DOING_CLANKER_SO_DANGEROUSLY_ENABLE_NODEJS__ || false;
+    }
+  } catch (err) {
+    console.error("[Settings] Load error:", err);
+  }
+  return false;
+}
+
 function getLocalFile(url) {
   const parsed = new URL(url);
   const pathClean = parsed.pathname.replace(/^\/+/, "");
@@ -421,18 +433,28 @@ function createWindow(fileToOpen) {
     try { mainWindow.destroy(); } catch { }
     mainWindow = null;
   }
-
+  if (getNodeJSSetting()) {
+    const choice = dialog.showMessageBoxSync(mainWindow, {
+      type: "question",
+      buttons: ["OK", "Cancel"],
+      defaultId: 0,
+      cancelId: 1,
+      message: "WARNING!!!",
+      detail: "You have the __I_KNOW_WHAT_IM_DOING_CLANKER_SO_DANGEROUSLY_ENABLE_NODEJS__ setting enabled in your setting file, this enables electron's nodejs functionality, this means that ANY PROJECTS OR UNSANDBOXED extensions have UNRESTRICTED ACCESS to your computer, nodejs can run commands, delete or create files without asking, and do tons of horrible stuff without you knowing about, please DO NOT load projects you DO NOT trust, as they can do ANYTHING!!!",
+      noLink: true,
+    }) === 0;
+  }
 
   mainWindow = new BrowserWindow({
     width: 1100,
     height: 800,
     webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      sandbox: false,
+      nodeIntegration: getNodeJSSetting(),
+      contextIsolation: !getNodeJSSetting(),
+      sandbox: !getNodeJSSetting(),
       nativeWindowOpen: true,
       preload: PRELOAD_PATH,
-      webSecurity: true,
+      webSecurity: !getNodeJSSetting(),
     },
   });
 
