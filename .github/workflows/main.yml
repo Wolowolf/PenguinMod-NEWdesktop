@@ -6,305 +6,198 @@ on:
   schedule:
     - cron: '0 6 * * *'
 
-permissions:
-  contents: write
-
 env:
-  NODE_ENV: production
-
-concurrency:
-  group: build-${{ github.ref }}
-  cancel-in-progress: true
+  NODE_ENV: 'production'
 
 jobs:
-  build-external:
-    name: Build ${{ matrix.name }}
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: PenguinMod Extension Gallery
-            repo: PenguinMod/PenguinMod-ExtensionsGallery
-            dir: PenguinMod-ExtensionsGallery
-            output: public
-            artifact: penguinmod-extensions-gallery
-
-          - name: TurboWarp Extension Gallery
-            repo: TurboWarp/extensions
-            dir: TurboWarp-ExtensionsGallery
-            output: build
-            artifact: turbowarp-extensions-gallery
-
-          - name: PenguinMod Home
-            repo: PenguinMod/PenguinMod-Home
-            dir: PenguinMod-Home
-            output: public
-            artifact: penguinmod-home
+    permissions:
+      contents: write
 
     steps:
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v1
-
-      - name: Cache Bun download cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.bun/install/cache
-            ~/.cache/bun
-          key: bun-${{ runner.os }}
-
-      - name: Clone repo
-        run: git clone --depth=1 --single-branch --filter=blob:none https://github.com/${{ matrix.repo }}.git ${{ matrix.dir }}
-
-      - name: Compute dependency hash
-        working-directory: ${{ matrix.dir }}
-        run: |
-          if [ -f bun.lockb ]; then
-            HASH_FILE="bun.lockb"
-          else
-            HASH_FILE="package.json"
-          fi
-          echo "LOCK_HASH=$(sha256sum "$HASH_FILE" | awk '{print $1}')" >> "$GITHUB_ENV"
-
-      - name: Cache node_modules
-        id: deps-cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ matrix.dir }}/node_modules
-          key: ${{ runner.os }}-${{ matrix.artifact }}-${{ env.LOCK_HASH }}
-
-      - name: Install dependencies
-        if: steps.deps-cache.outputs.cache-hit != 'true'
-        working-directory: ${{ matrix.dir }}
-        run: bun install --frozen-lockfile
-        
-      - name: Setup .env for PenguinMod-Home
-        if: matrix.dir == 'PenguinMod-Home'
-        working-directory: ${{ matrix.dir }}
-        run: mv .env.template .env
-
-      - name: Build
-        working-directory: ${{ matrix.dir }}
-        run: bun run build
-
-      - name: Upload built output
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact }}
-          path: ${{ matrix.dir }}/${{ matrix.output }}
-          if-no-files-found: error
-
-  build-app:
-    name: Build desktop app
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
-    needs: build-external
-
-    steps:
+      # --- Checkout ---
       - name: Checkout
         uses: actions/checkout@v4
 
+      # --- Generate Dynamic Cache Key Components ---
+      - name: Get current week
+        run: echo "WEEK_STAMP=$(date +'%Y-%U')" >> $GITHUB_ENV
+
+      # --- Generate Release Metadata ---
+      - name: Generate release metadata
+        run: |
+          echo "TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_ENV
+          echo "TIMESTAMP_TAG=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
+          echo "RELEASE_NAME=Build #${{ github.run_number }} — ${{ github.workflow }} (${{ github.run_id }}) — $(date +'%Y-%m-%d %H:%M UTC')" >> $GITHUB_ENV
+          echo "RELEASE_TAG=build-${{ github.run_id }}-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
+
+      # --- Install system dependencies ---
       - name: Install system dependencies
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            git curl jq zip unzip \
-            wine32 wine64
+          sudo apt-get install -y git curl jq zip unzip wine32 wine64
 
+      # --- Install Bun ---
       - name: Install Bun
         uses: oven-sh/setup-bun@v1
 
-      - name: Setup Node.js
+      # --- Install Node.js ---
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 26
 
-      - name: Cache Bun download cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.bun/install/cache
-            ~/.cache/bun
-          key: bun-${{ runner.os }}
+      # --- Clone Standalone Repos and Cache ---
 
-      - name: Cache npm cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: npm-${{ runner.os }}
+      # PenguinMod Extension Gallery
+      - name: Clone PenguinMod Extension Gallery
+        run: git clone --depth=1 https://github.com/PenguinMod/PenguinMod-ExtensionsGallery.git
 
-      - name: Cache Electron downloads
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/electron
-            ~/.cache/electron-builder
-          key: electron-${{ runner.os }}
-
-      - name: Generate release metadata
+      - name: Install PenguinMod ext gallery deps
         run: |
-          echo "TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S UTC')" >> "$GITHUB_ENV"
-          echo "TIMESTAMP_TAG=$(date +'%Y%m%d-%H%M%S')" >> "$GITHUB_ENV"
-          echo "RELEASE_NAME=Build #${{ github.run_number }} — ${{ github.workflow }} (${{ github.run_id }}) — $(date +'%Y-%m-%d %H:%M UTC')" >> "$GITHUB_ENV"
-          echo "RELEASE_TAG=build-${{ github.run_id }}-$(date +'%Y%m%d-%H%M%S')" >> "$GITHUB_ENV"
+          cd PenguinMod-ExtensionsGallery
+          bun i
+          bun run build
 
+      # TurboWarp Extension Gallery
+      - name: Clone TurboWarp Extension Gallery
+        run: git clone --depth=1 https://github.com/TurboWarp/extensions.git TurboWarp-ExtensionsGallery
+
+      - name: Cache TurboWarp node_modules
+        uses: actions/cache@v3
+        with:
+          path: TurboWarp-ExtensionsGallery/node_modules
+          key: node-modules-turbowarp-${{ env.WEEK_STAMP }}
+          restore-keys: |
+            node-modules-turbowarp-
+
+      - name: Install TurboWarp deps
+        run: |
+          cd TurboWarp-ExtensionsGallery
+          bun i
+          bun run build
+
+      # SharkPool Extension Gallery
+      - name: Clone SharkPool Extension Gallery
+        run: git clone --depth=1 https://github.com/SharkPool-SP/SharkPools-Extensions.git
+
+      # PenguinMod Home
+      - name: Clone PenguinMod Home
+        run: git clone --depth=1 https://github.com/PenguinMod/PenguinMod-Home.git
+
+      - name: Cache PenguinMod Home node_modules
+        uses: actions/cache@v3
+        with:
+          path: PenguinMod-Home/node_modules
+          key: node-modules-penguinmod-home-${{ env.WEEK_STAMP }}
+          restore-keys: |
+            node-modules-penguinmod-home-
+
+      - name: Install PenguinMod Home deps
+        run: |
+          cd PenguinMod-Home
+          mv .env.template .env
+          bun i
+
+      # --- Clone PenguinMod GUI Main Repository ---
       - name: Clone PenguinMod GUI
-        run: git clone --depth=1 --single-branch --filter=blob:none https://github.com/PenguinMod/penguinmod.github.io.git
+        run: git clone --depth=1 https://github.com/PenguinMod/penguinmod.github.io.git
 
-      - name: Clone GUI sub-repos
+      # --- CONSOLIDATED GUI & SUBMODULES CACHE ---
+      - name: Cache GUI and Submodule node_modules
+        id: gui-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            penguinmod.github.io/node_modules
+            penguinmod.github.io/PenguinMod-Vm/node_modules
+            penguinmod.github.io/PenguinMod-Blocks/node_modules
+            penguinmod.github.io/PenguinMod-Render/node_modules
+            penguinmod.github.io/PenguinMod-Paint/node_modules
+          key: node-modules-penguinmod-combined-${{ hashFiles('penguinmod.github.io/package.json') }}-${{ env.WEEK_STAMP }}
+          restore-keys: |
+            node-modules-penguinmod-combined-${{ hashFiles('penguinmod.github.io/package.json') }}-
+            node-modules-penguinmod-combined-
+
+      # --- Process Submodules and Run Updates ---
+      - name: Setup GUI Dependencies & Submodules
         run: |
           cd penguinmod.github.io
-          git clone --depth=1 --single-branch --filter=blob:none https://github.com/PenguinMod/PenguinMod-Vm.git
-          git clone --depth=1 -b develop-builds --single-branch --filter=blob:none https://github.com/PenguinMod/PenguinMod-Blocks.git
-          git clone --depth=1 --single-branch --filter=blob:none https://github.com/PenguinMod/PenguinMod-Render.git
-          git clone --depth=1 --single-branch --filter=blob:none https://github.com/PenguinMod/PenguinMod-Paint.git
 
-      - name: Compute dependency hashes
-        run: |
-          hash_file () {
-            if [ -f "$1/bun.lockb" ]; then
-              sha256sum "$1/bun.lockb" | awk '{print $1}'
-            else
-              sha256sum "$1/package.json" | awk '{print $1}'
-            fi
-          }
+          git clone --depth=1 https://github.com/PenguinMod/PenguinMod-Vm.git
+          git clone --depth=1 -b develop-builds https://github.com/PenguinMod/PenguinMod-Blocks.git
+          git clone --depth=1 https://github.com/PenguinMod/PenguinMod-Render.git
+          git clone --depth=1 https://github.com/PenguinMod/PenguinMod-Paint.git
 
-          echo "ROOT_HASH=$(hash_file .)" >> "$GITHUB_ENV"
-          echo "GUI_HASH=$(hash_file penguinmod.github.io)" >> "$GITHUB_ENV"
-          echo "VM_HASH=$(hash_file penguinmod.github.io/PenguinMod-Vm)" >> "$GITHUB_ENV"
-          echo "BLOCKS_HASH=$(hash_file penguinmod.github.io/PenguinMod-Blocks)" >> "$GITHUB_ENV"
-          echo "RENDER_HASH=$(hash_file penguinmod.github.io/PenguinMod-Render)" >> "$GITHUB_ENV"
-          echo "PAINT_HASH=$(hash_file penguinmod.github.io/PenguinMod-Paint)" >> "$GITHUB_ENV"
+          if [ -d "node_modules/scratch-vm/node_modules" ]; then
+            mv node_modules/scratch-vm/node_modules PenguinMod-Vm/
+          fi
+          if [ -d "node_modules/scratch-blocks/node_modules" ]; then
+            mv node_modules/scratch-blocks/node_modules PenguinMod-Blocks/
+          fi
+          if [ -d "node_modules/scratch-render/node_modules" ]; then
+            mv node_modules/scratch-render/node_modules PenguinMod-Render/
+          fi
+          if [ -d "node_modules/scratch-paint/node_modules" ]; then
+            mv node_modules/scratch-paint/node_modules PenguinMod-Paint/
+          fi
 
-      - name: Cache root production node_modules
-        id: root-prod-cache
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-root-prod-${{ env.ROOT_HASH }}
+          bun i
+          cd PenguinMod-Vm && bun i && cd ..
+          cd PenguinMod-Blocks && bun i && cd ..
+          cd PenguinMod-Render && rm -f package-lock.json && bun i && cd ..
+          cd PenguinMod-Paint && bun i && cd ..
 
-      - name: Cache GUI node_modules
-        id: gui-cache
-        uses: actions/cache@v4
-        with:
-          path: penguinmod.github.io/node_modules
-          key: ${{ runner.os }}-gui-${{ env.GUI_HASH }}
+          rm -rf node_modules/scratch-vm && mv PenguinMod-Vm node_modules/scratch-vm
+          rm -rf node_modules/scratch-blocks && mv PenguinMod-Blocks node_modules/scratch-blocks
+          rm -rf node_modules/scratch-render && mv PenguinMod-Render node_modules/scratch-render
+          rm -rf node_modules/scratch-paint && mv PenguinMod-Paint node_modules/scratch-paint
 
-      - name: Cache VM node_modules
-        id: vm-cache
-        uses: actions/cache@v4
-        with:
-          path: penguinmod.github.io/PenguinMod-Vm/node_modules
-          key: ${{ runner.os }}-vm-${{ env.VM_HASH }}
-
-      - name: Cache Blocks node_modules
-        id: blocks-cache
-        uses: actions/cache@v4
-        with:
-          path: penguinmod.github.io/PenguinMod-Blocks/node_modules
-          key: ${{ runner.os }}-blocks-${{ env.BLOCKS_HASH }}
-
-      - name: Cache Render node_modules
-        id: render-cache
-        uses: actions/cache@v4
-        with:
-          path: penguinmod.github.io/PenguinMod-Render/node_modules
-          key: ${{ runner.os }}-render-${{ env.RENDER_HASH }}
-
-      - name: Cache Paint node_modules
-        id: paint-cache
-        uses: actions/cache@v4
-        with:
-          path: penguinmod.github.io/PenguinMod-Paint/node_modules
-          key: ${{ runner.os }}-paint-${{ env.PAINT_HASH }}
-
-      - name: Install root production deps
-        if: steps.root-prod-cache.outputs.cache-hit != 'true'
-        run: bun install --production --frozen-lockfile
-
-      - name: Install GUI deps
-        if: steps.gui-cache.outputs.cache-hit != 'true'
-        working-directory: penguinmod.github.io
-        run: bun install --frozen-lockfile
-
-      - name: Install VM deps
-        if: steps.vm-cache.outputs.cache-hit != 'true'
-        working-directory: penguinmod.github.io/PenguinMod-Vm
-        run: bun install --frozen-lockfile
-
-      - name: Install Blocks deps
-        if: steps.blocks-cache.outputs.cache-hit != 'true'
-        working-directory: penguinmod.github.io/PenguinMod-Blocks
-        run: bun install --frozen-lockfile
-
-      - name: Install Render deps
-        if: steps.render-cache.outputs.cache-hit != 'true'
-        working-directory: penguinmod.github.io/PenguinMod-Render
-        run: bun install --frozen-lockfile
-
-      - name: Install Paint deps
-        if: steps.paint-cache.outputs.cache-hit != 'true'
-        working-directory: penguinmod.github.io/PenguinMod-Paint
-        run: bun install --frozen-lockfile
-
-      - name: Download external build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: penguinmod-extensions-gallery
-          path: app/PenguinMod-ExtensionsGallery
-
-      - name: Download TurboWarp build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: turbowarp-extensions-gallery
-          path: app/TurboWarp-ExtensionsGallery
-
-      - name: Download PenguinMod Home artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: penguinmod-home
-          path: app/PenguinMod-Home
-
+      # --- Build Web App ---
       - name: Build PenguinMod Web
         run: |
           cd penguinmod.github.io
-
           bun run build
           cp -R build ../app
-
           cd ..
           rm -rf app/package.json app/node_modules
-
           cd PenguinMod-Home
           bun run build
           cp -R public ../app
-
           cd ..
           cp -R SharkPools-Extensions app/
+          cp -R TurboWarp-ExtensionsGallery/build app/TurboWarp-ExtensionsGallery
+          cp -R PenguinMod-ExtensionsGallery/public app/PenguinMod-ExtensionsGallery
 
-      - name: Build Electron App
+      # --- Install prod-only deps ---
+      - name: Install production deps
         run: |
-          npx electron-builder --linux AppImage deb rpm --win nsis --publish never
+          rm -rf node_modules
+          mkdir node_modules
+          bun i --omit=dev
 
+      # --- Build Electron App ---
+      - name: Build Electron App
+        run: npx electron-builder --linux AppImage deb rpm --win nsis --publish never
+
+      # --- Zip artifacts ---
       - name: Zip linux-unpacked
         run: zip -r builds/linux-unpacked.zip builds/linux-unpacked
 
       - name: Zip win-unpacked
         run: zip -r builds/win-unpacked.zip builds/win-unpacked
 
+      # --- Create GitHub Release ---
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        id: create_release
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.RELEASE_TAG }}
-          name: ${{ env.RELEASE_NAME }}
-          prerelease: true
-          draft: false
+          release_name: ${{ env.RELEASE_NAME }}
           body: |
             ## Automated Build
 
@@ -317,10 +210,82 @@ jobs:
             | **Branch**   | `${{ github.ref_name }}` |
             | **Commit**   | `${{ github.sha }}` |
             | **Built at** | `${{ env.TIMESTAMP }}` |
-          files: |
-            builds/*.deb
-            builds/*.rpm
-            builds/*.AppImage
-            builds/*.exe
-            builds/linux-unpacked.zip
-            builds/win-unpacked.zip
+          draft: false
+          prerelease: true
+
+      # --- Capture artifact filenames ---
+      - name: Capture artifact filenames
+        run: |
+          DEB=$(ls builds/*.deb | head -1)
+          RPM=$(ls builds/*.rpm | head -1)
+          APPIMAGE=$(ls builds/*.AppImage | head -1)
+          EXE=$(ls builds/*.exe | head -1)
+
+          echo "DEB_PATH=$DEB" >> $GITHUB_ENV
+          echo "DEB_NAME=$(basename "$DEB")" >> $GITHUB_ENV
+          echo "RPM_PATH=$RPM" >> $GITHUB_ENV
+          echo "RPM_NAME=$(basename "$RPM")" >> $GITHUB_ENV
+          echo "APPIMAGE_PATH=$APPIMAGE" >> $GITHUB_ENV
+          echo "APPIMAGE_NAME=$(basename "$APPIMAGE")" >> $GITHUB_ENV
+          echo "EXE_PATH=$EXE" >> $GITHUB_ENV
+          echo "EXE_NAME=$(basename "$EXE")" >> $GITHUB_ENV
+
+      - name: Upload .deb release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.DEB_PATH }}
+          asset_name: ${{ env.DEB_NAME }}
+          asset_content_type: application/vnd.debian.binary-package
+
+      - name: Upload .rpm release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.RPM_PATH }}
+          asset_name: ${{ env.RPM_NAME }}
+          asset_content_type: application/x-rpm
+
+      - name: Upload AppImage release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.APPIMAGE_PATH }}
+          asset_name: ${{ env.APPIMAGE_NAME }}
+          asset_content_type: application/octet-stream
+
+      - name: Upload .exe release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.EXE_PATH }}
+          asset_name: ${{ env.EXE_NAME }}
+          asset_content_type: application/octet-stream
+
+      - name: Upload linux-unpacked.zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: builds/linux-unpacked.zip
+          asset_name: linux-unpacked.zip
+          asset_content_type: application/zip
+
+      - name: Upload win-unpacked.zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: builds/win-unpacked.zip
+          asset_name: win-unpacked.zip
+          asset_content_type: application/zip
