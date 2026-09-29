@@ -76,6 +76,7 @@ jobs:
       - name: Install TurboWarp deps
         run: |
           cd TurboWarp-ExtensionsGallery
+          rm -f package-lock.json
           bun i
           bun run build
 
