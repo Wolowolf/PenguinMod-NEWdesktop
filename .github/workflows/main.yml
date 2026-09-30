@@ -155,7 +155,9 @@ jobs:
           rm -rf node_modules/scratch-blocks && mv PenguinMod-Blocks node_modules/scratch-blocks
           rm -rf node_modules/scratch-render && mv PenguinMod-Render node_modules/scratch-render
           rm -rf node_modules/scratch-paint && mv PenguinMod-Paint node_modules/scratch-paint
-
+      # --- Patch GUI: fixed-size stage + drag-to-resize handle ---
+      - name: Patch GUI stage layout
+        run: node patches/stage-layout.js penguinmod.github.io
       # --- Build Web App ---
       - name: Build PenguinMod Web
         run: |
