@@ -14,7 +14,10 @@
  *      boxes with little padding, no arrow icons next to x / y, and its rows wrap so
  *      the panel can get as narrow as the stage.
  *   6. Automatic restore points are OFF by default (they can be turned on again in
- *      the Restore Points window). See section 8 for why.
+ *      the Restore Points window). See section 9 for why.
+ *   7. The sprite panel is ONE wrapping row: [eye toggle] [name] x y [size symbol]
+ *      [direction symbol], boxes sized to their content, no rounded corners.
+ *   8. No rounded corners anywhere in the editor (section 10).
  *
  * Usage:  node patches/stage-layout.js <path-to-GUI-folder>
  *
@@ -495,9 +498,12 @@ replaceOnce(GJ,
 }
 
 /* ------------------------------------------------------------------ */
-/* 8. Sprite info panel: compact, wrapping, no x / y arrow icons       */
+/* 8. Sprite info panel: ONE compact row, boxes sized to their content, */
+/*    no rounded corners, single eye toggle, symbols instead of words    */
 /* ------------------------------------------------------------------ */
 const SI = 'src/components/sprite-info/sprite-info.jsx';
+
+// 8a. remove the arrow icons next to x / y
 for (const axis of ['x', 'y']) {
     const re = new RegExp(
         '\\n[ \\t]*\\{\\n' +
@@ -517,11 +523,97 @@ for (const axis of ['x', 'y']) {
     write(SI, text.replace(re, ''));
 }
 
+// 8b. replace the two-row layout with one wrapping row:
+//     [eye toggle] [name] x y [size symbol] [direction symbol]
+{
+    const text = read(SI);
+    const startMarker =
+        '        return (\n' +
+        '            <Box className={styles.spriteInfo}>\n' +
+        '                <div className={classNames(styles.row, styles.rowPrimary)}>\n' +
+        '                    <div className={styles.group}>\n' +
+        '                        <Label\n';
+    const endMarker = '            </Box>\n        );\n';
+    const a = text.indexOf(startMarker);
+    if (a === -1) fail(SI + ': could not find the sprite info layout block');
+    if (text.indexOf(startMarker, a + 1) !== -1) fail(SI + ': sprite info layout block found twice');
+    const b = text.indexOf(endMarker, a);
+    if (b === -1) fail(SI + ': could not find the end of the sprite info layout block');
+    const layout = `        return (
+            <Box className={styles.spriteInfo}>
+                <div className={styles.row}>
+                    <div
+                        className={classNames(
+                            styles.radio,
+                            styles.eyeToggle,
+                            {
+                                [styles.isActive]: this.props.visible && !this.props.disabled,
+                                [styles.isDisabled]: this.props.disabled
+                            }
+                        )}
+                        tabIndex="0"
+                        onClick={this.props.disabled ? null : (
+                            this.props.visible ? this.props.onClickNotVisible : this.props.onClickVisible
+                        )}
+                        onKeyPress={this.props.disabled ? null : (
+                            this.props.visible ? this.props.onPressNotVisible : this.props.onPressVisible
+                        )}
+                    >
+                        <img
+                            className={styles.icon}
+                            src={this.props.visible ? showIcon : hideIcon}
+                        />
+                    </div>
+                    <div className={styles.group}>
+                        {spriteNameInput}
+                    </div>
+                    {xPosition}
+                    {yPosition}
+                    <div className={classNames(styles.group, styles.largerInput)}>
+                        <Label
+                            secondary
+                            above={labelAbove}
+                            text="\u21EA"
+                        >
+                            <BufferedInput
+                                small
+                                disabled={this.props.disabled}
+                                label={sizeLabel}
+                                tabIndex="0"
+                                type="text"
+                                value={this.props.disabled ? '' : Math.round(this.props.size)}
+                                onSubmit={this.props.onChangeSize}
+                            />
+                        </Label>
+                    </div>
+                    <div className={classNames(styles.group, styles.largerInput)}>
+                        <DirectionPicker
+                            direction={Math.round(this.props.direction)}
+                            disabled={this.props.disabled}
+                            labelAbove={labelAbove}
+                            rotationStyle={this.props.rotationStyle}
+                            onChangeDirection={this.props.onChangeDirection}
+                            onChangeRotationStyle={this.props.onChangeRotationStyle}
+                        />
+                    </div>
+                </div>
+            </Box>
+        );
+`;
+    write(SI, text.slice(0, a) + layout + text.slice(b + endMarker.length));
+}
+
+// 8c. the direction label becomes a symbol too
+replaceOnce('src/components/direction-picker/direction-picker.jsx',
+    '        above={props.labelAbove}\n        text={directionLabel}\n',
+    '        above={props.labelAbove}\n        text="\u27F3"\n');
+
+// 8d. styles
 const SIC = 'src/components/sprite-info/sprite-info.css';
 write(SIC, read(SIC).replace(/\s*$/, '\n') + `
-/* ${MARKER}: compact sprite info that can shrink and wrap */
+/* ${MARKER}: one wrapping row, boxes sized to their content, no rounded corners */
 .sprite-info {
-    padding: 0.4rem;
+    padding: 0.25rem 0.4rem;
     min-width: 0;
 }
 
@@ -529,56 +621,57 @@ write(SIC, read(SIC).replace(/\s*$/, '\n') + `
     flex-wrap: wrap;
     justify-content: flex-start;
     align-items: center;
-    gap: 0.3rem 0.5rem;
-}
-
-.row-primary {
-    margin-bottom: 0.3rem;
+    gap: 0.25rem 0.5rem;
 }
 
 .group {
     flex: 0 0 auto;
+    max-width: 100%;
 }
 
-/* the sprite name takes whatever space is left on its row */
-.row-primary > .group:first-child {
-    flex: 1 1 6rem;
-    min-width: 0;
-}
-
-.row-primary > .group:first-child > label {
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
-/* square boxes with almost no padding (x, y, size, direction) */
+/* every box is only as wide as what is inside it */
 .sprite-info input {
-    width: 2.25rem;
-    height: 2.25rem;
-    padding: 0 1px;
-    border-radius: 0.4rem;
+    field-sizing: content;
+    box-sizing: border-box;
+    width: auto;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 0.3rem;
+    border-radius: 0;
     text-align: center;
     text-overflow: clip;
 }
 
 .larger-input input {
-    width: 2.25rem;
+    width: auto;
 }
 
 .sprite-info input.sprite-input {
-    width: 100%;
     min-width: 3rem;
-    height: 2rem;
-    padding: 0 0.5rem;
-    border-radius: 2rem;
+    max-width: 9rem;
     text-align: left;
     text-overflow: ellipsis;
 }
 
-.icon-wrapper {
-    width: 2.25rem;
-    height: 2.25rem;
-    padding: 0.55rem;
+/* one button that toggles between shown (eye) and hidden (crossed-out eye) */
+.eye-toggle {
+    flex: 0 0 auto;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0.2rem;
+    box-sizing: border-box;
+    border: 1px solid $ui-black-transparent;
+    border-radius: 0;
+}
+
+.eye-toggle:focus {
+    border-color: $motion-primary;
+}
+
+/* the size / direction symbols a bit bigger so they are readable */
+.sprite-info [class*="label_input-label-secondary"] {
+    font-size: 0.875rem;
+    line-height: 1;
 }
 
 [dir="ltr"] .sprite-info [class*="label_input-label"] {
@@ -602,5 +695,26 @@ replaceOnce('src/lib/tw-restore-point-api.js',
     'const DEFAULT_INTERVAL = 1000 * 60 * 5;',
     '// ' + MARKER + ': automatic restore points are off unless the user turns them on\n' +
     'const DEFAULT_INTERVAL = -1;');
+
+/* ------------------------------------------------------------------ */
+/* 10. No rounded corners anywhere in the editor                       */
+/* ------------------------------------------------------------------ */
+// Block shapes are drawn as SVG by the blocks library, so they are not affected by this.
+// To undo this section, delete it from this script (or ask Claude to reverse it).
+const GC = 'src/components/gui/gui.css';
+write(GC, read(GC).replace(/\s*$/, '\n') + `
+/* ${MARKER}: no rounded corners anywhere in the editor */
+:global(*),
+:global(*::before),
+:global(*::after) {
+    border-radius: 0 !important;
+}
+
+:global(*::-webkit-scrollbar),
+:global(*::-webkit-scrollbar-thumb),
+:global(*::-webkit-scrollbar-track) {
+    border-radius: 0 !important;
+}
+`);
 
 console.log('Stage layout patch applied successfully.');
