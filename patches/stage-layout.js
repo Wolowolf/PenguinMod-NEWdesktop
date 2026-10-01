@@ -9,6 +9,12 @@
  *   3. A drag handle is added on the left edge of the stage column. Drag it left
  *      to make the stage bigger, right to make it smaller. Double-click resets.
  *      The size is remembered between launches.
+ *   4. The stage column hugs the stage (no empty space beside tall or small stages).
+ *   5. The sprite info panel (name, x, y, show, size, direction) is compact: square
+ *      boxes with little padding, no arrow icons next to x / y, and its rows wrap so
+ *      the panel can get as narrow as the stage.
+ *   6. Automatic restore points are OFF by default (they can be turned on again in
+ *      the Restore Points window). See section 8 for why.
  *
  * Usage:  node patches/stage-layout.js <path-to-GUI-folder>
  *
@@ -67,6 +73,8 @@ replaceOnce(SU,
 // The editor stage is scaled to fit inside a box of this width (height = width * 3/4).
 const DEFAULT_STAGE_BOX_WIDTH = 480;
 const MIN_STAGE_BOX_WIDTH = 240;
+// Narrowest the stage column may get (the sprite panel can wrap down to this).
+const MIN_STAGE_COLUMN_WIDTH = 242;
 const MAX_STAGE_BOX_WIDTH = 1200;
 const STAGE_BOX_RATIO = 3 / 4;
 // Space that must always be left for the block palette + workspace.
@@ -125,6 +133,7 @@ replaceOnce(SU,
     'export {\n' +
     '    DEFAULT_STAGE_BOX_WIDTH,\n' +
     '    MIN_STAGE_BOX_WIDTH,\n' +
+    '    MIN_STAGE_COLUMN_WIDTH,\n' +
     '    MAX_STAGE_BOX_WIDTH,\n' +
     '    getEffectiveStageBoxWidth,\n' +
     '    getStageDimensions,');
@@ -239,12 +248,19 @@ replaceOnce(CSC,
     '        question,\n        stageBoxWidth,\n        stageSize,\n        useEditorDragStyle,\n');
 
 replaceOnce(CSC,
+    "import {getStageDimensions, getMinWidth} from '../../lib/screen-utils.js';\n",
+    "import {getStageDimensions, getMinWidth, MIN_STAGE_COLUMN_WIDTH} from '../../lib/screen-utils.js';\n");
+
+replaceOnce(CSC,
     '    const stageDimensions = getStageDimensions(stageSize, customStageSize, isFullScreen);\n' +
     '    const minWidth = getMinWidth(stageSize);\n',
     '    // Player-only mode keeps its normal size; the editor uses the fixed-size box\n' +
     '    const boxWidth = isPlayerOnly ? null : stageBoxWidth;\n' +
     '    const stageDimensions = getStageDimensions(stageSize, customStageSize, isFullScreen, boxWidth);\n' +
-    '    const minWidth = getMinWidth(stageSize, boxWidth);\n');
+    '    // In the editor the column hugs the stage, but never gets narrower than the sprite panel can shrink\n' +
+    '    const minWidth = boxWidth ?\n' +
+    '        Math.max(Math.ceil(stageDimensions.width), MIN_STAGE_COLUMN_WIDTH) :\n' +
+    '        getMinWidth(stageSize, boxWidth);\n');
 
 replaceOnce(CSC,
     '    stageSize: PropTypes.oneOf(Object.keys(STAGE_DISPLAY_SIZES)).isRequired,\n',
@@ -277,7 +293,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux';
 
-import {DEFAULT_STAGE_BOX_WIDTH, getEffectiveStageBoxWidth} from '../../lib/screen-utils';
+import {DEFAULT_STAGE_BOX_WIDTH, getEffectiveStageBoxWidth, getStageDimensions} from '../../lib/screen-utils';
 import {setStageBoxWidth, saveStageBoxWidth} from '../../reducers/stage-size';
 
 import styles from './stage-resize-handle.css';
@@ -289,6 +305,7 @@ class StageResizeHandle extends React.Component {
         this.dragging = false;
         this.startX = 0;
         this.startWidth = DEFAULT_STAGE_BOX_WIDTH;
+        this.slope = 1;
         this.currentWidth = getEffectiveStageBoxWidth(props.boxWidth);
         this.nudgePending = false;
         this.handlePointerDown = this.handlePointerDown.bind(this);
@@ -332,6 +349,10 @@ class StageResizeHandle extends React.Component {
         this.dragging = true;
         this.startX = e.clientX;
         this.startWidth = getEffectiveStageBoxWidth(this.props.boxWidth);
+        // Tall stages are narrower than the box, so the column grows slower than the box does.
+        // Compensate so the handle keeps following the mouse.
+        const dims = getStageDimensions('large', this.props.customStageSize, false, this.startWidth);
+        this.slope = Math.max(0.3, Math.min(1, dims.width / this.startWidth)) || 1;
         try {
             e.currentTarget.setPointerCapture(e.pointerId);
         } catch (err) {
@@ -345,7 +366,7 @@ class StageResizeHandle extends React.Component {
         // The stage column is on the right, so dragging left makes the stage bigger.
         // (In right-to-left languages the column is on the left, so it is reversed.)
         const delta = this.props.isRtl ? dx : -dx;
-        this.applyWidth(this.startWidth + delta);
+        this.applyWidth(this.startWidth + (delta / this.slope));
     }
     handlePointerUp (e) {
         if (!this.dragging) return;
@@ -383,12 +404,17 @@ class StageResizeHandle extends React.Component {
 
 StageResizeHandle.propTypes = {
     boxWidth: PropTypes.number,
+    customStageSize: PropTypes.shape({
+        width: PropTypes.number,
+        height: PropTypes.number
+    }),
     isRtl: PropTypes.bool,
     onChange: PropTypes.func.isRequired
 };
 
 const mapStateToProps = state => ({
-    boxWidth: state.scratchGui.stageSize.boxWidth
+    boxWidth: state.scratchGui.stageSize.boxWidth,
+    customStageSize: state.scratchGui.customStageSize
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -467,5 +493,114 @@ replaceOnce(GJ,
         '\n/* desktop patch: lets the stage resize handle be positioned against the stage column */\n' +
         '.stage-and-target-wrapper {\n    position: relative;\n}\n');
 }
+
+/* ------------------------------------------------------------------ */
+/* 8. Sprite info panel: compact, wrapping, no x / y arrow icons       */
+/* ------------------------------------------------------------------ */
+const SI = 'src/components/sprite-info/sprite-info.jsx';
+for (const axis of ['x', 'y']) {
+    const re = new RegExp(
+        '\\n[ \\t]*\\{\\n' +
+        '[ \\t]*\\(stageSize === STAGE_DISPLAY_SIZES\\.large\\) \\?\\n' +
+        '[ \\t]*<div className=\\{styles\\.iconWrapper\\}>\\n' +
+        '[ \\t]*<img\\n' +
+        '[ \\t]*aria-hidden="true"\\n' +
+        '[ \\t]*className=\\{classNames\\(styles\\.' + axis + 'Icon, styles\\.icon\\)\\}\\n' +
+        '[ \\t]*src=\\{' + axis + 'Icon\\}\\n' +
+        '[ \\t]*/>\\n' +
+        '[ \\t]*</div> :\\n' +
+        '[ \\t]*null\\n' +
+        '[ \\t]*\\}', 'g');
+    const text = read(SI);
+    const found = text.match(re);
+    if (!found || found.length !== 1) fail(SI + ': could not find the ' + axis + ' arrow icon block exactly once');
+    write(SI, text.replace(re, ''));
+}
+
+const SIC = 'src/components/sprite-info/sprite-info.css';
+write(SIC, read(SIC).replace(/\s*$/, '\n') + `
+/* ${MARKER}: compact sprite info that can shrink and wrap */
+.sprite-info {
+    padding: 0.4rem;
+    min-width: 0;
+}
+
+.row {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.3rem 0.5rem;
+}
+
+.row-primary {
+    margin-bottom: 0.3rem;
+}
+
+.group {
+    flex: 0 0 auto;
+}
+
+/* the sprite name takes whatever space is left on its row */
+.row-primary > .group:first-child {
+    flex: 1 1 6rem;
+    min-width: 0;
+}
+
+.row-primary > .group:first-child > label {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* square boxes with almost no padding (x, y, size, direction) */
+.sprite-info input {
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 1px;
+    border-radius: 0.4rem;
+    text-align: center;
+    text-overflow: clip;
+}
+
+.larger-input input {
+    width: 2.25rem;
+}
+
+.sprite-info input.sprite-input {
+    width: 100%;
+    min-width: 3rem;
+    height: 2rem;
+    padding: 0 0.5rem;
+    border-radius: 2rem;
+    text-align: left;
+    text-overflow: ellipsis;
+}
+
+.icon-wrapper {
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0.55rem;
+}
+
+[dir="ltr"] .sprite-info [class*="label_input-label"] {
+    margin-right: 0.25rem;
+}
+
+[dir="rtl"] .sprite-info [class*="label_input-label"] {
+    margin-left: 0.25rem;
+}
+`);
+
+/* ------------------------------------------------------------------ */
+/* 9. Automatic restore points: off by default                         */
+/* ------------------------------------------------------------------ */
+// Why: once a project has been changed, the editor re-creates a restore point
+// every 5 minutes for as long as it stays open (each one shows a "Creating
+// restore point..." message). Restore points can be turned back on in
+// File -> Restore points -> "Restore points are created ...".
+// To undo this section, delete it from this script (or ask Claude to reverse it).
+replaceOnce('src/lib/tw-restore-point-api.js',
+    'const DEFAULT_INTERVAL = 1000 * 60 * 5;',
+    '// ' + MARKER + ': automatic restore points are off unless the user turns them on\n' +
+    'const DEFAULT_INTERVAL = -1;');
 
 console.log('Stage layout patch applied successfully.');
