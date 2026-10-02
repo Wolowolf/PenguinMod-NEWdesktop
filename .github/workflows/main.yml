@@ -3,8 +3,6 @@ name: Build
 on:
   workflow_dispatch:
   push:
-  schedule:
-    - cron: '0 6 * * *'
 
 env:
   NODE_ENV: 'production'
@@ -84,24 +82,6 @@ jobs:
       - name: Clone SharkPool Extension Gallery
         run: git clone --depth=1 https://github.com/SharkPool-SP/SharkPools-Extensions.git
 
-      # PenguinMod Home
-      - name: Clone PenguinMod Home
-        run: git clone --depth=1 https://github.com/PenguinMod/PenguinMod-Home.git
-
-      - name: Cache PenguinMod Home node_modules
-        uses: actions/cache@v3
-        with:
-          path: PenguinMod-Home/node_modules
-          key: node-modules-penguinmod-home-${{ env.WEEK_STAMP }}
-          restore-keys: |
-            node-modules-penguinmod-home-
-
-      - name: Install PenguinMod Home deps
-        run: |
-          cd PenguinMod-Home
-          mv .env.template .env
-          bun i
-
       # --- Clone PenguinMod GUI Main Repository ---
       - name: Clone PenguinMod GUI
         run: git clone --depth=1 https://github.com/PenguinMod/penguinmod.github.io.git
@@ -166,10 +146,6 @@ jobs:
           cp -R build ../app
           cd ..
           rm -rf app/package.json app/node_modules
-          cd PenguinMod-Home
-          bun run build
-          cp -R public ../app
-          cd ..
           cp -R SharkPools-Extensions app/
           cp -R TurboWarp-ExtensionsGallery/build app/TurboWarp-ExtensionsGallery
           cp -R PenguinMod-ExtensionsGallery/public app/PenguinMod-ExtensionsGallery
@@ -182,6 +158,12 @@ jobs:
           bun i --omit=dev
 
       # --- Build Electron App ---
+      # Tells the app which release it was built as, so "Check for Updates" can tell if there is a newer one
+      - name: Write build info
+        run: |
+          echo "{\"tag\":\"${{ env.RELEASE_TAG }}\",\"builtAt\":\"${{ env.TIMESTAMP }}\"}" > app/build-info.json
+          cat app/build-info.json
+
       - name: Build Electron App
         # Windows only (was: --linux AppImage deb rpm --win nsis). See CHANGES.md to bring Linux back.
         run: npx electron-builder --win nsis --publish never
