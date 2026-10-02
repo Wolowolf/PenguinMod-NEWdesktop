@@ -11,8 +11,7 @@ const {
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
-const { createWriteStream } = require("fs");
-const unzipper = require("unzipper");
+const updater = require("./updater");
 
 let mainWindow = null;
 let isQuitting = false;
@@ -20,44 +19,18 @@ let isQuitting = false;
 const PRELOAD_PATH = path.join(__dirname, "preload.js");
 const SETTINGS_FILE = path.join(app.getPath("userData"), "app-settings.json");
 
+// The in-app updater installs releases of MY fork (see app/updater.js for what it does to the files).
+const UPDATE_REPO = "Wolowolf/PenguinMod-NEWdesktop";
+const UPDATE_ASSET = "win-unpacked.zip";
+const LEFTOVERS_FILE = path.join(app.getPath("userData"), "update-leftovers.json");
+let updateInProgress = false;
+
 const folders = {
-  home: path.join(__dirname, "public"),
   editor: path.join(__dirname, "build"),
   turbowarp: path.join(__dirname, "TurboWarp-ExtensionsGallery"),
   penguinmod: path.join(__dirname, "PenguinMod-ExtensionsGallery"),
   sharkpools: path.join(__dirname, "SharkPools-Extensions"),
 };
-
-function getInstallDir() {
-  const platformFolder = os.platform() === "win32" ? "win-unpacked" : "linux-unpacked";
-  let dir = __dirname;
-  while (true) {
-    if (path.basename(dir) === platformFolder) return dir;
-    const parent = path.dirname(dir);
-    if (parent === dir) return __dirname;
-    dir = parent;
-  }
-}
-
-function getStartupSetting() {
-  try {
-    if (fs.existsSync(SETTINGS_FILE)) {
-      const data = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf8"));
-      return data.startupPage || "home";
-    }
-  } catch (err) {
-    console.error("[Settings] Load error:", err);
-  }
-  return "home";
-}
-
-function setStartupSetting(value) {
-  try {
-    fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ startupPage: value }, null, 2), "utf8");
-  } catch (err) {
-    console.error("[Settings] Save error:", err);
-  }
-}
 
 function getNodeJSSetting() {
   try {
@@ -95,27 +68,124 @@ function getLocalFile(url) {
   return null;
 }
 
+// ---- in-app updater ------------------------------------------------------------------------
+
+// The folder the app is installed in (where "PenguinMod Desktop.exe" is), or null if this copy
+// can't be updated in place (running from source, not Windows, unexpected layout).
+function getInstallDir() {
+  if (!app.isPackaged || process.platform !== "win32") return null;
+  const dir = path.dirname(process.execPath);
+  const expected = path.join(dir, "resources", "app", "app");
+  if (path.resolve(__dirname).toLowerCase() !== expected.toLowerCase()) return null;
+  return dir;
+}
+
+// Written by the CI build: which release this copy of the app was built as.
+function readBuildInfo() {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(__dirname, "build-info.json"), "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+function sendUpdateProgress(phase, percent, text) {
+  try {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("update-progress", { phase, percent, text });
+    }
+  } catch { }
+}
+
+async function runUpdateCheck(win) {
+  if (updateInProgress) return;
+  const say = (type, message, detail) =>
+    dialog.showMessageBoxSync(win, { type, buttons: ["OK"], message, detail, noLink: true });
+
+  const installDir = getInstallDir();
+  if (!installDir) {
+    say("info", "Updates are only available in the installed Windows app.",
+      "This copy isn't running from an installed (or unzipped) build, so it can't be updated in place.");
+    return;
+  }
+
+  updateInProgress = true;
+  const tmpZip = path.join(os.tmpdir(), `penguinmod-update-${process.pid}.zip`);
+  try {
+    const res = await net.fetch(`https://api.github.com/repos/${UPDATE_REPO}/releases?per_page=30`, {
+      headers: { Accept: "application/vnd.github+json" },
+    });
+    if (!res.ok) {
+      throw new Error(`GitHub answered HTTP ${res.status}` + (res.status === 403 ? " (too many requests, try again later)." : "."));
+    }
+    const found = updater.pickRelease(await res.json(), UPDATE_REPO, UPDATE_ASSET);
+    if (!found) {
+      say("info", "No update found.", `There is no finished release with ${UPDATE_ASSET} in ${UPDATE_REPO} yet.`);
+      return;
+    }
+    const { release, asset } = found;
+    const current = readBuildInfo();
+    if (current && current.tag === release.tag_name) {
+      say("info", "You're up to date.", `Installed build: ${release.tag_name}`);
+      return;
+    }
+
+    const mb = (asset.size / 1024 / 1024).toFixed(0);
+    const choice = dialog.showMessageBoxSync(win, {
+      type: "question",
+      buttons: ["Install update", "Cancel"],
+      defaultId: 0,
+      cancelId: 1,
+      noLink: true,
+      message: "An update is available.",
+      detail:
+        `New build: ${release.tag_name}\n` +
+        `Installed: ${current ? current.tag : "unknown"}\n` +
+        `Download size: about ${mb} MB\n\n` +
+        "The app will restart when it is done. Save your project first; unsaved changes are lost. " +
+        "Your settings and saved files are not touched.",
+    });
+    if (choice !== 0) return;
+
+    updater.assertWritable(installDir);
+    await updater.downloadFile(net.fetch.bind(net), asset.browser_download_url, tmpZip, {
+      expectedSize: asset.size,
+      expectedDigest: asset.digest || "",
+      onProgress: sendUpdateProgress,
+    });
+    updater.cleanupLeftovers(LEFTOVERS_FILE, installDir);
+    const result = await updater.applyUpdateFromZip(tmpZip, installDir, {
+      exeName: path.basename(process.execPath),
+      leftoversFile: LEFTOVERS_FILE,
+      onProgress: sendUpdateProgress,
+    });
+
+    sendUpdateProgress("done");
+    say("info", "Update installed.",
+      `${result.changed} file(s) replaced, ${result.added} added, ${result.removed} removed.\nThe app will restart now.`);
+    isQuitting = true;
+    app.relaunch();
+    app.exit(0);
+  } catch (err) {
+    console.error("[updater] failed", err);
+    sendUpdateProgress("done");
+    say("error", "The update failed.", String((err && err.message) || err));
+  } finally {
+    updateInProgress = false;
+    try { fs.unlinkSync(tmpZip); } catch { }
+  }
+}
+
+function cleanupOldUpdateFiles() {
+  const installDir = getInstallDir();
+  if (!installDir) return;
+  try { updater.cleanupLeftovers(LEFTOVERS_FILE, installDir); } catch { }
+}
+
 function setupAppMenu(win) {
   const isMac = process.platform === 'darwin';
   const template = [
     ...(isMac ? [{ label: app.name, submenu: [{ role: 'quit' }] }] : []),
-    {
-      label: 'Settings',
-      submenu: [
-        {
-          label: 'Startup: Home Page',
-          type: 'radio',
-          checked: getStartupSetting() === 'home',
-          click: () => setStartupSetting('home')
-        },
-        {
-          label: 'Startup: Editor',
-          type: 'radio',
-          checked: getStartupSetting() === 'editor',
-          click: () => setStartupSetting('editor')
-        }
-      ]
-    },
     {
       label: 'System',
       submenu: [
@@ -125,180 +195,6 @@ function setupAppMenu(win) {
     }
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
-}
-
-// download logic with updates
-async function downloadFile(url, destPath) {
-  const res = await net.fetch(url, { headers: { Accept: "application/octet-stream" } });
-  if (!res.ok) throw new Error(`Download failed: HTTP ${res.status}`);
-
-  const total = parseInt(res.headers.get("content-length") || "0", 10);
-  let received = 0;
-
-  const reader = res.body.getReader();
-  const fileStream = createWriteStream(destPath);
-
-  await new Promise((resolve, reject) => {
-    fileStream.on("error", reject);
-    function pump() {
-      reader.read().then(({ done, value }) => {
-        if (done) {
-          fileStream.end(resolve);
-          return;
-        }
-        received += value.length;
-        const mb = (received / 1024 / 1024).toFixed(1);
-        if (total > 0) {
-          const totalMb = (total / 1024 / 1024).toFixed(1);
-          const pct = Math.round((received / total) * 100);
-          sendUpdateProgress("download", pct, `Downloading… ${mb} / ${totalMb} MB`);
-        } else {
-          sendUpdateProgress("download", -1, `Downloading… ${mb} MB`);
-        }
-        fileStream.write(Buffer.from(value), (err) => {
-          if (err) return reject(err);
-          pump();
-        });
-      }).catch(reject);
-    }
-    pump();
-  });
-}
-
-// bypass windows locking issues by renaming first
-function safeWriteFile(targetPath, data) {
-  if (os.platform() === "win32") {
-    if (fs.existsSync(targetPath)) {
-      const tomb = targetPath + ".old";
-      try {
-        if (fs.existsSync(tomb)) fs.unlinkSync(tomb);
-        fs.renameSync(targetPath, tomb);
-      } catch (err) {
-        console.warn("[update] rename failed, fallback write:", path.basename(targetPath), err.code);
-      }
-    }
-    fs.writeFileSync(targetPath, data);
-    const tomb = targetPath + ".old";
-    try {
-      if (fs.existsSync(tomb)) fs.unlinkSync(tomb);
-    } catch { }
-  } else {
-    try {
-      if (fs.existsSync(targetPath)) fs.unlinkSync(targetPath);
-    } catch { }
-    fs.writeFileSync(targetPath, data);
-  }
-}
-
-async function extractChangedFiles(zipPath, targetDir) {
-  const directory = await unzipper.Open.file(zipPath);
-  const platformFolder = os.platform() === "win32" ? "win-unpacked" : "linux-unpacked";
-  const stripPrefix = `builds/${platformFolder}/`;
-
-  const eligible = directory.files.filter(
-    (entry) => entry.type === "File" && entry.path.startsWith(stripPrefix)
-  );
-  const total = eligible.length;
-  let i = 0;
-
-  for (const entry of eligible) {
-    i++;
-    const relativePath = entry.path.slice(stripPrefix.length);
-    if (!relativePath) continue;
-
-    const pct = Math.round((i / total) * 100);
-    sendUpdateProgress("extract", pct, relativePath);
-
-    const targetPath = path.join(targetDir, relativePath);
-    const rel = path.relative(targetDir, targetPath);
-    if (!rel || rel.startsWith("..") || path.isAbsolute(rel)) continue;
-
-    const remoteData = await entry.buffer();
-    if (fs.existsSync(targetPath)) {
-      const localData = fs.readFileSync(targetPath);
-      if (Buffer.compare(localData, remoteData) === 0) continue;
-    } else {
-      fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-    }
-
-    safeWriteFile(targetPath, remoteData);
-
-    if (os.platform() !== "win32") {
-      const unixMode = (entry.externalFileAttributes >>> 16) & 0xffff;
-      if (unixMode !== 0) {
-        try {
-          fs.chmodSync(targetPath, unixMode);
-        } catch (err) {
-          console.warn("[update] chmod failed:", relativePath, err.code);
-        }
-      }
-    }
-  }
-}
-
-function sendUpdateProgress(phase, percent, status) {
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send("update-progress", { phase, percent, status });
-  }
-}
-
-async function runUpdateCheck(win) {
-  const GITHUB_REPO = "FreshPenguin112/PenguinMod-Desktop";
-  try {
-    const res = await net.fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases`, {
-      headers: { Accept: "application/vnd.github+json" },
-    });
-
-    if (!res.ok) return { success: false, message: `GitHub API error: HTTP ${res.status}` };
-
-    const releases = await res.json();
-    const release = releases[0];
-    if (!release || !release.assets?.length) {
-      dialog.showMessageBoxSync(win, {
-        type: "info",
-        message: "No Updates Found",
-        detail: "You are already using the latest version.",
-      });
-      return { success: false, message: "No release assets found." };
-    }
-
-    const assetName = os.platform() === "win32" ? "win-unpacked.zip" : "linux-unpacked.zip";
-    const asset = release.assets.find((a) => a.name === assetName);
-    if (!asset) {
-      return { success: false, message: `No matching asset (${assetName}) found in latest release.` };
-    }
-
-    const choice = dialog.showMessageBoxSync(win, {
-      type: "question",
-      buttons: ["Install Update", "Cancel"],
-      defaultId: 0,
-      cancelId: 1,
-      title: "Update Available",
-      message: `Update available: ${release.name || release.tag_name}`,
-      detail: [
-        `Release: ${release.name || release.tag_name}`,
-        `Published: ${new Date(release.published_at).toLocaleString()}`,
-        `Asset: ${asset.name} (${(asset.size / 1024 / 1024).toFixed(1)} MB)`,
-        release.body ? `\nNotes:\n${release.body.slice(0, 300)}${release.body.length > 300 ? "…" : ""}` : "",
-      ].join("\n"),
-      noLink: true,
-    });
-
-    if (choice !== 0) return { success: false, message: "Update cancelled." };
-
-    const tmpZip = path.join(os.tmpdir(), `penguinmod-update-${Date.now()}.zip`);
-    await downloadFile(asset.browser_download_url, tmpZip);
-    await extractChangedFiles(tmpZip, getInstallDir());
-
-    try { fs.unlinkSync(tmpZip); } catch { }
-
-    app.relaunch();
-    app.exit(0);
-    return { success: true, message: "Update installed. Restarting…" };
-  } catch (err) {
-    console.error("[update-checker]", err);
-    return { success: false, message: `Update failed: ${err.message}` };
-  }
 }
 
 // shitty patch because for some reason using data uris in project_url param errors here
@@ -329,7 +225,6 @@ function setupProtocol() {
       }
       const hostMap = {
         "studio.penguinmod.com": { dir: folders.editor, def: "editor.html" },
-        "penguinmod.com": { dir: folders.home, def: "index.html" },
         "extensions.penguinmod.com": { dir: folders.penguinmod, def: "index.html" },
         "extensions.turbowarp.org": { dir: folders.turbowarp, def: "index.html" }
       };
@@ -406,22 +301,7 @@ if (process.env.NOPROXY === "true") {
 }
 
 app.whenReady().then(() => {
-  ipcMain.handle("get-startup-setting", () => getStartupSetting());
-  ipcMain.on("set-startup-setting", (event, value) => setStartupSetting(value));
-
-  ipcMain.handle("manual-check-update", async (event) => {
-    const senderFrame = event.senderFrame;
-    if (!senderFrame || senderFrame.parent !== null) {
-      throw new Error("Security Violation: Update requests must originate from main frame context.");
-    }
-
-    const originUrl = senderFrame.url;
-    if (!originUrl.startsWith("https://penguinmod.com") && !originUrl.startsWith("https://studio.penguinmod.com")) {
-      throw new Error("Security Violation: Unauthorized origin.");
-    }
-    return await runUpdateCheck(mainWindow);
-  });
-
+  cleanupOldUpdateFiles();
   setupProtocol();
   setupHeaderSpoofing();
   const fileToOpen = process.argv.length >= 2 ? process.argv[1] : null;
@@ -459,7 +339,6 @@ function createWindow(fileToOpen) {
     },
   });
 
-  const startupTarget = getStartupSetting();
   let startUrl = "";
   if (fileToOpen) {
     try {
@@ -469,7 +348,7 @@ function createWindow(fileToOpen) {
       console.error("[main] Failed to load local project file:", err);
     }
   }
-  mainWindow.loadURL(startUrl.length > 0 ? startUrl : (startupTarget === "editor" ? "https://studio.penguinmod.com/editor.html" : "https://penguinmod.com/index.html"));
+  mainWindow.loadURL(startUrl.length > 0 ? startUrl : "https://studio.penguinmod.com/editor.html");
 
   mainWindow.webContents.on("console-message", ({ level, message, lineNumber, sourceId, frame }) => {
     const prefix = `[renderer:${sourceId}:${lineNumber}]`;
@@ -661,4 +540,3 @@ function setupDialogs() {
     promptWindow.once("ready-to-show", () => promptWindow.show());
   });
 }
-
