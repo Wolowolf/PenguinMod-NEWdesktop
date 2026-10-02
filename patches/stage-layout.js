@@ -18,6 +18,8 @@
  *   7. The sprite panel is ONE wrapping row: [eye toggle] [name] x y [size symbol]
  *      [direction symbol], boxes sized to their content, no rounded corners.
  *   8. No rounded corners anywhere in the editor (section 10).
+ *   9. The block category menu (Motion, Looks... extensions, Pinned) is a column of
+ *      equal-sized colour boxes with just the name, no icons (section 11).
  *
  * Usage:  node patches/stage-layout.js <path-to-GUI-folder>
  *
@@ -714,6 +716,115 @@ write(GC, read(GC).replace(/\s*$/, '\n') + `
 :global(*::-webkit-scrollbar-thumb),
 :global(*::-webkit-scrollbar-track) {
     border-radius: 0 !important;
+}
+`);
+
+/* ------------------------------------------------------------------ */
+/* 11. Block category menu: equal-sized colour boxes, name only         */
+/* ------------------------------------------------------------------ */
+// Each entry in the palette's category menu (Pinned, Motion, Looks, ... and every
+// extension) becomes a box in the colour of that category's blocks, showing only
+// its name. All boxes have the same size: as wide as "Pointerlock" and as tall as
+// a two-line name such as "Operators Expansion". Longer names are cut after 2 lines.
+// To undo this section, delete it from this script (or ask Claude to reverse it).
+
+// 11a. Expose each category's colour to CSS. The menu only stores the colour
+//      inline for entries without an icon, so we copy it onto every entry as CSS
+//      variables when the blocks library creates the entry.
+replaceOnce('src/lib/blocks.js',
+    '    const ScratchBlocks = LazyScratchBlocks.get();\n',
+    '    const ScratchBlocks = LazyScratchBlocks.get();\n' +
+`
+    // ${MARKER}: give every category menu entry its colour as a CSS variable
+    const pmCategory = ScratchBlocks.Toolbox && ScratchBlocks.Toolbox.Category;
+    if (pmCategory && !pmCategory.prototype.pmColoured) {
+        const originalCreateDom = pmCategory.prototype.createDom;
+        pmCategory.prototype.pmColoured = true;
+        pmCategory.prototype.createDom = function () {
+            originalCreateDom.apply(this, arguments);
+            const colour = typeof this.colour_ === 'string' && /^#[0-9a-fA-F]{6}/.test(this.colour_) ?
+                this.colour_ : '#666666';
+            const r = parseInt(colour.slice(1, 3), 16);
+            const g = parseInt(colour.slice(3, 5), 16);
+            const b = parseInt(colour.slice(5, 7), 16);
+            // dark text on light colours (e.g. yellow), white text on dark ones
+            const light = (0.299 * r + 0.587 * g + 0.114 * b) > 160;
+            if (this.item_) {
+                this.item_.style.setProperty('--pm-cat-colour', colour);
+                this.item_.style.setProperty('--pm-cat-text', light ? '#111111' : '#ffffff');
+            }
+        };
+
+        // The blocks library assumes the category menu is 60 px wide (toolbox width =
+        // menu + flyout). Ours is wider, so add the difference; otherwise the menu would
+        // cover the left edge of the block palette.
+        const toolboxProto = ScratchBlocks.Toolbox.prototype;
+        const originalGetWidth = toolboxProto.getWidth;
+        toolboxProto.getWidth = function () {
+            const table = this.categoryMenu_ && this.categoryMenu_.table;
+            if (table && table.offsetWidth) this.pmMenuWidth = table.offsetWidth;
+            return originalGetWidth.apply(this, arguments) + Math.max(0, (this.pmMenuWidth || 60) - 60);
+        };
+    }
+`);
+
+// 11b. The look of the boxes.
+const BC = 'src/components/blocks/blocks.css';
+write(BC, read(BC).replace(/\s*$/, '\n') + `
+/* ${MARKER}: category menu = equal colour boxes with only the name */
+.blocks :global(.scratchCategoryMenu) {
+    /* box = "Pointerlock" (61 px of text) + 0.3rem padding on each side + 2 px frame */
+    width: 4.8rem;
+    box-sizing: border-box;
+    padding: 2px;
+}
+
+.blocks :global(.scratchCategoryMenuRow) {
+    margin: 0 0 2px;
+}
+
+.blocks :global(.scratchCategoryMenuItem) {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    height: 2.4rem;
+    padding: 0 0.3rem;
+    text-align: left;
+    background: var(--pm-cat-colour, #666666);
+    color: var(--pm-cat-text, #ffffff) !important;
+}
+
+/* selected entry: white frame inside the box (the colour stays the block colour) */
+.blocks :global(.scratchCategoryMenuItem.categorySelected) {
+    background: var(--pm-cat-colour, #666666);
+    box-shadow: inset 0 0 0 2px var(--pm-cat-text, #ffffff);
+}
+
+.blocks :global(.scratchCategoryMenuItem:hover) {
+    color: var(--pm-cat-text, #ffffff) !important;
+    filter: brightness(1.15);
+}
+
+/* no icons or colour dots any more, just the name */
+.blocks :global(.scratchCategoryItemBubble),
+.blocks :global(.scratchCategoryItemIcon) {
+    display: none !important;
+}
+
+.blocks :global(.scratchCategoryMenuItemLabel) {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1.1;
+    text-align: left;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
 }
 `);
 
