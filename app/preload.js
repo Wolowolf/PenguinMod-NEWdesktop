@@ -16,10 +16,6 @@ contextBridge.exposeInMainWorld("__electronInternalBridge", {
   notifyThemeChanged: () => { } // dummy stub to prevent page exceptions
 });
 
-contextBridge.exposeInMainWorld("__electronUpdaterBridge", {
-  checkForUpdate: () => ipcRenderer.invoke("manual-check-update"),
-});
-
 window.addEventListener("DOMContentLoaded", async () => {
   webFrame.executeJavaScript(`
   (() => {
@@ -34,38 +30,48 @@ window.addEventListener("DOMContentLoaded", async () => {
     document.querySelectorAll("a[href]").forEach(a => {
       try {
         const url = new URL(a.href, window.location.href);
-        const isPenguin = url.host === "penguinmod.com" || url.protocol === "home:";
         const isEditor = url.host === "studio.penguinmod.com" || url.protocol === "editor:";
-        if ((isPenguin || isEditor) && a.getAttribute("target") !== "_self") {
+        if (isEditor && a.getAttribute("target") !== "_self") {
           a.setAttribute("target", "_self");
         }
       } catch { }
     });
   };
 
+  // update progress overlay (shown while the in-app updater downloads and installs)
+  const overlay = document.createElement("div");
+  overlay.style.cssText =
+    "display:none;position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,0.75);" +
+    "color:#fff;font:16px sans-serif;align-items:center;justify-content:center;flex-direction:column;gap:12px";
+  const label = document.createElement("div");
+  const bar = document.createElement("div");
+  bar.style.cssText = "width:320px;height:10px;background:#444";
+  const fill = document.createElement("div");
+  fill.style.cssText = "height:100%;width:0;background:#4c97ff";
+  bar.appendChild(fill);
+  overlay.append(label, bar);
+  document.body.appendChild(overlay);
+
+  const PHASES = {
+    download: "Downloading update…",
+    compare: "Checking files…",
+    write: "Preparing new files…",
+    swap: "Installing…",
+  };
+  ipcRenderer.on("update-progress", (_event, msg) => {
+    if (!msg || msg.phase === "done") {
+      overlay.style.display = "none";
+      return;
+    }
+    overlay.style.display = "flex";
+    label.textContent = (PHASES[msg.phase] || "Updating…") + (msg.phase === "download" && msg.text ? "  " + msg.text.replace(/^Downloading… /, "") : "");
+    fill.style.width = msg.percent >= 0 ? msg.percent + "%" : "100%";
+  });
+
   enforceSelfTarget();
   new MutationObserver(enforceSelfTarget).observe(document.body, {
     childList: true,
     subtree: true,
     attributes: true,
-  });
-
-  const overlay = document.createElement("div");
-  overlay.id = "electron-update-overlay";
-  overlay.style.cssText = `display:none; position:fixed; inset:0; z-index:9999999; background:rgba(0,0,0,0.65); backdrop-filter:blur(4px); align-items:center; justify-content:center; font-family:system-ui;`;
-  overlay.innerHTML = `
-  <div style="background:#1c1c1e; color:#f0f0f0; border-radius:16px; padding:28px 32px; width:420px; box-sizing:border-box; display:flex; flex-direction:column; gap:14px;">
-    <div style="font-size:16px; font-weight:600;" id="update-phase-label">Preparing update...</div>
-    <div style="background:#3a3a3c; border-radius:999px; height:8px; overflow:hidden;"><div id="update-bar" style="height:100%; width:0%; background:#007aff; transition:width 0.15s ease;"></div></div>
-    <div id="update-status" style="font-size:11px; color:#8e8e93;">Starting...</div>
-  </div>`;
-  document.body.appendChild(overlay);
-
-  ipcRenderer.on("update-progress", (_event, { phase, percent, status }) => {
-    overlay.style.display = "flex";
-    document.getElementById("update-phase-label").textContent = phase === "download" ? "Downloading..." : "Extracting...";
-    const bar = document.getElementById("update-bar");
-    if (percent >= 0) bar.style.width = `${percent}%`;
-    document.getElementById("update-status").textContent = status;
   });
 });
