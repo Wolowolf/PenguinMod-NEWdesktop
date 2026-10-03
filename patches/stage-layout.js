@@ -20,6 +20,7 @@
  *   8. No rounded corners anywhere in the editor (section 10).
  *   9. The block category menu (Motion, Looks... extensions, Pinned) is a column of
  *      equal-sized colour boxes with just the name, no icons (section 11).
+ *  10. The "Back to Home" button in the editor's top bar is removed (section 12).
  *
  * Usage:  node patches/stage-layout.js <path-to-GUI-folder>
  *
@@ -827,5 +828,38 @@ write(BC, read(BC).replace(/\s*$/, '\n') + `
     -webkit-line-clamp: 2;
 }
 `);
+
+/* ------------------------------------------------------------------ */
+/* 12. Remove the "Back to Home" button from the menu bar              */
+/* ------------------------------------------------------------------ */
+// The button is a link to the live PenguinMod website (https://penguinmod.com) in the
+// editor's top bar. The desktop app has no home page, so the button is removed.
+// To undo this section, delete it from this script (or ask Claude to reverse it).
+const MB = 'src/components/menu-bar/menu-bar.jsx';
+const homeButtonLines = [
+    '                    <div className={styles.menuBarItem}>',
+    '                        <a',
+    '                            className={styles.feedbackLink}',
+    '                            href="https://penguinmod.com"',
+    '                            rel="noopener noreferrer"',
+    '                            target="_blank"',
+    '                        >',
+    '                            <Button className={styles.feedbackButton}>',
+    '                                <FormattedMessage',
+    '                                    defaultMessage="Back to Home"',
+    '                                    description="Button to go back to the home page"',
+    '                                    id="pm.backToHomeButton"',
+    '                                />',
+    '                            </Button>',
+    '                        </a>',
+    '                    </div>',
+    ''
+];
+replaceOnce(MB, homeButtonLines.join('\n'), '');
+// Leave a marker so the change is easy to find in the GUI source.
+replaceOnce(MB,
+    '                    <div className={styles.menuBarItem}>\n                        {this.props.isShowingProject && this.props.canEditTitle ?\n                            (<ShareButton',
+    '                    {/* ' + MARKER + ': "Back to Home" button removed */}\n' +
+    '                    <div className={styles.menuBarItem}>\n                        {this.props.isShowingProject && this.props.canEditTitle ?\n                            (<ShareButton');
 
 console.log('Stage layout patch applied successfully.');

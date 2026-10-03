@@ -77,6 +77,15 @@
 
 ## Change log (newest first)
 
+### Session 8 — remove the "Back to Home" button
+- Requested: delete the "Back to Home" button in the editor's top bar (a link to the live penguinmod.com site; the app has no home page). Also: future sessions must open and merge pull requests themselves with `gh` (done in `CLAUDE.md`, merged to `main` as pull request 1 before this tweak).
+- Files changed: `patches/stage-layout.js` only (new section 12 + header item 10); `CLAUDE.md` ("sections 1 to 12"), `CHANGES.md`. Branch `tweak/remove-home-button`.
+- What changed and why: section 12 removes the whole `<div className={styles.menuBarItem}><a … href="https://penguinmod.com" …><Button …>Back to Home</Button></a></div>` block from `src/components/menu-bar/menu-bar.jsx` (exact match, `PATCH FAILED` if upstream changes it) and leaves a `PMDESKTOP_STAGE_PATCH` comment in its place. Not touched: the "See Project Page" and "Upload" buttons next to it. *To reverse:* delete section 12 from `patches/stage-layout.js` and the header line.
+- Also fixed in the local test script (outside the repo): it now deletes the editor's `build\` folder before building, because webpack never deletes old bundle files, so a previous build's files were being copied into the test app (and a CI build always starts empty).
+- Verified how: ran `run-local-test.ps1` on Windows (patch applied, production build, clean `build\`): in the running Electron 44.5.1 app the page text no longer contains "Back to Home", there are no links to penguinmod in the top bar, the string `pm.backToHomeButton` is gone from the bundle, the top bar reads File / Edit / Addons / Settings / See Project Page / Upload, and the rest of the layout (stage, category menu, sprite panel) looks the same in a screenshot. NOT verified: the CI build and the installer (the release this merge will publish is the real test); the "See Project Page" button still links to the live site.
+- Note: once, the test script's launch step left no app window running (the app started fine when launched directly); cause not found, harmless.
+- Result after build: not yet tested.
+
 ### Session 7 — local Windows test setup + branch workflow (no app change)
 - Requested: install what is needed to test the app on the user's Windows PC; make every later conversation (one tweak each) write its changes to GitHub AND use the local copy for testing, via instructions in `CLAUDE.md`. No worktrees (one tweak at a time).
 - Files changed in the fork: `CLAUDE.md` (new sections "Workflow for every change" and "Local test setup", outdated build-trigger text fixed), `CHANGES.md` (this entry + three outdated build-trigger statements fixed). **No change to `app/`, `patches/`, `package.json` or the workflow.** Both edited files are `.md`, so merging them builds nothing.
