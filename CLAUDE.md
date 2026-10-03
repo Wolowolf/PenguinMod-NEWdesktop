@@ -25,8 +25,8 @@ I change one thing at a time, in one conversation, in this folder (no worktrees)
 2. Create a branch named after the tweak, for example `tweak/darker-menu`. Never commit to `main` directly, except for `.md`-only changes I ask for.
 3. Make the change. Keep it small.
 4. **Test it locally on this PC** with the script described in "Local test setup" below. This catches `PATCH FAILED` before anything is published, lets you see and screenshot the result, and tests on real Windows. Do this BEFORE pushing anything that can build.
-5. Commit and push the **branch** (this builds and releases nothing). Give me the link to open the pull request on GitHub (or open it with `gh` if it is logged in). Explain in plain language what a pull request is and what to click.
-6. Merge into `main` only after I say so. Say clearly that the merge starts a build and publishes a release my updater will offer. Then check the build in the Actions tab and report the result honestly.
+5. Commit and push the **branch** (this builds and releases nothing). Then open the pull request yourself with `gh pr create` (gh is installed and I am signed in as Wolowolf; if `gh` is not found, use `C:\Program Files\GitHub CLI\gh.exe`). Do not ask me to click anything on GitHub. Explain in plain language what a pull request is the first time.
+6. Merge into `main` yourself with `gh pr merge --merge` (do NOT add `--delete-branch`; ask me before deleting any branch), but **only after I say so** for that tweak. Say clearly that the merge starts a build and publishes a release my updater will offer. (A pull request that changes only `.md` files builds nothing, so say that instead.) Then watch the build with `gh run list` / `gh run view` and report the result honestly.
 7. Add the `CHANGES.md` entry (on the branch, so it is part of the same pull request). Fill "Result after build" later once I have tried the build.
 
 ## Local test setup (on my Windows PC)
