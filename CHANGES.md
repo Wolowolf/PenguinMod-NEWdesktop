@@ -15,7 +15,7 @@
 
 - Beginner with GitHub. Explain steps in plain language, one at a time.
 - Sessions 1-6 happened in chat, where they edited through the **GitHub website** (open file → pencil icon → paste → Commit changes) because Claude could not push. If Claude Code is committing to branches and opening pull requests now, explain each pull request and how to merge it. For YAML, indentation must be kept exactly.
-- Every commit to the fork triggers a build automatically (the workflow has a `push` trigger). Results are in the fork's Actions tab, then Releases.
+- A push to `main` (other than changes that only touch `*.md` files) triggers a build automatically; pushes to other branches do not (checked in Session 7: `on: push: branches: [main]` + `paths-ignore: '**.md'`). Results are in the fork's Actions tab, then Releases.
 - Only Windows matters. Windows x64 installer is the main deliverable.
 - Language: English.
 
@@ -62,7 +62,7 @@
 **The updater (Session 5 rewrite):** see the Session 5 entry. Points at `Wolowolf/PenguinMod-NEWdesktop`, asset `win-unpacked.zip`.
 
 **CI workflow (`.github/workflows/main.yml`), summary:**
-- Name `Build`. Triggers: `workflow_dispatch` and `push` only (the daily `schedule` was removed in Session 5). Runs on `ubuntu-latest` with `contents: write`.
+- Name `Build`. Triggers: `workflow_dispatch` and `push` to `main` only, ignoring `*.md`-only changes (the daily `schedule` was removed in Session 5; the branch/`.md` filter was found already in place in Session 7). Runs on `ubuntu-latest` with `contents: write`.
 - Installs wine32/wine64, Bun, Node 26.
 - Clones and builds: PenguinMod-ExtensionsGallery, TurboWarp/extensions (as `TurboWarp-ExtensionsGallery`), SharkPools-Extensions, and the PenguinMod GUI (PenguinMod-Home is no longer cloned or built since Session 5) with its submodules (Vm, Blocks, Render, Paint; Render gets `rm -f package-lock.json` before `bun i`).
 - **Since Session 2:** a step "Patch GUI stage layout" (`node patches/stage-layout.js penguinmod.github.io`) runs right before "Build PenguinMod Web".
@@ -76,6 +76,16 @@
 ---
 
 ## Change log (newest first)
+
+### Session 7 — local Windows test setup + branch workflow (no app change)
+- Requested: install what is needed to test the app on the user's Windows PC; make every later conversation (one tweak each) write its changes to GitHub AND use the local copy for testing, via instructions in `CLAUDE.md`. No worktrees (one tweak at a time).
+- Files changed in the fork: `CLAUDE.md` (new sections "Workflow for every change" and "Local test setup", outdated build-trigger text fixed), `CHANGES.md` (this entry + three outdated build-trigger statements fixed). **No change to `app/`, `patches/`, `package.json` or the workflow.** Both edited files are `.md`, so merging them builds nothing.
+- Found while checking: `main.yml` was already restricted to pushes to `main` and ignores `*.md`-only changes. `CLAUDE.md` / `CHANGES.md` wrongly said it ran on every push; corrected.
+- Installed on the PC: `bun` 1.4.2 (via `npm i -g bun`), `gh` 2.102.0 (via winget). Already there: git 2.56, node 24.21.0 (CI uses 26), npm 11.19. Not installed: Playwright, Python. The user signed in to GitHub with `gh auth login --web` (git push works over that sign-in).
+- **Test setup (outside the repo, NOT in git):** `C:\Users\elias\Documents\PenguinMod-test\` contains `package.json` (electron 44.5.1 + unzipper), `node_modules\`, `run-local-test.ps1`, `cdp.mjs`, `src\penguinmod.github.io\` (editor + four libraries, same clone/install steps as `main.yml`), `app-run\` (the repo's `app\` + the fresh editor build) and `userdata\` (own settings, separate from an installed app). `run-local-test.ps1` resets the cached editor with `git checkout -- .` + `git clean -fd`, applies `patches/stage-layout.js` from the repo, builds, copies, launches; flags `-Dev -Update -LaunchOnly -NoLaunch -Debug`. `cdp.mjs` talks to Electron's debug port 9333 (`node cdp.mjs shot out.png`, `node cdp.mjs eval "<js>"`) so Claude can screenshot and inspect the app without Playwright. *To recreate if the folder is lost:* make the folder, `npm i electron@44.5.1 unzipper` (if `node_modules\electron\dist\electron.exe` is missing afterwards, run `node node_modules\electron\install.js`; this npm needs `"allowScripts"` in `package.json` instead of a command-line flag), then re-create the script from the description above (clone the five repos as in `main.yml`, `bun i` in each, move the four libraries to `node_modules\scratch-*`).
+- Verified how: ran `run-local-test.ps1` for real on Windows 11 (Node 24, bun 1.4.2): first-time setup completed, "Stage layout patch applied successfully", **production (minified) editor build finished in about 0.7 minutes** (21 MB; the new markers `pmdesktop:stageBoxWidth` and `pm-cat-colour` are in the bundle), started Electron 44.5.1 with the test app, and looked at a screenshot: editor loads, stage fixed at 481 px column, category menu = 10 equal colour boxes with names only (72.8 x 38.4 px, Motion = rgb(76, 151, 255)), one-row compact sprite panel with eye toggle, square corners, and the `⇪` / `⟳` symbols render on Windows. Branch push to GitHub worked and started no build (checked the Actions list). This also means the Sessions 3-6 patch sections now have a first check on Windows with a real GPU and a production build.
+- NOT verified: the extension galleries (TurboWarp, PenguinMod, SharkPool) are not part of the local test app; the CI build itself with this setup; the updater (needs a packaged install + a newer release); running a real packaged `.exe`. The "Back to Home" button in the editor header is upstream's and points to the live site; not touched.
+- Result after build: not applicable (docs only).
 
 ### Session 6 — category menu = equal colour boxes with only the name
 - Requested: the block category menu (Pinned, Motion, Looks … and every extension) currently shows an icon + name. Replace it with just the name inside a box in the colour of that category's/extension's blocks; all boxes the same size, almost no gap between them; width = the longest extension name seen ("Pointerlock"), height = a two-line name ("Operators Expansion"). The user's reference mock-up had darker shades than the real block colours.
@@ -169,7 +179,7 @@
 - **Category menu (Session 6):** the menu width is a fixed 4.8rem sized for "Pointerlock" in Helvetica/Arial; a wider name wraps to 2 lines then is cut. The hook also changes the blocks library's toolbox width (see Session 6, 11a); if the palette ever overlaps or leaves a gap next to the menu, look there first.
 - **Block shapes are still rounded** (SVG from `scratch-blocks`); only CSS corners were removed in Session 4.
 - **Restore point loop not reproduced** (see Session 3). Automatic restore points are off by default now.
-- **Commit order matters:** every commit triggers a build. Add NEW files (`patches/stage-layout.js`, `app/updater.js`) BEFORE editing the files that use them. Session 5 order: `app/updater.js` first, then `app/electron-main.js`, `app/preload.js`, and `main.yml` last. Only the last build counts; earlier ones create throwaway releases (and the updater would offer them, so delete stray releases).
+- **Commit order matters:** every push to `main` triggers a build (branches do not). Add NEW files (`patches/stage-layout.js`, `app/updater.js`) BEFORE editing the files that use them. Session 5 order: `app/updater.js` first, then `app/electron-main.js`, `app/preload.js`, and `main.yml` last. Only the last build counts; earlier ones create throwaway releases (and the updater would offer them, so delete stray releases).
 - **Scheduled builds:** removed in Session 5.
 - **First-build duration:** roughly 10+ minutes with empty caches; later runs should be faster.
 
