@@ -950,6 +950,10 @@ replaceOnce(CD,
             rows.forEach((row, i) => {
                 if (i !== from && tops[i] + heights[i] / 2 < middle) place++;
             });
+            // the box can only reach the middle of the first / last box, not pass it, so
+            // being pushed against the top or bottom end of the menu means the first / last place
+            if (shift <= minShift + 1) place = 0;
+            if (shift >= maxShift - 1) place = last;
             target = place;
 
             // boxes it has passed slide by one box height, the others stay where they are
@@ -985,6 +989,7 @@ replaceOnce(CD,
                 const id = extractCategoryID(draggedCat.firstChild.classList);
                 draggedCat.parentNode.insertBefore(draggedCat, target > from ? rows[target].nextSibling : rows[target]);
                 compileNewOrder(blocklyToolboxDiv.querySelectorAll(rowSelector));
+                vm.runtime.emitProjectChanged(); // the project now has unsaved changes
                 setTimeout(() => {
                     forceRefreshToolbox();
                     if (id) ScratchBlocks.mainWorkspace.toolbox_.setSelectedCategoryById(id);
@@ -998,6 +1003,41 @@ replaceOnce(CD,
         frame = requestAnimationFrame(tick);
     }
 
+    // ${MARKER}: the order is stored in a comment on the Stage; keep that comment up to date
+    function pmUpdateOrderingComment() {
+        const stageTarget = vm.runtime.getTargetForStage();
+        if (!stageTarget) return;
+        for (const comment of Object.values(stageTarget.comments)) {
+            if (!comment.text.endsWith(COMMENT_TRAPPER_ID)) continue;
+            const lines = comment.text.split("\\n");
+            const dataLine = lines.findIndex(line => line.endsWith(COMMENT_TRAPPER_ID));
+            lines[dataLine] = JSON.stringify(categoryOrdering) + COMMENT_TRAPPER_ID;
+            comment.text = lines.join("\\n");
+            return;
+        }
+    }
+
+    // ${MARKER}: opening a project that has no stored order must not keep the previous project's
+    // order. The addon sorts the menu's XML in place, so rebuild the menu from the editor's own
+    // untouched copy of it (the same call the editor makes when its toolbox changes).
+    vm.runtime.on("PROJECT_LOADED", () => {
+        if (categoryOrdering === undefined || findOrderingComment(true)) return;
+        categoryOrdering = undefined;
+        setTimeout(() => {
+            const workspace = ScratchBlocks.getMainWorkspace();
+            const toolboxXML = ReduxStore.getState().scratchGui.toolbox.toolboxXML;
+            if (workspace && toolboxXML) workspace.updateToolbox(toolboxXML);
+        }, 100);
+    });
+
     function activateBlocklyListener() {`);
+
+// 13c. Saving the order. The addon writes its settings comment into the project only the
+//      first time and then never updates it, so a second re-ordering was not saved. Update
+//      the existing comment instead of skipping (one-line edit; the comment is written
+//      into the project when it is saved, as before).
+replaceOnce(CD,
+    'if (findOrderingComment()) return;',
+    'if (findOrderingComment()) { pmUpdateOrderingComment(); return; }');
 
 console.log('Stage layout patch applied successfully.');

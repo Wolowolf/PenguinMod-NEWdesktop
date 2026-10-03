@@ -77,6 +77,17 @@
 
 ## Change log (newest first)
 
+### Session 11 — category drag: last place reachable, order really saved in the project
+- Requested: (1) with the default 10 boxes an extension box could not be dragged below the last one ("My Blocks"); (2) make the box order be saved inside the project.
+- Files changed: `patches/stage-layout.js` only (section 13 extended: 13b edited, new 13c; branch `tweak/category-drag-fixes`), `CHANGES.md`.
+- Causes found (both reproduced in the running app first):
+  1. The held box is kept inside the menu, so it can only reach the MIDDLE of the first/last box, and the rule "its middle must pass the other box's middle" never became true for the last place. Fix (13b): when the held box is pushed against the top / bottom end it counts as first / last place.
+  2. The upstream addon already writes the order into the project (a comment on the Stage, written by a wrapper of `vm.toJSON`, read again on `PROJECT_LOADED`), but `saveOrdering` returned as soon as that comment existed, so only the FIRST re-ordering was ever stored; later ones were lost and loading brought back the first order. Fix (13c): the one-line check `if (findOrderingComment()) return;` now updates the existing comment (new function `pmUpdateOrderingComment`) before returning. The drop also calls `vm.runtime.emitProjectChanged()` so the editor knows there are unsaved changes (it did not before).
+  3. Found on the way: opening a project that has NO stored order kept the previous project's order (the addon sorts the toolbox XML in place). Fix (13b): an extra `PROJECT_LOADED` handler forgets the order and rebuilds the menu with `workspace.updateToolbox(<the editor's untouched toolboxXML from the redux store>)` (the call the editor itself makes).
+  - *To reverse:* delete the new parts of section 13 (or all of section 13), or ask Claude.
+- Verified how: ran `run-local-test.ps1 -Debug` on Windows (patch applied, production build, Electron 44.5.1) and drove the app with real mouse events through the debug port. Before the fix: dropping Motion 40 px below "My Blocks" left it second to last; the second re-ordering was not in the saved project and reloading brought back the first order. After the fix: it lands last; `vm.toJSON()` contains the newest order after each re-ordering; `saveProjectSb3` then `loadProject` restores exactly the order seen before saving; loading a project saved before any re-ordering shows the default order again. With 41 boxes (22 built-in extensions loaded through `vm.extensionManager`, the menu scrolls: 885 px of content in 570 px): holding a box at the bottom edge scrolled the menu from 0 to 315 px (its end) and the box landed after the last extension. NOT verified: a project file saved to disk and opened with File > Load from your computer (only the in-app save/load path was used), custom extensions loaded from a URL, the CI build.
+- Result after build: not yet tested.
+
 ### Session 10 — category boxes slide when re-ordered by dragging
 - Requested: when dragging a category box to re-order the menu, the held box was greyed out, a floating copy followed the mouse and a blank gap opened where it would land. Instead: the box itself should slide up and down between the others while dragging, with no copy or icon.
 - Files changed: `patches/stage-layout.js` only (new section 13 + header item 11; branch `tweak/slide-category-drag`), `CLAUDE.md` ("sections 1 to 13"), `CHANGES.md`.
