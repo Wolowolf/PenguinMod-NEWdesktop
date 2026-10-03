@@ -822,9 +822,10 @@ write(BC, read(BC).replace(/\s*$/, '\n') + `
     line-height: 1.1;
     text-align: left;
     color: #ffffff !important;
-    /* thin black outline around the white letters */
-    -webkit-text-stroke: 1px #000000;
-    paint-order: stroke fill;
+    /* thin black outline around the white letters: small blurred shadows on four sides
+       plus a soft halo are anti-aliased and look smoother than -webkit-text-stroke */
+    text-shadow: -0.7px 0 0.6px #000000, 0.7px 0 0.6px #000000, 0 -0.7px 0.6px #000000,
+        0 0.7px 0.6px #000000, 0 0 1px #000000;
     /* one line, cut when too long */
     white-space: nowrap;
     overflow: hidden;
