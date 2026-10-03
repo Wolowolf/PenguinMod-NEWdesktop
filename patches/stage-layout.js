@@ -21,6 +21,8 @@
  *   9. The block category menu (Motion, Looks... extensions, Pinned) is a column of
  *      equal-sized colour boxes with just the name, no icons (section 11).
  *  10. The "Back to Home" button in the editor's top bar is removed (section 12).
+ *  11. Re-ordering the category boxes by dragging: the box itself slides up and down
+ *      between the others (no faded box, floating copy or blank gap) (section 13).
  *
  * Usage:  node patches/stage-layout.js <path-to-GUI-folder>
  *
@@ -874,5 +876,128 @@ replaceOnce(MB,
     '                    <div className={styles.menuBarItem}>\n                        {this.props.isShowingProject && this.props.canEditTitle ?\n                            (<ShareButton',
     '                    {/* ' + MARKER + ': "Back to Home" button removed */}\n' +
     '                    <div className={styles.menuBarItem}>\n                        {this.props.isShowingProject && this.props.canEditTitle ?\n                            (<ShareButton');
+
+/* ------------------------------------------------------------------ */
+/* 13. Re-ordering the category boxes: the box itself slides           */
+/* ------------------------------------------------------------------ */
+// The "Draggable Categories in Block Palette" addon (hold a category box for half a second,
+// then drag) normally fades the box you hold to 50%, shows a floating copy with a shadow
+// under the mouse, and opens a blank gap where it would land. Here the box you hold is
+// instead moved up and down with the mouse (it stays in its column), and the other boxes
+// slide out of its way as it passes them, so there is no copy, no fading and no gap.
+// The hold-to-start, the saved order and the refresh after the drop are the addon's own.
+// To undo this section, delete it from this script (or ask Claude to reverse it).
+const CD = 'src/addons/addons/toolbox-category-drag/userscript.js';
+
+// 13a. Start the new drag instead of the old one (one-line edit of the 500 ms hold handler).
+replaceOnce(CD,
+    'setTimeout(() => initDragDroper(e, blocklyToolboxDiv), 500)',
+    'setTimeout(() => pmInitSlideDrag(e, blocklyToolboxDiv), 500)');
+
+// 13b. The new drag. Inserted next to the old function (which stays in the file, unused),
+//      so it can use the addon's own helpers (extractCategoryID, compileNewOrder, ...).
+replaceOnce(CD,
+    '    function activateBlocklyListener() {',
+`    // ${MARKER}: the held category box slides up and down, the others slide out of its way
+    function pmInitSlideDrag(clickEvent, blocklyToolboxDiv) {
+        const rowSelector = 'div[class*="scratchCategoryMenuRow"]';
+        const draggedCat = clickEvent.target.closest('div[class="scratchCategoryMenuRow"]');
+        if (!draggedCat) return;
+
+        const rows = Array.from(blocklyToolboxDiv.querySelectorAll(rowSelector));
+        const from = rows.indexOf(draggedCat);
+        if (from === -1) return;
+        const last = rows.length - 1;
+
+        // Positions are measured once, in "scrolled content" coordinates, before anything moves.
+        const contentOrigin = () => blocklyToolboxDiv.getBoundingClientRect().top - blocklyToolboxDiv.scrollTop;
+        const tops = rows.map(row => row.getBoundingClientRect().top - contentOrigin());
+        const heights = rows.map(row => row.getBoundingClientRect().height);
+        // how far the boxes below move when this box is taken out: its height plus the gap
+        const pitch = rows.map((row, i) => i < last ?
+            tops[i + 1] - tops[i] :
+            heights[i] + (parseFloat(getComputedStyle(row).marginBottom) || 0));
+        const minShift = tops[0] - tops[from];
+        const maxShift = tops[last] + heights[last] - tops[from] - heights[from];
+
+        const startY = clickEvent.clientY - contentOrigin();
+        let mouseY = clickEvent.clientY;
+        let target = from;
+        let frame = 0;
+
+        draggedCat.style.position = 'relative';
+        draggedCat.style.zIndex = '2';
+        for (const row of rows) {
+            if (row !== draggedCat) row.style.transition = 'transform 0.15s ease';
+        }
+
+        const tick = () => {
+            // scroll the menu when the box is held near its top or bottom edge
+            const bounds = blocklyToolboxDiv.getBoundingClientRect();
+            if (mouseY < bounds.top + 40) {
+                blocklyToolboxDiv.scrollTop -= 6;
+            } else if (mouseY > bounds.bottom - 40) {
+                blocklyToolboxDiv.scrollTop += 6;
+            }
+
+            // the held box follows the mouse up and down, but stays inside the menu
+            const shift = Math.max(minShift, Math.min(maxShift, mouseY - contentOrigin() - startY));
+            draggedCat.style.transform = 'translateY(' + shift + 'px)';
+
+            // its new place = how many other boxes have their middle above its middle
+            const middle = tops[from] + heights[from] / 2 + shift;
+            let place = 0;
+            rows.forEach((row, i) => {
+                if (i !== from && tops[i] + heights[i] / 2 < middle) place++;
+            });
+            target = place;
+
+            // boxes it has passed slide by one box height, the others stay where they are
+            rows.forEach((row, i) => {
+                if (i === from) return;
+                let move = 0;
+                if (target > from && i > from && i <= target) move = -pitch[from];
+                if (target < from && i >= target && i < from) move = pitch[from];
+                row.style.transform = move ? 'translateY(' + move + 'px)' : '';
+            });
+
+            frame = requestAnimationFrame(tick);
+        };
+
+        const onMouseMove = moveEvent => {
+            mouseY = moveEvent.clientY;
+        };
+        const stopSelecting = selectEvent => selectEvent.preventDefault();
+        const onMouseUp = () => {
+            cancelAnimationFrame(frame);
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            document.removeEventListener('selectstart', stopSelecting);
+            for (const row of rows) {
+                row.style.transition = '';
+                row.style.transform = '';
+            }
+            draggedCat.style.position = '';
+            draggedCat.style.zIndex = '';
+
+            // moved to a new place: save the new order and rebuild the menu (as the addon does)
+            if (target !== from) {
+                const id = extractCategoryID(draggedCat.firstChild.classList);
+                draggedCat.parentNode.insertBefore(draggedCat, target > from ? rows[target].nextSibling : rows[target]);
+                compileNewOrder(blocklyToolboxDiv.querySelectorAll(rowSelector));
+                setTimeout(() => {
+                    forceRefreshToolbox();
+                    if (id) ScratchBlocks.mainWorkspace.toolbox_.setSelectedCategoryById(id);
+                }, 100);
+            }
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+        document.addEventListener('selectstart', stopSelecting);
+        frame = requestAnimationFrame(tick);
+    }
+
+    function activateBlocklyListener() {`);
 
 console.log('Stage layout patch applied successfully.');
