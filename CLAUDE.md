@@ -49,7 +49,7 @@ A thin Electron wrapper (a few hundred lines in `app/`) around the PenguinMod **
 | `app/electron-main.js` | Electron main process, menu (System → Check for Updates, Reload), URL mapping to offline folders |
 | `app/preload.js` | Preload script |
 | `app/updater.js` | Update engine (no Electron dependency); updates from THIS fork's releases using `win-unpacked.zip` |
-| `patches/stage-layout.js` | Node script that CI runs on the downloaded GUI source. This is where almost all visible editor changes live (sections 1 to 11) |
+| `patches/stage-layout.js` | Node script that CI runs on the downloaded GUI source. This is where almost all visible editor changes live (sections 1 to 12) |
 | `.github/workflows/main.yml` | The CI build (Windows only) |
 | `package.json` | Entry point and electron-builder settings (NSIS installer, `.pmp` file association) |
 
