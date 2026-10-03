@@ -725,8 +725,9 @@ write(GC, read(GC).replace(/\s*$/, '\n') + `
 /* ------------------------------------------------------------------ */
 // Each entry in the palette's category menu (Pinned, Motion, Looks, ... and every
 // extension) becomes a box in the colour of that category's blocks, showing only
-// its name. All boxes have the same size: as wide as "Pointerlock" and as tall as
-// a two-line name such as "Operators Expansion". Longer names are cut after 2 lines.
+// its name. All boxes are as wide as "Pointerlock". A box is one line tall; longer
+// names are cut with a dot. The selected box grows to two lines and shows more of the
+// name (up to two lines). Text: white with a thin black outline, top left, small padding.
 // To undo this section, delete it from this script (or ask Claude to reverse it).
 
 // 11a. Expose each category's colour to CSS. The menu only stores the colour
@@ -745,14 +746,8 @@ replaceOnce('src/lib/blocks.js',
             originalCreateDom.apply(this, arguments);
             const colour = typeof this.colour_ === 'string' && /^#[0-9a-fA-F]{6}/.test(this.colour_) ?
                 this.colour_ : '#666666';
-            const r = parseInt(colour.slice(1, 3), 16);
-            const g = parseInt(colour.slice(3, 5), 16);
-            const b = parseInt(colour.slice(5, 7), 16);
-            // dark text on light colours (e.g. yellow), white text on dark ones
-            const light = (0.299 * r + 0.587 * g + 0.114 * b) > 160;
             if (this.item_) {
                 this.item_.style.setProperty('--pm-cat-colour', colour);
-                this.item_.style.setProperty('--pm-cat-text', light ? '#111111' : '#ffffff');
             }
         };
 
@@ -770,12 +765,15 @@ replaceOnce('src/lib/blocks.js',
 `);
 
 // 11b. The look of the boxes.
+//      Not selected: the name on ONE line, cut with a dot when too long.
+//      Selected: the box grows to two lines (no frame) and shows up to two lines of the name.
+//      The text is always white with a thin black outline, aligned to the top left.
 const BC = 'src/components/blocks/blocks.css';
 write(BC, read(BC).replace(/\s*$/, '\n') + `
-/* ${MARKER}: category menu = equal colour boxes with only the name */
+/* ${MARKER}: category menu = equal-width colour boxes with only the name */
 .blocks :global(.scratchCategoryMenu) {
-    /* box = "Pointerlock" (61 px of text) + 0.3rem padding on each side + 2 px frame */
-    width: 4.8rem;
+    /* box = "Pointerlock" (61 px of text) + 0.15rem padding on each side, + 2 px menu padding */
+    width: 4.5rem;
     box-sizing: border-box;
     padding: 2px;
 }
@@ -787,24 +785,24 @@ write(BC, read(BC).replace(/\s*$/, '\n') + `
 .blocks :global(.scratchCategoryMenuItem) {
     box-sizing: border-box;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: flex-start;
     width: 100%;
-    height: 2.4rem;
-    padding: 0 0.3rem;
+    /* half of the padding Session 6 had (0.3rem at the sides, about 0.43rem top and bottom) */
+    padding: 0.215rem 0.15rem;
     text-align: left;
     background: var(--pm-cat-colour, #666666);
-    color: var(--pm-cat-text, #ffffff) !important;
+    color: #ffffff !important;
 }
 
-/* selected entry: white frame inside the box (the colour stays the block colour) */
+/* selected entry: no frame, the box is two lines tall instead of one */
 .blocks :global(.scratchCategoryMenuItem.categorySelected) {
     background: var(--pm-cat-colour, #666666);
-    box-shadow: inset 0 0 0 2px var(--pm-cat-text, #ffffff);
+    min-height: calc(1.54rem + 0.43rem);
 }
 
 .blocks :global(.scratchCategoryMenuItem:hover) {
-    color: var(--pm-cat-text, #ffffff) !important;
+    color: #ffffff !important;
     filter: brightness(1.15);
 }
 
@@ -817,11 +815,26 @@ write(BC, read(BC).replace(/\s*$/, '\n') + `
 .blocks :global(.scratchCategoryMenuItemLabel) {
     flex: 1 1 auto;
     min-width: 0;
+    margin: 0;
+    padding: 0;
     font-size: 0.7rem;
     font-weight: 600;
     line-height: 1.1;
     text-align: left;
+    color: #ffffff !important;
+    /* thin black outline around the white letters: small blurred shadows on four sides
+       plus a soft halo are anti-aliased and look smoother than -webkit-text-stroke */
+    text-shadow: -0.7px 0 0.6px #000000, 0.7px 0 0.6px #000000, 0 -0.7px 0.6px #000000,
+        0 0.7px 0.6px #000000, 0 0 1px #000000;
+    /* one line, cut when too long */
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* selected: up to two lines */
+.blocks :global(.scratchCategoryMenuItem.categorySelected .scratchCategoryMenuItemLabel) {
+    white-space: normal;
     overflow-wrap: anywhere;
     display: -webkit-box;
     -webkit-box-orient: vertical;
