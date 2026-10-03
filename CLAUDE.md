@@ -83,7 +83,7 @@ These come from earlier sessions in a Linux sandbox with 1 CPU and about 4 GB RA
 
 - The whole updater flow inside a real packaged Windows app.
 - Anything that depends on Windows fonts or a real GPU (for example how the `⇪` and `⟳` symbols in the sprite panel look).
-- The production (minified) build of the editor patches (check the Session 7 entry in `CHANGES.md`: it may have been tested locally).
+- The CI build with the local test setup (the local production build and app were checked on Windows in Session 7; the packaged installer was not).
 - The first builds containing Sessions 5 and 6 have not been confirmed by me. Check the "Result after build" lines in `CHANGES.md`.
 
 ## Ideas offered but not applied yet
