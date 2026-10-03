@@ -15,7 +15,7 @@
 
 - Beginner with GitHub. Explain steps in plain language, one at a time.
 - Sessions 1-6 happened in chat, where they edited through the **GitHub website** (open file → pencil icon → paste → Commit changes) because Claude could not push. If Claude Code is committing to branches and opening pull requests now, explain each pull request and how to merge it. For YAML, indentation must be kept exactly.
-- Every commit to the fork triggers a build automatically (the workflow has a `push` trigger). Results are in the fork's Actions tab, then Releases.
+- A push to `main` (other than changes that only touch `*.md` files) triggers a build automatically; pushes to other branches do not (checked in Session 7: `on: push: branches: [main]` + `paths-ignore: '**.md'`). Results are in the fork's Actions tab, then Releases.
 - Only Windows matters. Windows x64 installer is the main deliverable.
 - Language: English.
 
@@ -62,7 +62,7 @@
 **The updater (Session 5 rewrite):** see the Session 5 entry. Points at `Wolowolf/PenguinMod-NEWdesktop`, asset `win-unpacked.zip`.
 
 **CI workflow (`.github/workflows/main.yml`), summary:**
-- Name `Build`. Triggers: `workflow_dispatch` and `push` only (the daily `schedule` was removed in Session 5). Runs on `ubuntu-latest` with `contents: write`.
+- Name `Build`. Triggers: `workflow_dispatch` and `push` to `main` only, ignoring `*.md`-only changes (the daily `schedule` was removed in Session 5; the branch/`.md` filter was found already in place in Session 7). Runs on `ubuntu-latest` with `contents: write`.
 - Installs wine32/wine64, Bun, Node 26.
 - Clones and builds: PenguinMod-ExtensionsGallery, TurboWarp/extensions (as `TurboWarp-ExtensionsGallery`), SharkPools-Extensions, and the PenguinMod GUI (PenguinMod-Home is no longer cloned or built since Session 5) with its submodules (Vm, Blocks, Render, Paint; Render gets `rm -f package-lock.json` before `bun i`).
 - **Since Session 2:** a step "Patch GUI stage layout" (`node patches/stage-layout.js penguinmod.github.io`) runs right before "Build PenguinMod Web".
@@ -169,7 +169,7 @@
 - **Category menu (Session 6):** the menu width is a fixed 4.8rem sized for "Pointerlock" in Helvetica/Arial; a wider name wraps to 2 lines then is cut. The hook also changes the blocks library's toolbox width (see Session 6, 11a); if the palette ever overlaps or leaves a gap next to the menu, look there first.
 - **Block shapes are still rounded** (SVG from `scratch-blocks`); only CSS corners were removed in Session 4.
 - **Restore point loop not reproduced** (see Session 3). Automatic restore points are off by default now.
-- **Commit order matters:** every commit triggers a build. Add NEW files (`patches/stage-layout.js`, `app/updater.js`) BEFORE editing the files that use them. Session 5 order: `app/updater.js` first, then `app/electron-main.js`, `app/preload.js`, and `main.yml` last. Only the last build counts; earlier ones create throwaway releases (and the updater would offer them, so delete stray releases).
+- **Commit order matters:** every push to `main` triggers a build (branches do not). Add NEW files (`patches/stage-layout.js`, `app/updater.js`) BEFORE editing the files that use them. Session 5 order: `app/updater.js` first, then `app/electron-main.js`, `app/preload.js`, and `main.yml` last. Only the last build counts; earlier ones create throwaway releases (and the updater would offer them, so delete stray releases).
 - **Scheduled builds:** removed in Session 5.
 - **First-build duration:** roughly 10+ minutes with empty caches; later runs should be faster.
 

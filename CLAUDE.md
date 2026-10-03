@@ -17,6 +17,29 @@ Read this file first, then read `CHANGES.md` (the full history of earlier work, 
 - Never ask me to paste passwords, tokens or keys into a chat. Use the GitHub connection that is already set up.
 - After every session, add an entry to the top of the change log in `CHANGES.md` (use the template at the bottom of that file): what was requested, which files changed, what and why, how it was verified, result after build.
 
+## Workflow for every change (one tweak per conversation)
+
+I change one thing at a time, in one conversation, in this folder (no worktrees). Follow these steps:
+
+1. `git pull` on `main`. Read this file and `CHANGES.md`.
+2. Create a branch named after the tweak, for example `tweak/darker-menu`. Never commit to `main` directly, except for `.md`-only changes I ask for.
+3. Make the change. Keep it small.
+4. **Test it locally on this PC** with the script described in "Local test setup" below. This catches `PATCH FAILED` before anything is published, lets you see and screenshot the result, and tests on real Windows. Do this BEFORE pushing anything that can build.
+5. Commit and push the **branch** (this builds and releases nothing). Give me the link to open the pull request on GitHub (or open it with `gh` if it is logged in). Explain in plain language what a pull request is and what to click.
+6. Merge into `main` only after I say so. Say clearly that the merge starts a build and publishes a release my updater will offer. Then check the build in the Actions tab and report the result honestly.
+7. Add the `CHANGES.md` entry (on the branch, so it is part of the same pull request). Fill "Result after build" later once I have tried the build.
+
+## Local test setup (on my Windows PC)
+
+The test setup lives OUTSIDE the repo in `C:\Users\elias\Documents\PenguinMod-test\` so it survives between sessions and never ends up in git. It holds Electron 44.5.1, a cached copy of the PenguinMod editor source (with `node_modules`), a test app folder, and its own settings folder (`userdata\`, separate from my installed app). If that folder is missing, say so and offer to recreate it (steps are in `CHANGES.md`, Session 7).
+
+- Run `powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\elias\Documents\PenguinMod-test\run-local-test.ps1`. It resets the cached editor to pristine, applies this repo's `patches/stage-layout.js`, builds the editor, copies the repo's `app/` plus the build into `app-run\`, and starts the app.
+- Flags: `-Dev` (faster unminified build), `-Update` (delete the cache and download the latest upstream again, like a fresh CI run; use it when `PATCH FAILED` might be an upstream change or once in a while), `-LaunchOnly`, `-NoLaunch`, `-Debug` (opens Electron's debug port 9333 so Claude can drive the app).
+- The first run downloads and installs a lot (the editor and four libraries) and is slow. Later runs only re-patch and rebuild.
+- Tools installed on this PC: git, node (v24; CI uses 26), npm, bun, gh. Not installed: Playwright, Python.
+- **What this does NOT replace:** the real CI build (it downloads fresh upstream, builds on Linux with wine, packs the installer) and the updater, which needs a real newer release. The extension galleries (TurboWarp, PenguinMod, SharkPool) are not part of the local test app, so offline extensions are not tested locally.
+- Because the local test app is not a packaged install, "Check for Updates" does not work there. Do not report updater results from it.
+
 ## What the project is
 
 A thin Electron wrapper (a few hundred lines in `app/`) around the PenguinMod **editor only** (there is no home page). The editor itself is NOT stored in this repo: CI downloads the PenguinMod GUI source, applies `patches/stage-layout.js` to it, builds it, and packs it into the app together with offline copies of the extension galleries.
@@ -40,9 +63,7 @@ A thin Electron wrapper (a few hundred lines in `app/`) around the PenguinMod **
 
 ## Build and release rules (important)
 
-- `main.yml` currently runs on **every push to any branch** (`on: push:` with no filter) and on manual start. Every run builds the app and publishes a GitHub Release tagged `build-<run_id>-<timestamp>`. My updater offers the newest release, so stray releases reach users of the app.
-  - Preferred fix (not done yet, check `CHANGES.md`): restrict `push:` to the main branch, so work on other branches never builds or releases.
-  - Until then, avoid pushing throwaway commits, and tell me when a branch push will start a build and release.
+- `main.yml` runs on a push to **`main`** (ignoring changes that only touch `*.md` files) and on manual start. Pushes to other branches never build or release. Every run builds the app and publishes a GitHub Release tagged `build-<run_id>-<timestamp>`. My updater offers the newest release, so **anything pushed to `main` (other than `.md` files) reaches users of the app**. Tell me before any push to `main` that will start a build.
 - Commit order matters: add NEW files before editing the files that use them (for example `app/updater.js` before `app/electron-main.js`; the workflow file last).
 - The Windows installer is unsigned, so Windows SmartScreen warns ("More info" → "Run anyway"). That is expected.
 - `electron` and `electron-builder` are unpinned (`"latest"`), so a build can change behaviour without any change from us. Pinning them is a known, not-yet-applied idea.
@@ -56,13 +77,13 @@ These come from earlier sessions in a Linux sandbox with 1 CPU and about 4 GB RA
 - **Real Electron on Linux:** possible with `npm i electron`, `xvfb-run`, and Playwright `connect_over_cdp`. Do not use `--disable-gpu` (the editor then reports "Browser is not supported"). Details are in `CHANGES.md` (Session 3 notes).
 - **Updater:** `app/updater.js` has no Electron dependency, so test it in plain Node against zips (including the real `win-unpacked.zip` from a release).
 - Some hosts (for example `cdn.jsdelivr.net`) were blocked in the old sandbox, so the extension-gallery steps of the full build could not be run there.
-- **If you are running on my Windows PC:** prefer testing the real packaged app there, and tell me exactly what you launched and what you saw. Ask before installing anything big.
+- **On my Windows PC:** use the local test setup above, and tell me exactly what you launched and what you saw. Ask before installing anything big.
 
 ## Things still unverified (be honest about these)
 
 - The whole updater flow inside a real packaged Windows app.
 - Anything that depends on Windows fonts or a real GPU (for example how the `⇪` and `⟳` symbols in the sprite panel look).
-- The production (minified) build of the editor patches.
+- The production (minified) build of the editor patches (check the Session 7 entry in `CHANGES.md`: it may have been tested locally).
 - The first builds containing Sessions 5 and 6 have not been confirmed by me. Check the "Result after build" lines in `CHANGES.md`.
 
 ## Ideas offered but not applied yet
