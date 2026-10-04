@@ -52,10 +52,12 @@ jobs:
           node-version: 26
 
       # --- Clone Standalone Repos and Cache ---
+      # Every upstream project is downloaded at the exact commit listed in upstream.json
+      # (scripts/clone-pinned.js), so upstream changes only reach the app when that file is changed.
 
       # PenguinMod Extension Gallery
       - name: Clone PenguinMod Extension Gallery
-        run: git clone --depth=1 https://github.com/PenguinMod/PenguinMod-ExtensionsGallery.git
+        run: node scripts/clone-pinned.js PenguinMod-ExtensionsGallery
 
       - name: Install PenguinMod ext gallery deps
         run: |
@@ -65,7 +67,7 @@ jobs:
 
       # TurboWarp Extension Gallery
       - name: Clone TurboWarp Extension Gallery
-        run: git clone --depth=1 https://github.com/TurboWarp/extensions.git TurboWarp-ExtensionsGallery
+        run: node scripts/clone-pinned.js TurboWarp-ExtensionsGallery
 
       - name: Cache TurboWarp node_modules
         uses: actions/cache@v6
@@ -84,11 +86,11 @@ jobs:
 
       # SharkPool Extension Gallery
       - name: Clone SharkPool Extension Gallery
-        run: git clone --depth=1 https://github.com/SharkPool-SP/SharkPools-Extensions.git
+        run: node scripts/clone-pinned.js SharkPools-Extensions
 
       # --- Clone PenguinMod GUI Main Repository ---
       - name: Clone PenguinMod GUI
-        run: git clone --depth=1 https://github.com/PenguinMod/penguinmod.github.io.git
+        run: node scripts/clone-pinned.js penguinmod.github.io
 
       # --- CONSOLIDATED GUI & SUBMODULES CACHE ---
       - name: Cache GUI and Submodule node_modules
@@ -111,10 +113,10 @@ jobs:
         run: |
           cd penguinmod.github.io
           
-          git clone --depth=1 https://github.com/PenguinMod/PenguinMod-Vm.git
-          git clone --depth=1 -b develop-builds https://github.com/PenguinMod/PenguinMod-Blocks.git
-          git clone --depth=1 https://github.com/PenguinMod/PenguinMod-Render.git
-          git clone --depth=1 https://github.com/PenguinMod/PenguinMod-Paint.git
+          node ../scripts/clone-pinned.js PenguinMod-Vm
+          node ../scripts/clone-pinned.js PenguinMod-Blocks
+          node ../scripts/clone-pinned.js PenguinMod-Render
+          node ../scripts/clone-pinned.js PenguinMod-Paint
           
           if [ -d "node_modules/scratch-vm/node_modules" ]; then
             mv node_modules/scratch-vm/node_modules PenguinMod-Vm/
