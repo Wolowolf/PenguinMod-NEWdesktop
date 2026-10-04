@@ -298,6 +298,9 @@ class AssetBrowser extends React.Component {
                         <img
                             className={classNames(styles.image, kind === 'backdrop' && styles.cover)}
                             src={item.thumb}
+                            onError={e => {
+                                if (item.url && e.target.src !== item.url) e.target.src = item.url;
+                            }}
                             loading="lazy"
                             draggable={false}
                             alt=""

@@ -29,6 +29,7 @@ const CC_BY_3 = {license: 'CC BY 3.0', licenseUrl: 'https://creativecommons.org/
 // ---- offline library ---------------------------------------------------------------------------
 
 let offlineIndex = null;
+const KENNEY_JUNK = /^(preview|sample|information|instructions?|update|changes)\b/i;
 const prepareIndex = index => {
     const kenney = index.kenney.map(([pack, file, flags, w, h]) => {
         const [slug, title] = index.packs[pack];
@@ -41,7 +42,7 @@ const prepareIndex = index => {
             search: `${title} ${file}`.toLowerCase(),
             credit: {src: 'kenney', id: `${slug}/${file}`, title: name, by: 'Kenney', url: 'https://kenney.nl', ...CC0, needsCredit: false}
         };
-    });
+    }).filter(item => !KENNEY_JUNK.test(item.name)); // pack previews and info sheets, not assets
     const authors = index.gameIcons.authors;
     const squash = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
     const tagsOf = {};
@@ -156,13 +157,23 @@ const OPENVERSE_LICENSES = ['cc0', 'pdm', 'by']; // no NC, ND, SA
 const openverseLicense = r => (r.license === 'cc0' ? 'CC0' : r.license === 'pdm' ? 'Public domain' :
     `CC ${r.license.toUpperCase()}${r.license_version ? ` ${r.license_version}` : ''}`);
 
+// Openverse's own preview service fails for SVG files (HTTP 424): use the source's small previews.
+const openverseThumb = r => {
+    const url = r.url || '';
+    const wiki = url.match(/^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\/(\w)\/(\w\w)\/([^/?#]+)$/);
+    if (wiki) return `https://upload.wikimedia.org/wikipedia/commons/thumb/${wiki[1]}/${wiki[2]}/${wiki[3]}/250px-${wiki[3]}${/\.svg$/i.test(wiki[3]) ? '.png' : ''}`;
+    if (/staticflickr\.com\/.*_[a-z]\.jpg$/i.test(url)) return url.replace(/_[a-z]\.jpg$/i, '_n.jpg');
+    if (r.filetype === 'svg' || /\.svg$/i.test(url)) return url;
+    return r.thumbnail;
+};
+
 const openverseItem = (kind, r) => {
     const sound = kind === 'sound';
     const title = (r.title || 'Untitled').trim();
     return {
         key: `openverse:${r.id}`, source: 'openverse', name: niceName(title) || 'Untitled',
         subtitle: [r.creator && `by ${r.creator}`, r.source].filter(Boolean).join(' · '),
-        sound, thumb: sound ? null : r.thumbnail, url: r.url,
+        sound, thumb: sound ? null : openverseThumb(r), url: r.url,
         fallbackUrl: sound ? null : `${OPENVERSE}images/${r.id}/thumb/?full_size=true`,
         svgFit: 360, // big vector drawings would cover the whole stage
         mime: r.filetype ? (MIME[r.filetype] || '') : mimeOf(r.url || ''),
@@ -177,7 +188,9 @@ const openverseItem = (kind, r) => {
 
 // type: images 'illustration' | 'all'; sounds 'sfx' | 'music' | 'all'
 export const searchOpenverse = async (kind, query, page, type) => {
-    const params = new URLSearchParams({q: query, license: OPENVERSE_LICENSES.join(','), page_size: '20', page: String(page)});
+    // filter_dead=false: Openverse skips checking every link (about a third faster); broken previews fall back
+    const params = new URLSearchParams({q: query, license: OPENVERSE_LICENSES.join(','), page_size: '20', page: String(page),
+        filter_dead: 'false'});
     let endpoint = 'images/';
     if (kind === 'sound') {
         endpoint = 'audio/';
