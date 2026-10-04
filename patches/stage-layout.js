@@ -23,6 +23,7 @@
  *  10. The "Back to Home" button in the editor's top bar is removed (section 12).
  *  11. Re-ordering the category boxes by dragging: the box itself slides up and down
  *      between the others (no faded box, floating copy or blank gap) (section 13).
+ *  12. The "See Project Page" and "Upload" buttons are removed (section 14).
  *
  * Usage:  node patches/stage-layout.js <path-to-GUI-folder>
  *
@@ -1039,5 +1040,41 @@ replaceOnce(CD,
 replaceOnce(CD,
     'if (findOrderingComment()) return;',
     'if (findOrderingComment()) { pmUpdateOrderingComment(); return; }');
+
+/* ------------------------------------------------------------------ */
+/* 14. Remove the "See Project Page" and "Upload" buttons              */
+/* ------------------------------------------------------------------ */
+// Both buttons only make sense for the PenguinMod sharing website: "See Project Page" opens
+// the project's page there, "Upload" opens penguinmod.com/upload. This desktop build is for
+// packaged projects, so both are cut out of the menu bar (the two <div> blocks after the
+// title field; the "Back to Home" marker from section 12 sits between them and is kept).
+// To undo this section, delete it from this script (or ask Claude to reverse it).
+{
+    const mbText = read(MB);
+    const communityStart = '                    <div className={classNames(styles.menuBarItem, styles.communityButtonWrapper)}>\n';
+    const homeMarker = '                    {/* ' + MARKER + ': "Back to Home" button removed */}\n';
+    const shareStart = '                    <div className={styles.menuBarItem}>\n                        {this.props.isShowingProject && this.props.canEditTitle ?\n                            (<ShareButton';
+    const shareEnd = '                            : (null)}\n                    </div>\n';
+    const cStart = mbText.indexOf(communityStart);
+    const marker = mbText.indexOf(homeMarker);
+    const sStart = mbText.indexOf(shareStart);
+    const sEnd = mbText.indexOf(shareEnd, sStart) + shareEnd.length;
+    if (cStart === -1 || marker === -1 || sStart === -1 || mbText.indexOf(shareEnd, sStart) === -1) {
+        fail(MB + ': could not find the "See Project Page" / "Upload" blocks.');
+    }
+    if (mbText.indexOf(communityStart, cStart + 1) !== -1 || mbText.indexOf(shareStart, sStart + 1) !== -1) {
+        fail(MB + ': the "See Project Page" / "Upload" blocks were found more than once.');
+    }
+    const communityBlock = mbText.slice(cStart, marker);
+    const shareBlock = mbText.slice(sStart, sEnd);
+    if (!(cStart < marker && marker < sStart) ||
+        !communityBlock.includes('<CommunityButton') || communityBlock.length > 2500 ||
+        !shareBlock.includes('<ShareButton') || shareBlock.length > 500) {
+        fail(MB + ': the "See Project Page" / "Upload" blocks do not look as expected.');
+    }
+    write(MB, mbText.slice(0, cStart) +
+        '                    {/* ' + MARKER + ': "See Project Page" and "Upload" buttons removed */}\n' +
+        homeMarker + mbText.slice(sEnd));
+}
 
 console.log('Stage layout patch applied successfully.');
