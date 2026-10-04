@@ -26,6 +26,9 @@
  *  12. The "See Project Page" and "Upload" buttons are removed (section 14).
  *  13. Online-community extras removed: cloud variables / change username, Remix,
  *      Discord links, the Sensing "Help Manual" button, the analytics script (section 15).
+ *  14. New sprite / costume / backdrop / sound libraries (Kenney, game-icons.net and sound
+ *      generators offline; Iconify and Openverse online) and the automatic "credit" sprite
+ *      (section 16, files in patches/asset-libraries/).
  *
  * Usage:  node patches/stage-layout.js <path-to-GUI-folder>
  *
@@ -1222,5 +1225,118 @@ cutThrough(EJS,
 replaceOnce('src/playground/render-gui.jsx',
     "const searchParams = new URLSearchParams(location.search);\nconst cloudHost = searchParams.get('cloud_host') || 'wss://clouddata.turbowarp.org';\n",
     '// ' + MARKER + ': no cloud server (cloud variables removed)\nconst cloudHost = null;\n');
+
+/* ------------------------------------------------------------------ */
+/* 16. New asset libraries + the "credit" sprite                       */
+/* ------------------------------------------------------------------ */
+// The original sprite, costume, backdrop and sound libraries are removed. The library windows
+// now show patches/asset-libraries/pm-asset-browser.jsx (Kenney, game-icons.net and three sound
+// generators offline; Iconify and Openverse online), the "Surprise" buttons add a random Kenney
+// item, and pm-credits.js keeps the "credit" sprite. The VM saves each asset's credit record
+// (`pmCredit`) in the project. To reverse: delete this section and patches/asset-libraries/.
+const ASSET_LIBS = path.join(__dirname, 'asset-libraries');
+const copyIn = (from, to) => write(to, fs.readFileSync(path.join(ASSET_LIBS, from), 'utf8'));
+copyIn('pm-asset-browser.jsx', 'src/components/pm-asset-browser/pm-asset-browser.jsx');
+copyIn('pm-asset-browser.css', 'src/components/pm-asset-browser/pm-asset-browser.css');
+copyIn('pm-asset-sources.js', 'src/lib/pm-asset-sources.js');
+copyIn('pm-credits.js', 'src/lib/pm-credits.js');
+
+// a. Each library window becomes the asset browser (the file must still be the original one).
+const replaceFile = (rel, mustContain, text) => {
+    if (!read(rel).includes(mustContain)) fail(rel + ': could not find:\n' + mustContain);
+    write(rel, text);
+};
+const libraryWrapper = (name, kind) => [
+    '// ' + MARKER + ' (section 16): the original library was removed; this opens the new asset libraries.',
+    "import React from 'react';",
+    "import AssetBrowser from '../components/pm-asset-browser/pm-asset-browser.jsx';",
+    '',
+    `const ${name} = props => <AssetBrowser kind="${kind}" {...props} />;`,
+    `export default ${name};`,
+    ''
+].join('\n');
+replaceFile('src/containers/costume-library.jsx', 'this.props.vm.addCostumeFromLibrary(item.md5ext, vmCostume);',
+    libraryWrapper('CostumeLibrary', 'costume'));
+replaceFile('src/containers/backdrop-library.jsx', 'this.props.vm.addBackdrop(item.md5ext, vmBackdrop);',
+    libraryWrapper('BackdropLibrary', 'backdrop'));
+replaceFile('src/containers/sprite-library.jsx', 'this.props.vm.addSprite(JSON.stringify(item)).then(() => {',
+    libraryWrapper('SpriteLibrary', 'sprite'));
+replaceFile('src/containers/sound-library.jsx', 'const getSoundLibraryThumbnailData = ',
+    libraryWrapper('SoundLibrary', 'sound'));
+
+// b. The library data itself is no longer bundled.
+replaceFile('src/lib/libraries/tw-async-libraries.js',
+    "import(/* webpackChunkName: \"library-sprites\" */ './sprites.json')", [
+        '// ' + MARKER + ' (section 16): the original sprite, costume, backdrop and sound libraries were removed.',
+        'const empty = () => Promise.resolve([]);',
+        'export const getBackdropLibrary = empty;',
+        'export const getCostumeLibrary = empty;',
+        'export const getSoundLibrary = empty;',
+        'export const getSpriteLibrary = empty;',
+        ''
+    ].join('\n'));
+
+// c. "Surprise" buttons: a random Kenney item (offline, CC0)
+const SURPRISE_IMPORT = "import {addRandomOfflineAsset} from '../lib/pm-asset-sources.js';\n";
+replaceOnce('src/containers/costume-tab.jsx',
+    "import { getCostumeLibrary, getBackdropLibrary } from '../lib/libraries/tw-async-libraries';\n",
+    "import { getCostumeLibrary, getBackdropLibrary } from '../lib/libraries/tw-async-libraries';\n" + SURPRISE_IMPORT);
+replaceOnce('src/containers/costume-tab.jsx',
+    '    async handleSurpriseCostume() {\n        const costumeLibraryContent = await getCostumeLibrary();\n',
+    "    async handleSurpriseCostume() {\n        return addRandomOfflineAsset(this.props.vm, 'costume');\n" +
+    '        const costumeLibraryContent = await getCostumeLibrary();\n');
+replaceOnce('src/containers/costume-tab.jsx',
+    '    async handleSurpriseBackdrop() {\n        const backdropLibraryContent = await getBackdropLibrary();\n',
+    "    async handleSurpriseBackdrop() {\n        return addRandomOfflineAsset(this.props.vm, 'backdrop');\n" +
+    '        const backdropLibraryContent = await getBackdropLibrary();\n');
+replaceOnce('src/containers/sound-tab.jsx',
+    "import { getSoundLibrary } from '../lib/libraries/tw-async-libraries';\n",
+    "import { getSoundLibrary } from '../lib/libraries/tw-async-libraries';\n" + SURPRISE_IMPORT);
+replaceOnce('src/containers/sound-tab.jsx',
+    '    async handleSurpriseSound() {\n        const soundLibraryContent = await getSoundLibrary();\n',
+    "    async handleSurpriseSound() {\n        return addRandomOfflineAsset(this.props.vm, 'sound').then(() => this.handleNewSound());\n" +
+    '        const soundLibraryContent = await getSoundLibrary();\n');
+replaceOnce('src/containers/stage-selector.jsx',
+    "import {getBackdropLibrary} from '../lib/libraries/tw-async-libraries';\n",
+    "import {getBackdropLibrary} from '../lib/libraries/tw-async-libraries';\n" + SURPRISE_IMPORT);
+replaceOnce('src/containers/stage-selector.jsx',
+    '        e.stopPropagation(); // Prevent click from falling through to selecting stage.\n' +
+    '        const backdropLibraryContent = await getBackdropLibrary();\n',
+    '        e.stopPropagation(); // Prevent click from falling through to selecting stage.\n' +
+    "        return addRandomOfflineAsset(this.props.vm, 'backdrop');\n" +
+    '        const backdropLibraryContent = await getBackdropLibrary();\n');
+replaceOnce('src/containers/target-pane.jsx',
+    "import {getSpriteLibrary} from '../lib/libraries/tw-async-libraries';\n",
+    "import {getSpriteLibrary} from '../lib/libraries/tw-async-libraries';\n" + SURPRISE_IMPORT);
+replaceOnce('src/containers/target-pane.jsx',
+    '    async handleSurpriseSpriteClick () {\n        const spriteLibraryContent = await getSpriteLibrary();\n',
+    "    async handleSurpriseSpriteClick () {\n        return addRandomOfflineAsset(this.props.vm, 'sprite').then(this.handleActivateBlocksTab);\n" +
+    '        const spriteLibraryContent = await getSpriteLibrary();\n');
+
+// d. The "credit" sprite watcher starts with the editor's VM
+const HOC = 'src/lib/vm-manager-hoc.jsx';
+replaceOnce(HOC, 'import AudioEngine from "scratch-audio";\n',
+    'import AudioEngine from "scratch-audio";\nimport installCredits from "./pm-credits.js"; // ' + MARKER + ' (section 16)\n');
+replaceOnce(HOC, '                window.vm = this.props.vm;\n',
+    '                window.vm = this.props.vm;\n                installCredits(this.props.vm);\n');
+
+// e. The VM (node_modules/scratch-vm, its own git checkout) saves and loads each asset's credit record.
+const SB3 = 'node_modules/scratch-vm/src/serialization/sb3.js';
+if (!read(SB3).includes(MARKER)) {
+    replaceOnce(SB3,
+        '    obj.rotationCenterY = costumeToSerialize.rotationCenterY;\n\n    return obj;\n',
+        '    obj.rotationCenterY = costumeToSerialize.rotationCenterY;\n' +
+        '    if (costume.pmCredit) obj.pmCredit = costume.pmCredit; // ' + MARKER + ': asset credit (section 16)\n\n' +
+        '    return obj;\n');
+    replaceOnce(SB3,
+        '    obj.md5ext = soundToSerialize.md5;\n    return obj;\n',
+        '    obj.md5ext = soundToSerialize.md5;\n    if (sound.pmCredit) obj.pmCredit = sound.pmCredit;\n    return obj;\n');
+    replaceOnce(SB3,
+        '            rotationCenterY: costumeSource.rotationCenterY\n        };\n',
+        '            rotationCenterY: costumeSource.rotationCenterY,\n            pmCredit: costumeSource.pmCredit\n        };\n');
+    replaceOnce(SB3,
+        '            dataFormat: soundSource.dataFormat,\n            data: null\n        };\n',
+        '            dataFormat: soundSource.dataFormat,\n            data: null,\n            pmCredit: soundSource.pmCredit\n        };\n');
+}
 
 console.log('Stage layout patch applied successfully.');
