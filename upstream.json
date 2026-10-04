@@ -1,5 +1,5 @@
 {
-  "_about": "Exact upstream commits the build uses (scripts/clone-pinned.js downloads them). To move to newer upstream code, change a commit here, run the local test with -Update, and merge it like any tweak.",
+  "_about": "Exact upstream commits the build uses (scripts/clone-pinned.js downloads them). The last four are only used by scripts/make-offline-library.mjs to build the offline library. To move to newer upstream code, change a commit here, run the local test with -Update, and merge it like any tweak.",
   "penguinmod.github.io": {
     "repo": "https://github.com/PenguinMod/penguinmod.github.io.git",
     "branch": "develop",
@@ -39,5 +39,25 @@
     "repo": "https://github.com/SharkPool-SP/SharkPools-Extensions.git",
     "branch": "main",
     "commit": "e168e253a2130d51779d6514e04e1f845c961ffa"
+  },
+  "game-icons": {
+    "repo": "https://github.com/game-icons/icons.git",
+    "branch": "master",
+    "commit": "82d948812bfe3f269ef8f731dcdb07b08160edc4"
+  },
+  "jsfxr": {
+    "repo": "https://github.com/chr15m/jsfxr.git",
+    "branch": "master",
+    "commit": "b7b6aa27d62f8f356db267276bf54b451555c49d"
+  },
+  "ZzFX": {
+    "repo": "https://github.com/KilledByAPixel/ZzFX.git",
+    "branch": "master",
+    "commit": "aab7e2b6b9086746b6e55fab75c75ce03e716c49"
+  },
+  "bfxr2": {
+    "repo": "https://github.com/increpare/bfxr2.git",
+    "branch": "master",
+    "commit": "d7fc91879fa7a06d158433ed0282d3e50027e3b5"
   }
 }

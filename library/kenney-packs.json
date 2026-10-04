@@ -1,0 +1,830 @@
+{
+ "_about": "Every Kenney (kenney.nl) pack in the 2D, Textures and Audio categories, all CC0, as listed on 2026-10-04. The zip URLs contain a version hash, so they always give the same files. scripts/make-offline-library.mjs turns them into the offline library.",
+ "packs": {
+  "1-bit-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/1-bit-pack/aa867a1f37-1677578516/kenney_1-bit-pack.zip",
+   "bytes": 657579
+  },
+  "1-bit-platformer-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/1-bit-platformer-pack/7c1e5f05a4-1677693072/kenney_1-bit-platformer-pack.zip",
+   "bytes": 402959
+  },
+  "abstract-platformer": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/abstract-platformer/a8f4badcb5-1677579172/kenney_abstract-platformer.zip",
+   "bytes": 2532432
+  },
+  "alien-ufo-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/alien-ufo-pack/6bc775e714-1677667399/kenney_alien-ufo-pack.zip",
+   "bytes": 418817
+  },
+  "animal-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/animal-pack/480cf9f223-1677669996/kenney_animal-pack.zip",
+   "bytes": 2607374
+  },
+  "animal-pack-remastered": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/animal-pack-remastered/54a307a369-1774771709/kenney_animal-pack-remastered.zip",
+   "bytes": 3600298
+  },
+  "background-elements": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/background-elements/b66a1ddec7-1677670395/kenney_background-elements.zip",
+   "bytes": 1062506
+  },
+  "background-elements-remastered": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/background-elements-remastered/7b034822ed-1774771758/kenney_background-elements-remastered.zip",
+   "bytes": 1039383
+  },
+  "block-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/block-pack/144bd42fea-1677698772/kenney_block-pack.zip",
+   "bytes": 1064140
+  },
+  "board-game-icons": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/board-game-icons/19cae04050-1721645690/kenney_board-game-icons.zip",
+   "bytes": 1039954
+  },
+  "board-game-info": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/board-game-info/51e61a2533-1674933074/kenney_board-game-info.zip",
+   "bytes": 2327891
+  },
+  "boardgame-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/boardgame-pack/a1656828d2-1677667644/kenney_boardgame-pack.zip",
+   "bytes": 2221570
+  },
+  "brick-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/brick-pack/4dade725a3-1721806579/kenney_toy-brick-pack.zip",
+   "bytes": 448506
+  },
+  "cartography-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/cartography-pack/2055ba99c2-1677578192/kenney_cartography-pack.zip",
+   "bytes": 4199252
+  },
+  "casino-audio": {
+   "category": "Audio",
+   "zip": "https://kenney.nl/media/pages/assets/casino-audio/2472606a04-1721639069/kenney_casino-audio.zip",
+   "bytes": 876839
+  },
+  "crosshair-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/crosshair-pack/5ef74bd405-1785950072/kenney_crosshair-pack.zip",
+   "bytes": 3118577
+  },
+  "cursor-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/cursor-pack/461b29df18-1717599281/kenney_cursor-pack.zip",
+   "bytes": 746901
+  },
+  "cursor-pixel-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/cursor-pixel-pack/092f2b012b-1720601332/kenney_cursor-pixel-pack.zip",
+   "bytes": 100645
+  },
+  "desert-shooter-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/desert-shooter-pack/ca69c66653-1758814247/kenney_desert-shooter-pack_1.0.zip",
+   "bytes": 566081
+  },
+  "development-essentials": {
+   "category": "Textures",
+   "zip": "https://kenney.nl/media/pages/assets/development-essentials/aa22019597-1767593474/kenney_development-essentials.zip",
+   "bytes": 1147495
+  },
+  "digital-audio": {
+   "category": "Audio",
+   "zip": "https://kenney.nl/media/pages/assets/digital-audio/216eac4753-1677590265/kenney_digital-audio.zip",
+   "bytes": 990367
+  },
+  "domino-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/domino-pack/b660438972-1785701505/kenney_domino-pack.zip",
+   "bytes": 1838008
+  },
+  "emotes-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/emotes-pack/d00a3dcb06-1677578798/kenney_emotes-pack.zip",
+   "bytes": 380191
+  },
+  "fantasy-ui-borders": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/fantasy-ui-borders/ab29cd0165-1701602367/kenney_fantasy-ui-borders.zip",
+   "bytes": 358780
+  },
+  "fish-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/fish-pack/07ae98c5b6-1747237960/kenney_fish-pack_2.zip",
+   "bytes": 702052
+  },
+  "flag-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/flag-pack/f1423dd38b-1780995519/kenney_flag-pack.zip",
+   "bytes": 494870
+  },
+  "foliage-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/foliage-pack/06a6c43298-1677693473/kenney_foliage-pack.zip",
+   "bytes": 2230956
+  },
+  "foliage-sprites": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/foliage-sprites/b65bd70c69-1677495980/kenney_foliage-sprites.zip",
+   "bytes": 2432412
+  },
+  "game-icons": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/game-icons/1ebf9c14af-1677661579/kenney_game-icons.zip",
+   "bytes": 1045980
+  },
+  "game-icons-expansion": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/game-icons-expansion/afac4593af-1677661643/kenney_game-icons-expansion.zip",
+   "bytes": 2008440
+  },
+  "generic-items": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/generic-items/96b9087204-1677667000/kenney_generic-items.zip",
+   "bytes": 2278836
+  },
+  "googly-eyes": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/googly-eyes/b5a22d641d-1709670508/kenney_googly-eyes.zip",
+   "bytes": 200608
+  },
+  "hexagon-buildings": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/hexagon-buildings/9d582923eb-1677669588/kenney_hexagon-buildings.zip",
+   "bytes": 347063
+  },
+  "hexagon-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/hexagon-pack/433cdc69d6-1677662331/kenney_hexagon-pack.zip",
+   "bytes": 4426063
+  },
+  "hexagon-tiles": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/hexagon-tiles/d7f21557bd-1677669510/kenney_hexagon-tiles.zip",
+   "bytes": 549737
+  },
+  "holiday-extras": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/holiday-extras/215b8b985b-1774771567/kenney_holiday-extras.zip",
+   "bytes": 2441492
+  },
+  "impact-sounds": {
+   "category": "Audio",
+   "zip": "https://kenney.nl/media/pages/assets/impact-sounds/87b4ddecda-1677589768/kenney_impact-sounds.zip",
+   "bytes": 800850
+  },
+  "input-prompts": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/input-prompts/8de120163f-1783763952/kenney_input-prompts_1.5.zip",
+   "bytes": 5070075
+  },
+  "input-prompts-pixel": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/input-prompts-pixel/84a40a31f6-1774771309/kenney_input-prompts-pixel.zip",
+   "bytes": 327336
+  },
+  "input-prompts-pixel-1-bit": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/input-prompts-pixel-1-bit/ba3f0202e6-1774771290/kenney_input-prompts-pixel-1-bit.zip",
+   "bytes": 562151
+  },
+  "interface-sounds": {
+   "category": "Audio",
+   "zip": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+   "bytes": 834536
+  },
+  "isometric-blocks": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/isometric-blocks/86a0152f5b-1677662261/kenney_isometric-blocks.zip",
+   "bytes": 7288814
+  },
+  "isometric-miniature-bases": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/isometric-miniature-bases/eb165ab941-1686811744/kenney_isometric-miniature-bases.zip",
+   "bytes": 6217413
+  },
+  "isometric-miniature-dungeon": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/isometric-miniature-dungeon/bdcbf8d79d-1674932261/kenney_isometric-miniature-dungeon.zip",
+   "bytes": 14211485
+  },
+  "isometric-miniature-farm": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/isometric-miniature-farm/abd0274182-1670690319/kenney_isometric-miniature-farm.zip",
+   "bytes": 10135825
+  },
+  "isometric-miniature-library": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/isometric-miniature-library/577e09ff09-1674932086/kenney_isometric-miniature-library.zip",
+   "bytes": 5819017
+  },
+  "isometric-miniature-prototype": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/isometric-miniature-prototype/8c46fe34a0-1674932174/kenney_isometric-miniature-prototype.zip",
+   "bytes": 3538637
+  },
+  "isometric-roads": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/isometric-roads/d3b7757a28-1677695247/kenney_isometric-roads.zip",
+   "bytes": 621468
+  },
+  "isometric-roads-water": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/isometric-roads-water/a7ef067d57-1677668457/kenney_isometric-roads-water.zip",
+   "bytes": 332139
+  },
+  "isometric-tiles-buildings": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/isometric-tiles-buildings/cfcdb066e1-1677694983/kenney_isometric-buildings.zip",
+   "bytes": 1706949
+  },
+  "isometric-tiles-city": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/isometric-tiles-city/7026b2670a-1677695025/kenney_isometric-city.zip",
+   "bytes": 990594
+  },
+  "isometric-tiles-landscape": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/isometric-tiles-landscape/37eb18a8d1-1677695072/kenney_isometric-landscape.zip",
+   "bytes": 1141541
+  },
+  "isometric-tiles-vehicles": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/isometric-tiles-vehicles/34c07c3393-1677695121/kenney_isometric-vehicles.zip",
+   "bytes": 2269908
+  },
+  "jumper-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/jumper-pack/4654b2d2e5-1677666699/kenney_jumper-pack.zip",
+   "bytes": 1548872
+  },
+  "kenney-fonts": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/kenney-fonts/8d5435c213-1677661710/kenney_kenney-fonts.zip",
+   "bytes": 57786
+  },
+  "letter-tiles": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/letter-tiles/8dbe904529-1677670676/kenney_letter-tiles.zip",
+   "bytes": 15506810
+  },
+  "light-masks": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/light-masks/6530e254f9-1775631687/kenney_light-masks-1.0.zip",
+   "bytes": 15017378
+  },
+  "map-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/map-pack/86e20aaba9-1677662163/kenney_map-pack.zip",
+   "bytes": 2347889
+  },
+  "medals": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/medals/4ed820ff57-1677699973/kenney_medals.zip",
+   "bytes": 115730
+  },
+  "medieval-rts": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/medieval-rts/0863f2c62a-1677693589/kenney_medieval-rts.zip",
+   "bytes": 1831847
+  },
+  "micro-roguelike": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/micro-roguelike/bbcaf50993-1677578239/kenney_micro-roguelike.zip",
+   "bytes": 182076
+  },
+  "minimap-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/minimap-pack/37d4e34596-1730884114/kenney_minimap-pack.zip",
+   "bytes": 84996
+  },
+  "mobile-controls": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/mobile-controls/0d047b3be4-1754738457/mobile-controls-1.zip",
+   "bytes": 3146863
+  },
+  "modular-characters": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/modular-characters/d84577feef-1677670340/kenney_modular-characters.zip",
+   "bytes": 1782898
+  },
+  "monochrome-pirates": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/monochrome-pirates/1b6c3591dd-1701252760/kenney_monochrome-pirates.zip",
+   "bytes": 347666
+  },
+  "monochrome-rpg": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/monochrome-rpg/03f49efc13-1674742619/kenney_monochrome-rpg.zip",
+   "bytes": 387381
+  },
+  "monster-builder-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/monster-builder-pack/663e4ef6de-1677495438/kenney_monster-builder-pack.zip",
+   "bytes": 1260970
+  },
+  "music-jingles": {
+   "category": "Audio",
+   "zip": "https://kenney.nl/media/pages/assets/music-jingles/f37e530b9e-1677590399/kenney_music-jingles.zip",
+   "bytes": 1239525
+  },
+  "new-platformer-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/new-platformer-pack/1896103897-1764756702/kenney_new-platformer-pack-1.1.zip",
+   "bytes": 3276507
+  },
+  "particle-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/particle-pack/f8fe0f8cb8-1677578741/kenney_particle-pack.zip",
+   "bytes": 15001764
+  },
+  "pattern-pack": {
+   "category": "Textures",
+   "zip": "https://kenney.nl/media/pages/assets/pattern-pack/e787377a73-1721940715/kenney_pattern-pack.zip",
+   "bytes": 1224706
+  },
+  "pattern-pack-extra": {
+   "category": "Textures",
+   "zip": "https://kenney.nl/media/pages/assets/pattern-pack-extra/270736c7fd-1786626805/kenney_pattern-pack-extra.zip",
+   "bytes": 1586053
+  },
+  "pattern-pack-lines": {
+   "category": "Textures",
+   "zip": "https://kenney.nl/media/pages/assets/pattern-pack-lines/6211bda939-1774771397/kenney_pattern-pack-lines.zip",
+   "bytes": 774269
+  },
+  "pattern-pack-pixel": {
+   "category": "Textures",
+   "zip": "https://kenney.nl/media/pages/assets/pattern-pack-pixel/65c3f0f0a1-1721640064/kenney_pattern-pack-pixel.zip",
+   "bytes": 58769
+  },
+  "physics-assets": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/physics-assets/e635010608-1677667214/kenney_physics-assets.zip",
+   "bytes": 2577770
+  },
+  "pico-8-city": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/pico-8-city/e625ac8b8f-1693576593/kenney_pico-8-city.zip",
+   "bytes": 213902
+  },
+  "pico-8-platformer": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/pico-8-platformer/5cc9d17030-1723028953/kenney_pico-8-platformer.zip",
+   "bytes": 126364
+  },
+  "pirate-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/pirate-pack/8574474ce6-1677579020/kenney_pirate-pack.zip",
+   "bytes": 2586559
+  },
+  "pixel-line-platformer": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/pixel-line-platformer/160da639da-1677495839/kenney_pixel-line-platformer.zip",
+   "bytes": 162238
+  },
+  "pixel-platformer": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/pixel-platformer/33bb4921eb-1696667883/kenney_pixel-platformer.zip",
+   "bytes": 260312
+  },
+  "pixel-platformer-blocks": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/pixel-platformer-blocks/27d740b8b2-1668793626/kenney_pixel-platformer-blocks.zip",
+   "bytes": 155366
+  },
+  "pixel-platformer-farm-expansion": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/pixel-platformer-farm-expansion/0d64009c0e-1668789813/kenney_pixel-platformer-farm-expansion.zip",
+   "bytes": 182691
+  },
+  "pixel-platformer-food-expansion": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/pixel-platformer-food-expansion/76330de2bf-1696596511/kenney_pixel-platformer-food-expansion.zip",
+   "bytes": 163245
+  },
+  "pixel-platformer-industrial-expansion": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/pixel-platformer-industrial-expansion/f95a0189cd-1668793443/kenney_pixel-platformer-industrial-expansion.zip",
+   "bytes": 166537
+  },
+  "pixel-shmup": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/pixel-shmup/640246b9cc-1677495782/kenney_pixel-shmup.zip",
+   "bytes": 127424
+  },
+  "pixel-ui-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/pixel-ui-pack/821e760f21-1677661508/kenney_pixel-ui-pack.zip",
+   "bytes": 141881
+  },
+  "pixel-vehicle-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/pixel-vehicle-pack/570a4c9051-1677578609/kenney_pixel-vehicle-pack.zip",
+   "bytes": 60319
+  },
+  "planets": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/planets/512b578338-1677495391/kenney_planets.zip",
+   "bytes": 7352480
+  },
+  "platformer-art-buildings": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/platformer-art-buildings/6aec290935-1677696287/kenney_platformer-art-buildings.zip",
+   "bytes": 417729
+  },
+  "platformer-art-candy": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/platformer-art-candy/85fe3ec6ed-1677696339/kenney_platformer-art-candy.zip",
+   "bytes": 590798
+  },
+  "platformer-art-deluxe": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/platformer-art-deluxe/cb30f83169-1677696393/kenney_platformer-art-deluxe.zip",
+   "bytes": 6582450
+  },
+  "platformer-art-extended-enemies": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/platformer-art-extended-enemies/38f1885b37-1677696504/kenney_platformer-art-extended-enemies.zip",
+   "bytes": 1059516
+  },
+  "platformer-art-extended-tileset": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/platformer-art-extended-tileset/6269ed8212-1677696610/kenney_platformer-art-extended-tileset.zip",
+   "bytes": 1025166
+  },
+  "platformer-art-mushrooms": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/platformer-art-mushrooms/bff127274a-1677696675/kenney_platformer-art-mushrooms.zip",
+   "bytes": 426680
+  },
+  "platformer-art-pixel": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/platformer-art-pixel/7a87f3ab92-1774772636/kenney_platformer-art-pixel.zip",
+   "bytes": 367310
+  },
+  "platformer-art-requests": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/platformer-art-requests/adf3dbf5c2-1677696809/kenney_platformer-art-requests.zip",
+   "bytes": 495957
+  },
+  "platformer-art-winter": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/platformer-art-winter/c7f8a0fd6c-1677696902/kenney_platformer-art-winter.zip",
+   "bytes": 506668
+  },
+  "platformer-bricks": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/platformer-bricks/b119bbd7a7-1677668020/kenney_platformer-bricks.zip",
+   "bytes": 241005
+  },
+  "platformer-characters": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/platformer-characters/b85f388c42-1677693768/kenney_platformer-characters.zip",
+   "bytes": 1433917
+  },
+  "platformer-pack-industrial": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/platformer-pack-industrial/f61c3a5fc4-1677696008/kenney_platformer-pack-industrial.zip",
+   "bytes": 1535960
+  },
+  "platformer-pack-medieval": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/platformer-pack-medieval/848792381c-1677696130/kenney_platformer-pack-medieval.zip",
+   "bytes": 1812358
+  },
+  "platformer-pack-remastered": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/platformer-pack-remastered/cee5812394-1774772013/kenney_platformer-pack-remastered.zip",
+   "bytes": 4264528
+  },
+  "playing-cards-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/playing-cards-pack/4b345a2a5a-1677495915/kenney_playing-cards-pack.zip",
+   "bytes": 191985
+  },
+  "prototype-textures": {
+   "category": "Textures",
+   "zip": "https://kenney.nl/media/pages/assets/prototype-textures/a88c69fa18-1677578307/kenney_prototype-textures.zip",
+   "bytes": 438977
+  },
+  "puzzle-pack-1": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/puzzle-pack-1/627a04c0d3-1774770940/kenney_puzzle-pack-1.zip",
+   "bytes": 405736
+  },
+  "puzzle-pack-2": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/puzzle-pack-2/2b69820372-1677667476/kenney_puzzle-pack-2.zip",
+   "bytes": 3966359
+  },
+  "racing-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/racing-pack/c4cd68480a-1677662443/kenney_racing-pack.zip",
+   "bytes": 1380632
+  },
+  "ranks-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/ranks-pack/6f46ba5840-1677578852/kenney_ranks-pack.zip",
+   "bytes": 679752
+  },
+  "retro-textures-fantasy": {
+   "category": "Textures",
+   "zip": "https://kenney.nl/media/pages/assets/retro-textures-fantasy/db459aee90-1774770433/kenney_retro-textures-fantasy.zip",
+   "bytes": 1203276
+  },
+  "road-textures": {
+   "category": "Textures",
+   "zip": "https://kenney.nl/media/pages/assets/road-textures/dbe293b0ed-1677578348/kenney_road-textures.zip",
+   "bytes": 514391
+  },
+  "robot-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/robot-pack/e545150528-1677670212/kenney_robot-pack.zip",
+   "bytes": 369329
+  },
+  "roguelike-caves-dungeons": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/roguelike-caves-dungeons/5195ceb8ca-1677694831/kenney_roguelike-caves-dungeons.zip",
+   "bytes": 188816
+  },
+  "roguelike-characters": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/roguelike-characters/53ffff4133-1729196490/kenney_roguelike-characters.zip",
+   "bytes": 63243
+  },
+  "roguelike-indoors": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/roguelike-indoors/4d5b520b03-1702169567/kenney_roguelike-indoors.zip",
+   "bytes": 112227
+  },
+  "roguelike-modern-city": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/roguelike-modern-city/0ff3dfff2b-1677694743/kenney_roguelike-modern-city.zip",
+   "bytes": 519937
+  },
+  "roguelike-rpg-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/roguelike-rpg-pack/12c03cd78b-1677697420/kenney_roguelike-rpg-pack.zip",
+   "bytes": 715373
+  },
+  "rolling-ball-assets": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/rolling-ball-assets/26fead26a1-1677495701/kenney_rolling-ball-assets.zip",
+   "bytes": 365679
+  },
+  "rpg-audio": {
+   "category": "Audio",
+   "zip": "https://kenney.nl/media/pages/assets/rpg-audio/8e99002d76-1677590336/kenney_rpg-audio.zip",
+   "bytes": 964837
+  },
+  "rpg-base": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/rpg-base/316dd80b01-1677669634/kenney_rpg-base.zip",
+   "bytes": 1553446
+  },
+  "rpg-urban-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/rpg-urban-pack/0a097d1dc7-1677578575/kenney_rpg-urban-pack.zip",
+   "bytes": 306630
+  },
+  "rune-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/rune-pack/c63018fba6-1702144010/kenney_rune-pack.zip",
+   "bytes": 1917678
+  },
+  "sci-fi-rts": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/sci-fi-rts/792bcb9cd5-1677693650/kenney_sci-fi-rts.zip",
+   "bytes": 2019242
+  },
+  "sci-fi-sounds": {
+   "category": "Audio",
+   "zip": "https://kenney.nl/media/pages/assets/sci-fi-sounds/6b296f9ecf-1677589334/kenney_sci-fi-sounds.zip",
+   "bytes": 5875104
+  },
+  "scribble-dungeons": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/scribble-dungeons/657110bad3-1674932859/kenney_scribble-dungeons.zip",
+   "bytes": 1517060
+  },
+  "scribble-platformer": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/scribble-platformer/d2a7aaf79a-1674932936/kenney_scribble-platformer.zip",
+   "bytes": 930280
+  },
+  "scribble-platformer-expansion": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/scribble-platformer-expansion/e28d7ba15c-1787574405/kenney_scribble-platformer-expansion_1.0.zip",
+   "bytes": 592858
+  },
+  "shape-characters": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/shape-characters/c016420b08-1698339465/kenney_shape-characters.zip",
+   "bytes": 546442
+  },
+  "shooting-gallery": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/shooting-gallery/9ef8a2db02-1677662387/kenney_shooting-gallery.zip",
+   "bytes": 796066
+  },
+  "simple-space": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/simple-space/b9b0968a6b-1677578143/kenney_simple-space.zip",
+   "bytes": 318846
+  },
+  "simplified-platformer-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/simplified-platformer-pack/2d06327041-1677693200/kenney_simplified-platformer-pack.zip",
+   "bytes": 685569
+  },
+  "sketch-desert": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/sketch-desert/bb048a97d0-1677484250/kenney_sketch-desert.zip",
+   "bytes": 2025387
+  },
+  "sketch-town": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/sketch-town/733b902fc6-1677484094/kenney_sketch-town.zip",
+   "bytes": 2866323
+  },
+  "sketch-town-expansion": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/sketch-town-expansion/80bebc5e65-1677484182/kenney_sketch-town-expansion.zip",
+   "bytes": 1752737
+  },
+  "skyboxes": {
+   "category": "Textures",
+   "zip": "https://kenney.nl/media/pages/assets/skyboxes/6736ff5c10-1784123473/kenney_skyboxes.zip",
+   "bytes": 4972122
+  },
+  "skyboxes-space": {
+   "category": "Textures",
+   "zip": "https://kenney.nl/media/pages/assets/skyboxes-space/b3d0ebe0d4-1790850383/kenney_skyboxes-space.zip",
+   "bytes": 7923191
+  },
+  "smoke-particles": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/smoke-particles/23249a0d35-1677695171/kenney_smoke-particles.zip",
+   "bytes": 6019666
+  },
+  "sokoban": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/sokoban/470af8da72-1677579120/kenney_sokoban-pack.zip",
+   "bytes": 1606642
+  },
+  "space-shooter-extension": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/space-shooter-extension/d0bd70032c-1677693518/kenney_space-shooter-extension.zip",
+   "bytes": 2840182
+  },
+  "space-shooter-remastered": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/space-shooter-remastered/2cbf3c45c8-1774771931/kenney_space-shooter-remastered.zip",
+   "bytes": 1108777
+  },
+  "splat-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/splat-pack/1070534984-1677495350/kenney_splat-pack.zip",
+   "bytes": 351719
+  },
+  "sports-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/sports-pack/ede5629412-1677693282/kenney_sports-pack.zip",
+   "bytes": 1338106
+  },
+  "tanks": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/tanks/d0bbede612-1677579063/kenney_tanks.zip",
+   "bytes": 1137694
+  },
+  "tappy-plane": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/tappy-plane/78fa8bdf8c-1677700386/kenney_tappy-plane.zip",
+   "bytes": 484581
+  },
+  "tiny-battle": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/tiny-battle/c1c25ac1f3-1691487575/kenney_tiny-battle.zip",
+   "bytes": 131452
+  },
+  "tiny-dungeon": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/tiny-dungeon/f8422efb44-1674742415/kenney_tiny-dungeon.zip",
+   "bytes": 98530
+  },
+  "tiny-factory": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/tiny-factory/1652277319-1788860879/kenney_tiny-factory.zip",
+   "bytes": 90463
+  },
+  "tiny-farm": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/tiny-farm/dfded1ae3e-1782913588/kenney_tiny-farm.zip",
+   "bytes": 191128
+  },
+  "tiny-ski": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/tiny-ski/22e4573b88-1680201514/kenney_tiny-ski.zip",
+   "bytes": 88065
+  },
+  "tiny-town": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/tiny-town/a415fbeb49-1735736916/kenney_tiny-town.zip",
+   "bytes": 182243
+  },
+  "toon-characters": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/toon-characters/4e8a6e4e53-1774770819/kenney_toon-characters.zip",
+   "bytes": 5474287
+  },
+  "top-down-shooter": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/top-down-shooter/230204340a-1677694684/kenney_top-down-shooter.zip",
+   "bytes": 2626248
+  },
+  "top-down-tanks": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/top-down-tanks/0385fcb3e0-1677699019/kenney_top-down-tanks.zip",
+   "bytes": 360093
+  },
+  "top-down-tanks-remastered": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/top-down-tanks-remastered/f24c234ed5-1774771973/kenney_top-down-tanks-remastered.zip",
+   "bytes": 1567419
+  },
+  "tower-defense": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/tower-defense/39d625c6b5-1677699069/kenney_tower-defense.zip",
+   "bytes": 1543710
+  },
+  "tower-defense-top-down": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/tower-defense-top-down/729844df28-1677693738/kenney_tower-defense-top-down.zip",
+   "bytes": 3298551
+  },
+  "ui-audio": {
+   "category": "Audio",
+   "zip": "https://kenney.nl/media/pages/assets/ui-audio/490d233f68-1677590494/kenney_ui-audio.zip",
+   "bytes": 411949
+  },
+  "ui-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/ui-pack/f651646eab-1718203990/kenney_ui-pack.zip",
+   "bytes": 1229750
+  },
+  "ui-pack-adventure": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/ui-pack-adventure/9a877376bc-1723597274/kenney_ui-pack-adventure.zip",
+   "bytes": 577463
+  },
+  "ui-pack-pixel-adventure": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/ui-pack-pixel-adventure/405ba5278a-1729196257/kenney_ui-pack-pixel-adventure.zip",
+   "bytes": 317032
+  },
+  "ui-pack-rpg-expansion": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/ui-pack-rpg-expansion/7ec4a46657-1677661824/kenney_ui-pack-rpg-expansion.zip",
+   "bytes": 214394
+  },
+  "ui-pack-sci-fi": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/ui-pack-sci-fi/b67c2acd31-1724181109/kenney_ui-pack-space-expansion.zip",
+   "bytes": 768505
+  },
+  "voiceover-pack": {
+   "category": "Audio",
+   "zip": "https://kenney.nl/media/pages/assets/voiceover-pack/3f7f168698-1677589897/kenney_voiceover-pack.zip",
+   "bytes": 1851632
+  },
+  "voiceover-pack-fighter": {
+   "category": "Audio",
+   "zip": "https://kenney.nl/media/pages/assets/voiceover-pack-fighter/6ceb77c6f1-1677589837/kenney_voiceover-pack-fighter.zip",
+   "bytes": 1265449
+  },
+  "voxel-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/voxel-pack/a3a73d0ff7-1677662501/kenney_voxel-pack.zip",
+   "bytes": 1267464
+  },
+  "yellow-paint-pack": {
+   "category": "2D",
+   "zip": "https://kenney.nl/media/pages/assets/yellow-paint-pack/737aca1ec1-1707675361/kenney_yellow-paint-pack.zip",
+   "bytes": 97256
+  }
+ }
+}

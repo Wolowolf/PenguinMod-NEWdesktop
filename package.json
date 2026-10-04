@@ -27,6 +27,12 @@
     "files": [
       "app/**/*"
     ],
+    "extraResources": [
+      {
+        "from": "offline-library",
+        "to": "offline-library"
+      }
+    ],
     "compression": "maximum",
     "publish": null,
     "buildDependenciesFromSource": false,

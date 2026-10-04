@@ -170,13 +170,33 @@ jobs:
           echo "{\"tag\":\"${{ env.RELEASE_TAG }}\",\"builtAt\":\"${{ env.TIMESTAMP }}\"}" > app/build-info.json
           cat app/build-info.json
 
+      # --- Offline library (Kenney, game-icons.net, sound generators) ---
+      # Built once with scripts/make-offline-library.mjs and published as its own release;
+      # app/offline-library.json says which one. It goes into the installer (resources/offline-library)
+      # but not into win-unpacked.zip: the updater downloads it only when its version changes.
+      - name: Download offline library
+        run: |
+          TAG=$(jq -r .tag app/offline-library.json)
+          ASSET=$(jq -r .asset app/offline-library.json)
+          curl -fsSL --retry 3 -o offline-library.zip "https://github.com/${GITHUB_REPOSITORY}/releases/download/$TAG/$ASSET"
+          echo "$(jq -r .sha256 app/offline-library.json)  offline-library.zip" | sha256sum -c -
+          unzip -q offline-library.zip
+          rm offline-library.zip
+          test "$(jq -r .version offline-library/version.json)" = "$(jq -r .version app/offline-library.json)"
+
       - name: Build Electron App
         # Windows only (was: --linux AppImage deb rpm --win nsis). See CHANGES.md to bring Linux back.
         run: npx electron-builder@$(node -p "require('./package.json').devDependencies['electron-builder']") --win nsis --publish never
 
       # --- Zip artifacts ---
       - name: Zip win-unpacked
-        run: zip -r builds/win-unpacked.zip builds/win-unpacked
+        run: |
+          zip -r builds/win-unpacked.zip builds/win-unpacked -x 'builds/win-unpacked/resources/offline-library/*'
+          # The installer has the offline library; the update zip must not (the updater downloads it separately).
+          test -f builds/win-unpacked/resources/offline-library/index.json
+          if unzip -Z1 builds/win-unpacked.zip | grep -q '^builds/win-unpacked/resources/offline-library/'; then
+            echo "The offline library ended up in win-unpacked.zip"; exit 1
+          fi
 
       # --- Create GitHub Release (the old create-release / upload-release-asset actions are deprecated) ---
       # GitHub turns spaces in file names into dots, so the installer is renamed here to be explicit:

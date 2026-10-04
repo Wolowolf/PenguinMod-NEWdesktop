@@ -11,6 +11,7 @@ const {
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
+const { pathToFileURL } = require("url");
 const updater = require("./updater");
 
 let mainWindow = null;
@@ -24,6 +25,13 @@ const UPDATE_REPO = "Wolowolf/PenguinMod-NEWdesktop";
 const UPDATE_ASSET = "win-unpacked.zip";
 const LEFTOVERS_FILE = path.join(app.getPath("userData"), "update-leftovers.json");
 let updateInProgress = false;
+
+// The offline library (Kenney, game-icons.net, sound generators), served at
+// https://studio.penguinmod.com/__library__/. It sits next to the app in resources/offline-library,
+// outside resources/app, so app updates don't download it again; app/offline-library.json says which
+// version this app needs. PMDESKTOP_LIBRARY_DIR points elsewhere (the local test uses it).
+const LIBRARY_DIR = process.env.PMDESKTOP_LIBRARY_DIR || path.join(process.resourcesPath, "offline-library");
+const LIBRARY_PREFIX = "/__library__/";
 
 const folders = {
   editor: path.join(__dirname, "build"),
@@ -126,6 +134,7 @@ async function runUpdateCheck(win) {
     const { release, asset } = found;
     const current = readBuildInfo();
     if (current && current.tag === release.tag_name) {
+      if (await offerLibrary(win, installDir)) return;
       say("info", "You're up to date.", `Installed build: ${release.tag_name}`);
       return;
     }
@@ -141,7 +150,8 @@ async function runUpdateCheck(win) {
       detail:
         `New build: ${release.tag_name}\n` +
         `Installed: ${current ? current.tag : "unknown"}\n` +
-        `Download size: about ${mb} MB\n\n` +
+        `Download size: about ${mb} MB\n` +
+        "(plus the offline library, about 180 MB, if this update needs a newer one)\n\n" +
         "The app will restart when it is done. Save your project first; unsaved changes are lost. " +
         "Your settings and saved files are not touched.",
     });
@@ -153,6 +163,10 @@ async function runUpdateCheck(win) {
       expectedDigest: asset.digest || "",
       onProgress: sendUpdateProgress,
     });
+    // The offline library first: the running (old) app doesn't use it, so a new one can be put in place
+    // safely. If this fails, nothing of the app is changed.
+    const libraryPin = await updater.libraryPinFromZip(tmpZip);
+    if (updater.libraryNeeded(installDir, libraryPin)) await installLibrary(installDir, libraryPin);
     updater.cleanupLeftovers(LEFTOVERS_FILE, installDir);
     const result = await updater.applyUpdateFromZip(tmpZip, installDir, {
       exeName: path.basename(process.execPath),
@@ -180,6 +194,62 @@ function cleanupOldUpdateFiles() {
   const installDir = getInstallDir();
   if (!installDir) return;
   try { updater.cleanupLeftovers(LEFTOVERS_FILE, installDir); } catch { }
+  try { updater.cleanupLibraryLeftovers(installDir); } catch { }
+}
+
+// Downloads the offline library this app needs from the fork's release and puts it in place.
+async function installLibrary(installDir, pin) {
+  const tmpZip = path.join(os.tmpdir(), `penguinmod-library-${process.pid}.zip`);
+  try {
+    await updater.downloadFile(net.fetch.bind(net), updater.libraryUrl(UPDATE_REPO, pin), tmpZip, {
+      expectedSize: pin.size || 0,
+      expectedDigest: pin.sha256 ? `sha256:${pin.sha256}` : "",
+      onProgress: sendUpdateProgress,
+    });
+    await updater.installLibraryFromZip(tmpZip, installDir, pin, sendUpdateProgress);
+  } finally {
+    try { fs.unlinkSync(tmpZip); } catch { }
+  }
+}
+
+// If this app's offline library is missing or out of date (for example after updating from a version
+// that didn't have one), offers to download it. Returns false only when nothing was needed.
+async function offerLibrary(win, installDir) {
+  const pin = updater.readLibraryPin(path.join(__dirname, "offline-library.json"));
+  if (!updater.libraryNeeded(installDir, pin)) return false;
+  const choice = dialog.showMessageBoxSync(win, {
+    type: "question",
+    buttons: ["Download", "Not now"],
+    defaultId: 0,
+    cancelId: 1,
+    noLink: true,
+    message: "The offline library is missing or out of date.",
+    detail:
+      "It holds the Kenney sprites, backdrops and sounds, the game-icons.net icons and the sound generators " +
+      `used by the libraries.\nDownload size: about ${Math.round((pin.size || 0) / 1048576)} MB, only once.`,
+  });
+  if (choice !== 0) return true;
+  updater.assertWritable(installDir);
+  await installLibrary(installDir, pin);
+  sendUpdateProgress("done");
+  dialog.showMessageBoxSync(win, { type: "info", buttons: ["OK"], noLink: true, message: "The offline library is installed." });
+  return true;
+}
+
+async function offerLibraryAtStart(win) {
+  const installDir = getInstallDir();
+  if (!installDir || updateInProgress) return;
+  updateInProgress = true;
+  try {
+    await offerLibrary(win, installDir);
+  } catch (err) {
+    console.error("[library] failed", err);
+    sendUpdateProgress("done");
+    dialog.showMessageBoxSync(win, { type: "error", buttons: ["OK"], noLink: true,
+      message: "The offline library could not be installed.", detail: String((err && err.message) || err) });
+  } finally {
+    updateInProgress = false;
+  }
 }
 
 function setupAppMenu(win) {
@@ -207,6 +277,20 @@ function storeLocalFile(filePath) {
   return `https://studio.penguinmod.com/__localfile__/${id}`;
 }
 
+// A file of the offline library, or 404 (never the internet). Paths can't leave LIBRARY_DIR.
+function serveLibraryFile(encodedPath) {
+  try {
+    const parts = encodedPath.split("/").map(decodeURIComponent);
+    if (parts.some((p) => !p || p === "." || p === ".." || /[\\\0]/.test(p))) throw new Error("bad path");
+    const base = path.resolve(LIBRARY_DIR);
+    const filePath = path.resolve(base, ...parts);
+    if (filePath.startsWith(base + path.sep) && fs.statSync(filePath).isFile()) {
+      return net.fetch(pathToFileURL(filePath).href);
+    }
+  } catch (_) { }
+  return new Response("Not found", { status: 404 });
+}
+
 function setupProtocol() {
   protocol.handle("https", (request) => {
     try {
@@ -222,6 +306,9 @@ function setupProtocol() {
           });
         }
         return new Response("Not found", { status: 404 });
+      }
+      if (url.host === "studio.penguinmod.com" && url.pathname.startsWith(LIBRARY_PREFIX)) {
+        return serveLibraryFile(url.pathname.slice(LIBRARY_PREFIX.length));
       }
       const hostMap = {
         "studio.penguinmod.com": { dir: folders.editor, def: "editor.html" },
@@ -370,6 +457,8 @@ function createWindow(fileToOpen) {
     }
   }
   mainWindow.loadURL(startUrl.length > 0 ? startUrl : "https://studio.penguinmod.com/editor.html");
+  const win = mainWindow;
+  win.webContents.once("did-finish-load", () => setTimeout(() => offerLibraryAtStart(win), 2000));
 
   mainWindow.webContents.on("console-message", ({ level, message, lineNumber, sourceId, frame }) => {
     const prefix = `[renderer:${sourceId}:${lineNumber}]`;
