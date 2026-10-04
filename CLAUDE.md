@@ -27,9 +27,9 @@ Windows gotchas:
 
 ## Local test (my Windows PC)
 Lives outside the repo in `C:\Users\elias\Documents\PenguinMod-test\`: Electron 44.5.1, cached editor source with `node_modules` (`src\`), test app (`app-run\`), own settings folder (`userdata\`, separate from my installed app). If it is missing, say so and offer to recreate it (steps: archive, Session 7).
-- Run `powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\elias\Documents\PenguinMod-test\run-local-test.ps1 [-Debug] [-Dev] [-Update] [-LaunchOnly] [-NoLaunch]`. It closes a running test app, resets the cached editor to pristine, applies `patches/stage-layout.js`, builds (output goes to `build.log`; only a summary, or the last 40 lines on failure, is printed), copies the repo's `app/` + the build into `app-run\` and starts the app (its console output goes to `app-out.log` / `app-err.log`; look there if it does not start). `-Debug` opens port 9333 and waits until the editor is loaded. `-Update` re-downloads upstream (use it when `PATCH FAILED` might be an upstream change). `-Dev` is a faster unminified build. The first run ever is slow.
+- Run `powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\elias\Documents\PenguinMod-test\run-local-test.ps1 [-Debug] [-Dev] [-Update] [-LaunchOnly] [-NoLaunch]`. It closes a running test app, resets the cached editor to pristine, applies `patches/stage-layout.js`, builds (output goes to `build.log`; only a summary, or the last 40 lines on failure, is printed), copies the repo's `app/` + the build into `app-run\` and starts the app (its console output goes to `app-out.log` / `app-err.log`; look there if it does not start). `-Debug` opens port 9333 and waits until the editor is loaded. `-Update` re-downloads upstream at the commits in `upstream.json` (needed after changing that file; without it the script stops when the cache doesn't match). `-Dev` is a faster unminified build. The first run ever is slow.
 - Drive the app: `node C:\Users\elias\Documents\PenguinMod-test\cdp.mjs <command>`: `ready`, `eval "<js>"`, `shot <file.png>`, `click x y`, `drag x1 y1 x2 y2 [holdMs]` (CSS pixels; `window.vm` and `ReduxStore` are available in `eval`). Write a custom script only when these are not enough. Tell me what you launched and what you saw.
-- Not covered locally: the CI build (fresh upstream, Linux + wine, installer), the updater ("Check for Updates" does not work in the test app; never report updater results from it), the offline extension galleries.
+- Not covered locally: the CI build (Linux + wine, freshly installed npm packages, installer), the updater ("Check for Updates" does not work in the test app; never report updater results from it), the offline extension galleries.
 - Installed: git, node 24 (CI uses 26), npm, bun, gh. Not installed: Playwright, Python. Ask before installing anything big.
 
 ## Saving tokens
@@ -49,6 +49,8 @@ A thin Electron wrapper around the PenguinMod **editor only** (no home page). Th
 | `patches/stage-layout.js` | Almost all visible editor changes (sections 1–13, listed in `CHANGES.md`) |
 | `.github/workflows/main.yml` | The CI build (Windows only) |
 | `package.json` | Entry point and electron-builder settings (NSIS installer, `.pmp` association) |
+| `upstream.json` | The exact upstream commit of each of the 8 projects CI and the local test download |
+| `scripts/clone-pinned.js` | Downloads one project from `upstream.json` (`node scripts/clone-pinned.js <name> [folder]`) |
 
 Patch script rules:
 - Exact find-and-replace edits on the GUI source, plus appended CSS. If upstream changed a line it looks for, it stops with `PATCH FAILED: …` on purpose: update the script to the new upstream text, never loosen the matching.
@@ -58,6 +60,7 @@ Patch script rules:
 
 ## Build and release
 - `main.yml` runs on a push to `main` (ignoring `*.md`-only changes) and on manual start; other branches never build. Each run publishes a release `build-<run_id>-<timestamp>`, and my updater offers the newest one, so anything non-`.md` that reaches `main` reaches users. Non-`.md` changes go to `main` only through pull requests; always tell me when a merge started a build.
+- Upstream code only changes when `upstream.json` changes. Moving to newer upstream is its own tweak: new commits in `upstream.json`, local test with `-Update` (fix `PATCH FAILED` there), PR.
 - Commit order: new files before the files that use them; the workflow file last.
 - Expected: the unsigned installer triggers a SmartScreen warning ("More info" → "Run anyway"). `electron` / `electron-builder` are pinned in `package.json` (and CI reads the builder version from there), so a build only changes when we bump them. Releases are made with `gh release create` in `main.yml`. The old "Node.js 20 is deprecated" annotation should be gone; tell me if a new warning shows up.
 - Offer the open ideas listed in `CHANGES.md` when relevant; don't apply them unasked.
