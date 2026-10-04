@@ -24,6 +24,8 @@
  *  11. Re-ordering the category boxes by dragging: the box itself slides up and down
  *      between the others (no faded box, floating copy or blank gap) (section 13).
  *  12. The "See Project Page" and "Upload" buttons are removed (section 14).
+ *  13. Online-community extras removed: cloud variables / change username, Remix,
+ *      Discord links, the Sensing "Help Manual" button, the analytics script (section 15).
  *
  * Usage:  node patches/stage-layout.js <path-to-GUI-folder>
  *
@@ -1076,5 +1078,149 @@ replaceOnce(CD,
         '                    {/* ' + MARKER + ': "See Project Page" and "Upload" buttons removed */}\n' +
         homeMarker + mbText.slice(sEnd));
 }
+
+/* ------------------------------------------------------------------ */
+/* 15. Remove the online-community extras                              */
+/* ------------------------------------------------------------------ */
+// This build is for packaged projects, not for sharing, so these are removed (and the code
+// that only they used is cleaned out, so nothing dead is left behind):
+//   a. Edit menu: "Change Username" and "Enable/Disable Cloud Variables".
+//   b. Compile-error menu: the two Discord links (the first line stays as plain text).
+//   c. Every "Remix" item / button.
+//   d. The About button code (it was never shown in the editor).
+//   e. Sensing palette: the "Help Manual" button (opened docs.penguinmod.com).
+//   f. Add-on settings page: the Discord button.
+//   g. The Google Tag Manager analytics script in the page template.
+//   h. The cloud server address (so nothing can ever connect to a cloud server).
+// Not shown in the editor, so left alone: the telemetry prompt (only opens when something
+// sets `showTelemetryModal`, and nothing does) and the credits page (nothing links to it).
+// To undo this section, delete it from this script (or ask Claude to reverse it).
+
+// Remove the text from `start` up to (not including) `stop`.
+const cutUntil = (rel, start, stop, maxLength) => {
+    const text = read(rel);
+    const s = text.indexOf(start);
+    if (s === -1) fail(rel + ': could not find the start of a block:\n' + start);
+    if (text.indexOf(start, s + 1) !== -1) fail(rel + ': block start found more than once:\n' + start);
+    const e = text.indexOf(stop, s + start.length);
+    if (e === -1) fail(rel + ': could not find the end of the block that starts with:\n' + start);
+    if (e - s > maxLength) fail(rel + ': the block that starts with the text below is longer than expected:\n' + start);
+    write(rel, text.slice(0, s) + text.slice(e));
+};
+// Remove the text from `start` through the end of `last`.
+const cutThrough = (rel, start, last, maxLength) => {
+    const text = read(rel);
+    const s = text.indexOf(start);
+    if (s === -1) fail(rel + ': could not find the start of a block:\n' + start);
+    const e = text.indexOf(last, s + start.length);
+    if (e === -1) fail(rel + ': could not find the end of the block that starts with:\n' + start);
+    if (text.indexOf(start, s + 1) !== -1) fail(rel + ': block start found more than once:\n' + start);
+    if (e + last.length - s > maxLength) fail(rel + ': the block that starts with the text below is longer than expected:\n' + start);
+    write(rel, text.slice(0, s) + text.slice(e + last.length));
+};
+
+// --- menu-bar.jsx: a, b, c, d (plus the imports / handlers that nothing uses any more) ---
+// a. Edit menu items
+cutThrough(MB,
+    '                                    <ChangeUsername>{changeUsername => (\n',
+    '                                    )}</CloudVariablesToggler>\n', 3500);
+// b. Compile-error menu: keep the first line as plain text, drop both Discord links
+replaceOnce(MB, [
+    '                                        <MenuItemLink href="https://discord.gg/NZ9MBMYTZh">',
+    '                                            <FormattedMessage',
+    '                                                defaultMessage="Some scripts could not be compiled."',
+    '                                                description="Link in error menu"',
+    '                                                id="tw.menuBar.reportError1"',
+    '                                            />',
+    '                                        </MenuItemLink>',
+    '                                        <MenuItemLink href="https://discord.gg/NZ9MBMYTZh">',
+    '                                            <FormattedMessage',
+    '                                                defaultMessage="This is a bug. Please report it."',
+    '                                                description="Link in error menu"',
+    '                                                id="tw.menuBar.reportError2"',
+    '                                            />',
+    '                                        </MenuItemLink>',
+    ''
+].join('\n'), [
+    '                                        <MenuItem>',
+    '                                            <FormattedMessage',
+    '                                                defaultMessage="Some scripts could not be compiled."',
+    '                                                description="Text in error menu"',
+    '                                                id="tw.menuBar.reportError1"',
+    '                                            />',
+    '                                        </MenuItem>',
+    ''
+].join('\n'));
+// c. Remix: File menu item, the button next to the title, and their code
+replaceOnce(MB,
+    '(this.props.canSave || this.props.canCreateCopy || this.props.canRemix) && (',
+    '(this.props.canSave || this.props.canCreateCopy) && (');
+replaceOnce(MB, [
+    '                                            {this.props.canRemix && (',
+    '                                                <MenuItem onClick={this.handleClickRemix}>',
+    '                                                    {remixMessage}',
+    '                                                </MenuItem>',
+    '                                            )}',
+    ''
+].join('\n'), '');
+replaceOnce(MB, [
+    '                    <div className={classNames(styles.menuBarItem)}>',
+    '                        {this.props.canRemix ? remixButton : []}',
+    '                    </div>',
+    ''
+].join('\n'), '');
+cutUntil(MB, '        const remixMessage = (\n', '        const newProjectMessage = (\n', 400);
+cutUntil(MB, '        const remixButton = (\n', '        return (\n            <Box\n', 1200);
+cutUntil(MB, '    handleClickRemix() {\n', '    handleClickSave() {\n', 300);
+// d. About button code (buildAboutMenu / wrapAboutMenuCallback also held the See Inside handler)
+replaceOnce(MB, '\n\n                {aboutButton}\n            </Box>', '\n            </Box>');
+cutUntil(MB, '    handleClickSeeInside() {\n', '    handleClickDownloadLogs() {', 2500);
+cutUntil(MB, '    handleClickSeeCommunity(waitForUpdate) {\n', '    handleRestoreOption(restoreFun) {\n', 1200);
+cutUntil(MB, 'const AboutButton = props => (\n', 'class MenuBar extends React.Component {\n', 1500);
+for (const name of ['handleClickSeeInside', 'handleClickRemix', 'handleClickSeeCommunity', 'handleClickShare']) {
+    replaceOnce(MB, "            '" + name + "',\n", '');
+}
+for (const line of [
+    "import CommunityButton from './community-button.jsx';",
+    "import ShareButton from './share-button.jsx';",
+    "import ProjectWatcher from '../../containers/project-watcher.jsx';",
+    "import ChangeUsername from '../../containers/tw-change-username.jsx';",
+    "import CloudVariablesToggler from '../../containers/tw-cloud-toggler.jsx';",
+    "import remixIcon from './icon--remix.svg';",
+    "import aboutIcon from './icon--about.svg';",
+    "import SeeInsideButton from './tw-see-inside.jsx';"
+]) {
+    replaceOnce(MB, line + '\n', '');
+}
+
+// e. Sensing palette: no "Help Manual" button (it opened docs.penguinmod.com/username)
+const TOOLBOX = 'src/lib/make-toolbox-xml.js';
+replaceOnce(TOOLBOX,
+    '        <button text="${helpManual}" callbackKey="OPEN_USERNAME_DOCS" isLaterDefined="true" />\n', '');
+replaceOnce(TOOLBOX, "    const helpManual = translate('HELP_MANUAL', 'Help Manual');\n", '');
+replaceOnce('src/containers/blocks.jsx', [
+    "        toolboxWorkspace.registerButtonCallback('OPEN_USERNAME_DOCS', () => {",
+    "            window.open('https://docs.penguinmod.com/username', '_blank');",
+    "        });",
+    ''
+].join('\n'), '');
+
+// f. Add-on settings page: no Discord button
+cutThrough('src/addons/settings/settings.jsx',
+    '                        <a\n                            href="https://discord.gg/NZ9MBMYTZh"',
+    '                        </a>\n', 600);
+
+// g. No Google Tag Manager analytics in the page template
+// (this file uses Windows line endings upstream, so match whichever style it has)
+const EJS = 'src/playground/index.ejs';
+const eol = read(EJS).includes('\r\n') ? '\r\n' : '\n';
+cutThrough(EJS,
+    '    <!-- Google tag (gtag.js) -->' + eol,
+    "    gtag('config', 'G-JEVT078EB6');" + eol + '    </script>' + eol, 600);
+
+// h. No cloud server address: projects can never connect to a cloud server
+replaceOnce('src/playground/render-gui.jsx',
+    "const searchParams = new URLSearchParams(location.search);\nconst cloudHost = searchParams.get('cloud_host') || 'wss://clouddata.turbowarp.org';\n",
+    '// ' + MARKER + ': no cloud server (cloud variables removed)\nconst cloudHost = null;\n');
 
 console.log('Stage layout patch applied successfully.');
