@@ -308,6 +308,27 @@ app.whenReady().then(() => {
   createWindow(fileToOpen);
 });
 
+// This build is for packaged projects, not for the PenguinMod sharing website: links to the
+// website and to Discord do nothing. (studio.penguinmod.com and extensions.penguinmod.com are
+// the offline editor and extension gallery and keep working.)
+const BLOCKED_HOSTS = [
+  "penguinmod.com", "www.penguinmod.com", "projects.penguinmod.com", "docs.penguinmod.com",
+  "discord.gg", "discord.com", "www.discord.com"
+];
+function isBlockedWebsite(url) {
+  try {
+    return BLOCKED_HOSTS.includes(new URL(url).host);
+  } catch (_) {
+    return false;
+  }
+}
+
+app.on("web-contents-created", (_event, contents) => {
+  contents.on("will-navigate", (event, url) => {
+    if (isBlockedWebsite(url)) event.preventDefault();
+  });
+});
+
 function createWindow(fileToOpen) {
   if (mainWindow && !mainWindow.isDestroyed()) {
     try { mainWindow.destroy(); } catch { }
@@ -356,7 +377,8 @@ function createWindow(fileToOpen) {
     else console.log(prefix, message);
   });
 
-  mainWindow.webContents.setWindowOpenHandler(() => {
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (isBlockedWebsite(url)) return { action: "deny" };
     return {
       action: "allow",
       overrideBrowserWindowOptions: {

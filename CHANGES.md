@@ -7,7 +7,7 @@ Kept short on purpose (read at the start of every session). Full history of Sess
 - **Baseline:** upstream commit `ab5e25a` (2026-06-15). Local test cache: GUI `24faae9`. Upstream builds stopped after 2026-09-06 (cause unconfirmed).
 - **CI (`main.yml`):** Ubuntu + wine, Bun, Node 26; actions `checkout@v7`, `setup-node@v7`, `cache@v6`, `setup-bun@v2` (Session 13). Clones and builds PenguinMod-ExtensionsGallery, TurboWarp extensions (`package-lock.json` deleted before `bun i`: its git-hosted checksum broke installs, Session 1), SharkPools-Extensions, and the GUI with Vm, Blocks (`develop-builds`), Render (lockfile deleted) and Paint. Runs the patch, writes `app/build-info.json` `{tag, builtAt}`, runs `electron-builder --win nsis` (version read from `package.json`), then `gh release create` publishes the `.exe` (renamed with dots) and `win-unpacked.zip`.
 - **`package.json`:** one NSIS installer, x64 only; `electron` 44.5.1 and `electron-builder` 26.15.3 pinned (bump them by hand); unused Linux targets still listed; `asar: false`; dependency `unzipper`; `.pmp` file association.
-- **App:** always opens `https://studio.penguinmod.com/editor.html` (or a `.pmp` given on the command line), served from `app/build`. Extension gallery URLs map to offline folders. Links to the PenguinMod website load the live site.
+- **App:** always opens `https://studio.penguinmod.com/editor.html` (or a `.pmp` given on the command line), served from `app/build`. Extension gallery URLs map to offline folders. Windows and links to penguinmod.com (and its projects./docs. hosts) and Discord are blocked (Session 15).
 - **Updater (`app/updater.js`, Session 5):** System → Check for Updates. Picks this fork's newest published release with a complete `win-unpacked.zip`, compares its tag with `build-info.json`, checks size + SHA-256, then replaces, adds and removes files under `resources/app/` with full rollback on error (`.old` leftovers deleted at next start). Needs a writable install folder (not Program Files). Downloads ~230 MB each time. Restarts the app.
 - **Patch sections** (`patches/stage-layout.js`; each one says how to reverse it):
   - 1–7: the editor stage always fits a 480 px wide 4:3 box. The small/large buttons are removed. A drag handle sits on the stage column's left edge (240–1200 px, double-click resets, saved in `localStorage` `pmdesktop:stageBoxWidth`). The column hugs the stage, with a minimum width of 242 px. (Sessions 2–3)
@@ -18,6 +18,7 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - 12: the "Back to Home" button is removed. (Session 8)
   - 13: dragging a category box to re-order the menu (upstream addon `toolbox-category-drag`). The held box slides and the others make room. The first and last places are reachable. The order is stored in the project's Stage comment, updated on every change, and reset for projects that have no stored order. (Sessions 10–11)
   - 14: the "See Project Page" and "Upload" buttons are removed from the menu bar (sharing-site buttons; this build is for packaged projects). (Session 14)
+  - 15: no Change Username / cloud variables, Remix, About, Discord links, Help Manual button or analytics script; no cloud server address. (Session 15)
 - **Not verified yet:**
   - The updater end to end inside a packaged install.
   - The installer itself (Claude has only tested the local build).
@@ -25,10 +26,19 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - Category order with a project file saved to disk and reopened (only in-app save and load were tested).
   - The user hasn't confirmed the builds from Sessions 3–6, 8–9 and 11 (Session 2's build was confirmed, Session 10's partly).
 - **Ideas offered, not applied** (offer when relevant):
-  - Stop editor links to the PenguinMod website from opening in the app.
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 15 — remove cloud variables, Remix, Discord and website links (2026-10-04)
+- Asked: remove the strongest candidates (cloud variables + change username, telemetry, Discord links, credits/About), the links that open the PenguinMod website, and Remix; clean the code; keep the online library, extension and project-server fetches.
+- Changed:
+  - `patches/stage-layout.js` section 15: Edit menu loses "Change Username" and the cloud toggler; the compile-error menu keeps its first line as plain text (no Discord links); every Remix item/button and the About button code are cut, with the imports and handlers only they used; the Sensing "Help Manual" button (opened docs.penguinmod.com) is gone; the add-on settings page loses its Discord button; the Google Tag Manager analytics script is removed from the page template; `cloudHost` is `null` so nothing can connect to a cloud server.
+  - `app/electron-main.js`: windows and navigations to penguinmod.com, www./projects./docs.penguinmod.com, discord.gg and discord.com are blocked (`isBlockedWebsite`). studio.* and extensions.penguinmod.com still work.
+  - To reverse: delete section 15 / `git revert` the merge.
+- Found: the telemetry prompt was already dead (it only opens if something sets `showTelemetryModal`, and nothing does) and nothing in the editor links to the credits page, so both are untouched. The only real analytics was the Google Tag Manager script (removed). It is still in the static contact/privacy/terms pages, which nothing links to.
+- Verified (local test app): Edit menu without the two items, File menu without Remix, error menu shows plain text only, no "Help Manual" in the Sensing palette, no `gtag` in `editor.html`, `window.open` to penguinmod.com / discord.gg / docs.penguinmod.com returns null, patch is safe to run twice. Not verified: `will-navigate` blocking, the add-on settings window (only checked that the built files lost the Discord link, did not look at it), CI build with fresh upstream.
+- Result after build: not yet tested
 
 ### Session 14 — remove "See Project Page" and "Upload" buttons (2026-10-04)
 - Asked: remove both buttons; the fork becomes a 2D game engine for serious packaged projects, not a Scratch / TurboWarp sharing platform; say what else should go.
@@ -46,27 +56,6 @@ Kept short on purpose (read at the start of every session). Full history of Sess
 - Found: the last build (run 37161397599) was already x64 only (`archs=x64`): the `--win nsis` on the command line overrides the arch list in `package.json`. So dropping ia32/arm64 is tidying, not a speed-up. Builds take about 5 minutes either way.
 - Verified: YAML parses; the new release step run with a fake `gh` gives the right arguments, notes text and file name; the version expression gives `26.15.3`; the action tags exist. Not verified: the real CI run with the new action versions and `gh release create` (only a build can show it).
 - Result after build: not yet tested
-
-### Session 12 — fewer tokens per session (2026-10-04)
-- Asked: cut token usage without losing accuracy; explore every option and apply it.
-- Changed:
-  - `CHANGES.md` was moved to `docs/CHANGES-archive.md` unchanged (header only), and this short file replaces it.
-  - `CLAUDE.md` was rewritten concisely with the same rules. The obsolete Linux-sandbox test recipes moved out (they are in the archive), and a "Saving tokens" section was added.
-  - Outside the repo:
-    - `run-local-test.ps1` now closes a running test app first. It writes the build output to `build.log` and prints only a summary, or the last 40 lines on failure. It starts the app through a hidden `cmd`, with the app's output in `app-out.log` / `app-err.log`. With `-Debug` it waits until the editor is loaded on port 9333.
-    - `cdp.mjs` gained `ready`, `click` and `drag` commands and uses `127.0.0.1`.
-  - To reverse: `git revert` the merge. For the test tools, ask Claude.
-- Bug found and fixed: the app never started after a full test run (the "launch left no app running" noted in Session 8). The build's `NODE_OPTIONS=--openssl-legacy-provider` leaked into the app, and Electron refuses to start with it ("not allowed in NODE_OPTIONS", seen in `app-err.log`). The script now clears `NODE_OPTIONS` / `NODE_ENV` after the build.
-- Why: the session was measured with the transcript. Re-reading Claude's instructions plus this file was about 41% of the weighted usage, and files read once (old `CHANGES.md` was ~14k tokens) about 40%. Long build output was re-read on every later step.
-- Verified:
-  - Size: `CLAUDE.md` went from 11.9k to about 7.6k characters, and `CHANGES.md` from 55.5k to about 8k. The archive is the old file unchanged apart from its header.
-  - Test tools on Windows: a launch-only run and a full run, both with `-Debug`.
-    - The old app was closed each time.
-    - The full run printed 15 lines (was hundreds) and returned in 14 s, even with its output captured.
-    - The app window "PenguinMod - Editor" was visible, and the port was ready when the script ended.
-    - `cdp.mjs ready` / `drag` (Lists moved to the top) / `eval` / `click` and the usage message worked.
-- Not verified: the real token saving in the next session, which will show it.
-- Result after build: `.md`-only change, builds nothing.
 
 ## Template (keep entries this short)
 

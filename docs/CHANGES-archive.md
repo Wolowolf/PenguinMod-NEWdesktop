@@ -75,6 +75,27 @@
 
 ## Change log (newest first)
 
+### Session 12 — fewer tokens per session (2026-10-04)
+- Asked: cut token usage without losing accuracy; explore every option and apply it.
+- Changed:
+  - `CHANGES.md` was moved to `docs/CHANGES-archive.md` unchanged (header only), and this short file replaces it.
+  - `CLAUDE.md` was rewritten concisely with the same rules. The obsolete Linux-sandbox test recipes moved out (they are in the archive), and a "Saving tokens" section was added.
+  - Outside the repo:
+    - `run-local-test.ps1` now closes a running test app first. It writes the build output to `build.log` and prints only a summary, or the last 40 lines on failure. It starts the app through a hidden `cmd`, with the app's output in `app-out.log` / `app-err.log`. With `-Debug` it waits until the editor is loaded on port 9333.
+    - `cdp.mjs` gained `ready`, `click` and `drag` commands and uses `127.0.0.1`.
+  - To reverse: `git revert` the merge. For the test tools, ask Claude.
+- Bug found and fixed: the app never started after a full test run (the "launch left no app running" noted in Session 8). The build's `NODE_OPTIONS=--openssl-legacy-provider` leaked into the app, and Electron refuses to start with it ("not allowed in NODE_OPTIONS", seen in `app-err.log`). The script now clears `NODE_OPTIONS` / `NODE_ENV` after the build.
+- Why: the session was measured with the transcript. Re-reading Claude's instructions plus this file was about 41% of the weighted usage, and files read once (old `CHANGES.md` was ~14k tokens) about 40%. Long build output was re-read on every later step.
+- Verified:
+  - Size: `CLAUDE.md` went from 11.9k to about 7.6k characters, and `CHANGES.md` from 55.5k to about 8k. The archive is the old file unchanged apart from its header.
+  - Test tools on Windows: a launch-only run and a full run, both with `-Debug`.
+    - The old app was closed each time.
+    - The full run printed 15 lines (was hundreds) and returned in 14 s, even with its output captured.
+    - The app window "PenguinMod - Editor" was visible, and the port was ready when the script ended.
+    - `cdp.mjs ready` / `drag` (Lists moved to the top) / `eval` / `click` and the usage message worked.
+- Not verified: the real token saving in the next session, which will show it.
+- Result after build: `.md`-only change, builds nothing.
+
 ### Session 11 — category drag: last place reachable, order really saved in the project
 - Requested: (1) with the default 10 boxes an extension box could not be dragged below the last one ("My Blocks"); (2) make the box order be saved inside the project.
 - Files changed: `patches/stage-layout.js` only (section 13 extended: 13b edited, new 13c; branch `tweak/category-drag-fixes`), `CHANGES.md`.
