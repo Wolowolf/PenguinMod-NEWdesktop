@@ -5,8 +5,8 @@ Kept short on purpose (read at the start of every session). Full history of Sess
 ## Current state (update when it changes)
 
 - **Baseline:** upstream commit `ab5e25a` (2026-06-15). Local test cache: GUI `24faae9`. Upstream builds stopped after 2026-09-06 (cause unconfirmed).
-- **CI (`main.yml`):** Ubuntu + wine, Bun, Node 26. Clones and builds PenguinMod-ExtensionsGallery, TurboWarp extensions (`package-lock.json` deleted before `bun i`: its git-hosted checksum broke installs, Session 1), SharkPools-Extensions, and the GUI with Vm, Blocks (`develop-builds`), Render (lockfile deleted) and Paint. Runs the patch, writes `app/build-info.json` `{tag, builtAt}`, runs `electron-builder --win nsis`, releases the `.exe` and `win-unpacked.zip`.
-- **`package.json`:** one NSIS installer for x64 + ia32 + arm64; unused Linux targets still listed; `asar: false`; dependency `unzipper`; `.pmp` file association.
+- **CI (`main.yml`):** Ubuntu + wine, Bun, Node 26; actions `checkout@v7`, `setup-node@v7`, `cache@v6`, `setup-bun@v2` (Session 13). Clones and builds PenguinMod-ExtensionsGallery, TurboWarp extensions (`package-lock.json` deleted before `bun i`: its git-hosted checksum broke installs, Session 1), SharkPools-Extensions, and the GUI with Vm, Blocks (`develop-builds`), Render (lockfile deleted) and Paint. Runs the patch, writes `app/build-info.json` `{tag, builtAt}`, runs `electron-builder --win nsis` (version read from `package.json`), then `gh release create` publishes the `.exe` (renamed with dots) and `win-unpacked.zip`.
+- **`package.json`:** one NSIS installer, x64 only; `electron` 44.5.1 and `electron-builder` 26.15.3 pinned (bump them by hand); unused Linux targets still listed; `asar: false`; dependency `unzipper`; `.pmp` file association.
 - **App:** always opens `https://studio.penguinmod.com/editor.html` (or a `.pmp` given on the command line), served from `app/build`. Extension gallery URLs map to offline folders. Links to the PenguinMod website load the live site.
 - **Updater (`app/updater.js`, Session 5):** System → Check for Updates. Picks this fork's newest published release with a complete `win-unpacked.zip`, compares its tag with `build-info.json`, checks size + SHA-256, then replaces, adds and removes files under `resources/app/` with full rollback on error (`.old` leftovers deleted at next start). Needs a writable install folder (not Program Files). Downloads ~230 MB each time. Restarts the app.
 - **Patch sections** (`patches/stage-layout.js`; each one says how to reverse it):
@@ -24,13 +24,21 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - Category order with a project file saved to disk and reopened (only in-app save and load were tested).
   - The user hasn't confirmed the builds from Sessions 3–6, 8–9 and 11 (Session 2's build was confirmed, Session 10's partly).
 - **Ideas offered, not applied** (offer when relevant):
-  - Upgrade the deprecated GitHub Actions versions.
-  - Pin `electron` / `electron-builder`.
-  - Drop the ia32 and arm64 targets for faster builds.
   - Stop editor links to the PenguinMod website from opening in the app.
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 13 — modern CI actions, pinned Electron, x64 only (2026-10-04)
+- Asked: upgrade the deprecated GitHub Actions, pin `electron` / `electron-builder`, drop the ia32 and arm64 targets.
+- Changed:
+  - `main.yml`: `checkout@v4→v7`, `setup-node@v4→v7`, `cache@v3→v6` (twice), `setup-bun@v1→v2`. `create-release@v1` and `upload-release-asset@v1` (deprecated, no newer version) became one `gh release create` step with the same tag, title, notes and prerelease flag. The installer is renamed `PenguinMod.Desktop.Setup.1.0.0.exe` explicitly. `npx electron-builder@<version from package.json>`.
+  - `package.json`: `electron` 44.5.1 and `electron-builder` 26.15.3 (exactly what the last build used); win arch list is x64 only.
+  - `CLAUDE.md`: the "unpinned" and "Node.js 20" lines.
+  - To reverse: `git revert` the merge.
+- Found: the last build (run 37161397599) was already x64 only (`archs=x64`): the `--win nsis` on the command line overrides the arch list in `package.json`. So dropping ia32/arm64 is tidying, not a speed-up. Builds take about 5 minutes either way.
+- Verified: YAML parses; the new release step run with a fake `gh` gives the right arguments, notes text and file name; the version expression gives `26.15.3`; the action tags exist. Not verified: the real CI run with the new action versions and `gh release create` (only a build can show it).
+- Result after build: not yet tested
 
 ### Session 12 — fewer tokens per session (2026-10-04)
 - Asked: cut token usage without losing accuracy; explore every option and apply it.
@@ -57,10 +65,6 @@ Kept short on purpose (read at the start of every session). Full history of Sess
 - Fixed: a box could not be dropped below the last box. The order was only saved the first time, because the addon never updated its Stage comment. A project without a stored order kept the previous project's order. Patch section 13 was extended (13b, 13c).
 - Verified locally with real mouse events: last place works, each re-ordering is saved, save + load restores it, and a long scrolling menu (41 boxes) auto-scrolls. Not verified: a project file saved to disk, custom URL extensions.
 - Result after build: Build #19, not yet tested.
-
-### Session 10 — category boxes slide while re-ordering
-- Changed: patch section 13 replaced the addon's drag, which had a faded box, a floating copy and a gap, with a sliding box.
-- Result after build: the user reports that scrolling with many extensions works. They found the end-of-list bug, fixed in Session 11.
 
 ## Template (keep entries this short)
 

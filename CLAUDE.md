@@ -59,5 +59,5 @@ Patch script rules:
 ## Build and release
 - `main.yml` runs on a push to `main` (ignoring `*.md`-only changes) and on manual start; other branches never build. Each run publishes a release `build-<run_id>-<timestamp>`, and my updater offers the newest one, so anything non-`.md` that reaches `main` reaches users. Non-`.md` changes go to `main` only through pull requests; always tell me when a merge started a build.
 - Commit order: new files before the files that use them; the workflow file last.
-- Expected: the unsigned installer triggers a SmartScreen warning ("More info" → "Run anyway"); the "Node.js 20 is deprecated" annotation is harmless. `electron` / `electron-builder` are unpinned (`"latest"`), so a build can change behaviour without any change from us.
+- Expected: the unsigned installer triggers a SmartScreen warning ("More info" → "Run anyway"). `electron` / `electron-builder` are pinned in `package.json` (and CI reads the builder version from there), so a build only changes when we bump them. Releases are made with `gh release create` in `main.yml`. The old "Node.js 20 is deprecated" annotation should be gone; tell me if a new warning shows up.
 - Offer the open ideas listed in `CHANGES.md` when relevant; don't apply them unasked.

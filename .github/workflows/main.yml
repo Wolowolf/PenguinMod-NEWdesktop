@@ -20,7 +20,7 @@ jobs:
     steps:
       # --- Checkout ---
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # --- Generate Dynamic Cache Key Components ---
       - name: Get current week
@@ -43,11 +43,11 @@ jobs:
 
       # --- Install Bun ---
       - name: Install Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
 
       # --- Install Node.js ---
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 26
 
@@ -68,7 +68,7 @@ jobs:
         run: git clone --depth=1 https://github.com/TurboWarp/extensions.git TurboWarp-ExtensionsGallery
 
       - name: Cache TurboWarp node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: TurboWarp-ExtensionsGallery/node_modules
           key: node-modules-turbowarp-${{ env.WEEK_STAMP }}
@@ -93,7 +93,7 @@ jobs:
       # --- CONSOLIDATED GUI & SUBMODULES CACHE ---
       - name: Cache GUI and Submodule node_modules
         id: gui-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: |
             penguinmod.github.io/node_modules
@@ -170,60 +170,42 @@ jobs:
 
       - name: Build Electron App
         # Windows only (was: --linux AppImage deb rpm --win nsis). See CHANGES.md to bring Linux back.
-        run: npx electron-builder --win nsis --publish never
+        run: npx electron-builder@$(node -p "require('./package.json').devDependencies['electron-builder']") --win nsis --publish never
 
       # --- Zip artifacts ---
       - name: Zip win-unpacked
         run: zip -r builds/win-unpacked.zip builds/win-unpacked
 
-      # --- Create GitHub Release ---
+      # --- Create GitHub Release (the old create-release / upload-release-asset actions are deprecated) ---
+      # GitHub turns spaces in file names into dots, so the installer is renamed here to be explicit:
+      # "PenguinMod Desktop Setup 1.0.0.exe" -> "PenguinMod.Desktop.Setup.1.0.0.exe"
       - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          release_name: ${{ env.RELEASE_NAME }}
-          body: |
-            ## Automated Build
-
-            | Field        | Value |
-            |-------------|-------|
-            | **Run ID**   | `${{ github.run_id }}` |
-            | **Run #**    | `${{ github.run_number }}` |
-            | **Workflow** | `${{ github.workflow }}` |
-            | **Trigger**  | `${{ github.event_name }}` |
-            | **Branch**   | `${{ github.ref_name }}` |
-            | **Commit**   | `${{ github.sha }}` |
-            | **Built at** | `${{ env.TIMESTAMP }}` |
-          draft: false
-          prerelease: true
-
-      # --- Capture artifact filenames ---
-      - name: Capture artifact filenames
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           EXE=$(ls builds/*.exe | head -1)
+          EXE_NAME=$(basename "$EXE")
+          mv "$EXE" "builds/${EXE_NAME// /.}"
 
-          echo "EXE_PATH=$EXE" >> $GITHUB_ENV
-          echo "EXE_NAME=$(basename "$EXE")" >> $GITHUB_ENV
+          cat > release-notes.md <<'NOTES'
+          ## Automated Build
 
-      - name: Upload .exe release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.EXE_PATH }}
-          asset_name: ${{ env.EXE_NAME }}
-          asset_content_type: application/octet-stream
+          | Field        | Value |
+          |-------------|-------|
+          | **Run ID**   | `${{ github.run_id }}` |
+          | **Run #**    | `${{ github.run_number }}` |
+          | **Workflow** | `${{ github.workflow }}` |
+          | **Trigger**  | `${{ github.event_name }}` |
+          | **Branch**   | `${{ github.ref_name }}` |
+          | **Commit**   | `${{ github.sha }}` |
+          | **Built at** | `${{ env.TIMESTAMP }}` |
+          NOTES
 
-      - name: Upload win-unpacked.zip
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: builds/win-unpacked.zip
-          asset_name: win-unpacked.zip
-          asset_content_type: application/zip
+          gh release create "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "$RELEASE_NAME" \
+            --notes-file release-notes.md \
+            --prerelease \
+            "builds/${EXE_NAME// /.}" \
+            builds/win-unpacked.zip
