@@ -79,9 +79,7 @@
         {
           "target": "nsis",
           "arch": [
-            "x64",
-            "ia32",
-            "arm64"
+            "x64"
           ]
         }
       ],
@@ -97,8 +95,8 @@
     }
   },
   "devDependencies": {
-    "electron": "latest",
-    "electron-builder": "latest"
+    "electron": "44.5.1",
+    "electron-builder": "26.15.3"
   },
   "dependencies": {
     "unzipper": "^0.12.3"
