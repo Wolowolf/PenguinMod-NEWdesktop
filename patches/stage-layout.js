@@ -1246,6 +1246,7 @@ copyIn('pm-icon-studio.jsx', 'src/components/pm-asset-browser/pm-icon-studio.jsx
 copyIn('pm-icon-studio.css', 'src/components/pm-asset-browser/pm-icon-studio.css');
 copyIn('pm-icon-svg.js', 'src/lib/pm-icon-svg.js');
 copyIn('game-icons-meta.json', 'src/lib/pm-game-icons-meta.json');
+copyIn('search-words.json', 'src/lib/pm-search-words.json'); // related words for the search (WordNet)
 
 // a. Each library window becomes the asset browser (the file must still be the original one).
 const replaceFile = (rel, mustContain, text) => {

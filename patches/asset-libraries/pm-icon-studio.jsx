@@ -19,9 +19,79 @@ const SECTIONS = [['background', 'background'], ['foreground', 'foreground'], ['
 const FONTS = ['Sans Serif', 'Serif', 'Handwriting', 'Marker', 'Curly', 'Pixel'];
 const SIZES = [16, 32, 64, 128, 256, 512];
 
-let lastSettings = null; // kept while moving from icon to icon, like on the website
-
 const clone = o => JSON.parse(JSON.stringify(o));
+
+// The last studio settings: kept while moving from icon to icon (like on the website) and between
+// sessions, and used for the icon previews in the library and for the "+" button.
+const STORE = 'pmdesktop:iconStudio';
+let lastSettings = null;
+let saveTimer = null;
+export const getStudioSettings = () => {
+    if (!lastSettings) {
+        try {
+            const stored = JSON.parse(localStorage.getItem(STORE));
+            if (stored && stored.foreground && stored.background) lastSettings = Object.assign(defaultSettings(), stored);
+        } catch (e) { /* no stored settings */ }
+        if (!lastSettings) lastSettings = applyPreset(defaultSettings(), 'transparent');
+    }
+    const s = clone(lastSettings);
+    s.foreground.broken = false; // parts belong to one icon only
+    s.foreground.parts = [];
+    return s;
+};
+const rememberSettings = settings => {
+    lastSettings = settings;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+        try {
+            localStorage.setItem(STORE, JSON.stringify(settings));
+        } catch (e) { /* not saved, still used for this session */ }
+    }, 300);
+};
+
+// Textures and badges the settings use, loaded once.
+const studioExtras = async settings => {
+    const extras = {textureUrl: null, badgeSvg: null, badge: null};
+    if (settings.background.texture.key) {
+        const tex = (await textureItems()).find(t => t.key === settings.background.texture.key);
+        if (tex) extras.textureUrl = await textureDataUrl(tex);
+    }
+    if (settings.badge.id) {
+        extras.badge = (await loadBadges()).find(b => b.id === settings.badge.id) || null;
+        extras.badgeSvg = extras.badge && extras.badge.svgText;
+    }
+    return extras;
+};
+const studioIcon = async item => {
+    if (!item.studioIcon) item.studioIcon = readIcon(await loadStudioIcon(item));
+    return item.studioIcon;
+};
+
+// Library previews in the current studio style (item.styledThumb).
+export const studioThumbs = async items => {
+    const settings = getStudioSettings();
+    settings.size = 96;
+    const key = JSON.stringify(settings);
+    const todo = items.filter(item => item.studio && item.styledKey !== key);
+    if (!todo.length) return false;
+    const extras = await studioExtras(settings);
+    await Promise.all(todo.map(async item => {
+        try {
+            const svg = compose(await studioIcon(item), settings, extras);
+            item.styledThumb = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+            item.styledKey = key;
+        } catch (e) { /* keeps the plain preview */ }
+    }));
+    return true;
+};
+
+// The "+" button: adds the icon exactly as its preview shows it.
+export const quickAddStudio = async (vm, kind, item) => {
+    const settings = getStudioSettings();
+    const extras = await studioExtras(settings);
+    const svg = compose(await studioIcon(item), settings, extras);
+    return addStudioAsset(vm, kind, item, svg, {png: false, size: settings.size, badge: extras.badge});
+};
 const set = (obj, path, value) => {
     const out = clone(obj);
     let cur = out;
@@ -62,9 +132,7 @@ Check.propTypes = {label: PropTypes.string, onChange: PropTypes.func, value: Pro
 class IconStudio extends React.Component {
     constructor (props) {
         super(props);
-        const settings = lastSettings ? clone(lastSettings) : defaultSettings();
-        settings.foreground.broken = false;
-        settings.foreground.parts = [];
+        const settings = getStudioSettings();
         this.state = {
             settings, section: 'foreground', icon: null, error: null, busy: false, part: 0,
             tags: [], textures: [], badges: [], textureUrl: null, badgeSvg: null
@@ -118,7 +186,7 @@ class IconStudio extends React.Component {
             // tags are a convenience; the studio works without them
         }
     }
-    // Texture pictures and badge drawings are only loaded when needed.
+    // Texture pictures and badge drawings (for the preview here) are only loaded when needed.
     async loadExtras (settings) {
         try {
             const tex = settings.background.texture.key;
@@ -145,7 +213,7 @@ class IconStudio extends React.Component {
     }
     setSettings (settings) {
         const before = this.state.settings;
-        lastSettings = settings;
+        rememberSettings(settings);
         this.setState({settings});
         if (before.background.texture.key !== settings.background.texture.key || before.badge.id !== settings.badge.id) {
             this.loadExtras(settings);

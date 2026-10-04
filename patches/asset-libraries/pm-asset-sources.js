@@ -9,13 +9,13 @@ import DOMPurify from 'dompurify';
 import {inlineSvgFonts} from 'scratch-svg-renderer';
 import {costumeUpload, soundUpload, spriteUpload} from './file-uploader.js';
 import gameIconsMeta from './pm-game-icons-meta.json'; // tags and author names from game-icons.net
+import searchWords from './pm-search-words.json'; // related words for the search (from WordNet)
 
 export const LIBRARY_URL = '/__library__/';
 const OPENVERSE = 'https://api.openverse.org/v1/';
 const ICONIFY = 'https://api.iconify.design/';
 
 const encodePath = p => p.split('/').map(encodeURIComponent).join('/');
-const words = s => s.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
 const niceName = file => file.replace(/\.[a-z0-9]+$/i, '').replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
 const MIME = {
     png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', svg: 'image/svg+xml',
@@ -29,6 +29,7 @@ const CC_BY_3 = {license: 'CC BY 3.0', licenseUrl: 'https://creativecommons.org/
 // ---- offline library ---------------------------------------------------------------------------
 
 let offlineIndex = null;
+const KENNEY_JUNK = /^(preview|sample|information|instructions?|update|changes)\b/i;
 const prepareIndex = index => {
     const kenney = index.kenney.map(([pack, file, flags, w, h]) => {
         const [slug, title] = index.packs[pack];
@@ -41,7 +42,7 @@ const prepareIndex = index => {
             search: `${title} ${file}`.toLowerCase(),
             credit: {src: 'kenney', id: `${slug}/${file}`, title: name, by: 'Kenney', url: 'https://kenney.nl', ...CC0, needsCredit: false}
         };
-    });
+    }).filter(item => !KENNEY_JUNK.test(item.name)); // pack previews and info sheets, not assets
     const authors = index.gameIcons.authors;
     const squash = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
     const tagsOf = {};
@@ -120,8 +121,76 @@ export const loadOfflineIndex = () => {
 
 const fitsKind = (item, kind) => (kind === 'sound' ? item.sound : kind === 'backdrop' ? item.backdrop : item.sprite);
 
-// Offline search: every word must appear in the pack/folder/file name (or the icon's tags).
-// `filter` is a Kenney pack number, or a game-icons tag.
+// ---- search ------------------------------------------------------------------------------------
+
+// Words as the related-words list splits them (camelCase, separators, digits).
+const tokenize = s => s.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+
+// Words of our asset names that are synonyms or kinds of `word` ("fruit" -> apple, banana...), from WordNet.
+const relatedCache = {};
+export const relatedWords = word => {
+    if (!relatedCache[word]) {
+        const out = new Set();
+        for (const stem of [word, word.replace(/ies$/, 'y'), word.replace(/es$/, ''), word.replace(/s$/, '')]) {
+            for (const i of searchWords.related[stem] || []) out.add(searchWords.words[i]);
+        }
+        out.delete(word);
+        relatedCache[word] = out;
+    }
+    return relatedCache[word];
+};
+
+export const shuffle = list => {
+    const out = list.slice();
+    for (let i = out.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
+};
+
+// Score of an item for a search (0 = no match). Every word typed must match: in the name (best), in
+// the pack / folder / tags, or through a related word ("fruit" finds "apple").
+const score = (item, queryTokens) => {
+    if (!item.words) {
+        item.words = new Set(tokenize(item.search));
+        item.nameWords = new Set(tokenize(item.name));
+        item.nameLower = item.name.toLowerCase();
+    }
+    let total = 0;
+    for (const t of queryTokens) {
+        if (item.nameLower.includes(t)) total += 4;
+        else if (item.search.includes(t)) total += 3;
+        else {
+            let best = 0;
+            for (const w of relatedWords(t)) {
+                if (item.nameWords.has(w)) {
+                    best = 2;
+                    break;
+                }
+                if (item.words.has(w)) best = 1;
+            }
+            if (!best) return 0;
+            total += best;
+        }
+    }
+    return total;
+};
+
+// Ranks `list` for `query` (best first); an empty query gives everything in random order.
+export const rank = (list, query) => {
+    const tokens = tokenize(query);
+    if (!tokens.length) return shuffle(list);
+    const scored = [];
+    for (const item of list) {
+        const s = score(item, tokens);
+        if (s) scored.push([s, item]);
+    }
+    return scored.sort((a, b) => b[0] - a[0]).map(x => x[1]);
+};
+
+// Offline search. `filter` is a Kenney pack number, or a game-icons tag. Without a search and without
+// a filter, everything comes in random order (a new mix every time the library opens).
 export const searchOffline = async (source, kind, query, filter) => {
     const index = await loadOfflineIndex();
     let list = index.kenney;
@@ -129,10 +198,11 @@ export const searchOffline = async (source, kind, query, filter) => {
         await loadBadges();
         list = typeof filter === 'string' && filter ? index.tagLists[filter] || [] : index.gameIcons;
     }
-    const tokens = words(query);
-    return list.filter(item => fitsKind(item, kind) &&
-        (source !== 'kenney' || filter === undefined || filter < 0 || item.pack === filter) &&
-        tokens.every(t => item.search.includes(t)));
+    const filtered = (source === 'gameIcons' && filter) || (source === 'kenney' && filter >= 0);
+    list = list.filter(item => fitsKind(item, kind) &&
+        (source !== 'kenney' || filter === undefined || filter < 0 || item.pack === filter));
+    if (!query.trim() && filtered) return list; // a pack or tag is shown in its own order
+    return rank(list, query);
 };
 
 // The neighbours of an icon in one of its tags (the "‹ tag ›" rows of the studio).
@@ -142,6 +212,28 @@ export const tagNeighbours = async (item, tag) => {
     const i = list.indexOf(item);
     if (i === -1 || list.length < 2) return {prev: null, next: null, count: list.length};
     return {prev: list[(i - 1 + list.length) % list.length], next: list[(i + 1) % list.length], count: list.length};
+};
+
+// Waveform and length of a sound, read from the file itself (48 peaks between 0 and 1).
+let decoder = null;
+const WAVE_BARS = 48;
+export const loadWaveform = async item => {
+    if (item.peaks) return item;
+    const data = await (await fetch(item.url)).arrayBuffer();
+    if (!decoder) decoder = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 2, 44100);
+    const audio = await decoder.decodeAudioData(data);
+    const samples = audio.getChannelData(0);
+    const step = Math.max(1, Math.floor(samples.length / WAVE_BARS));
+    const peaks = [];
+    for (let i = 0; i < WAVE_BARS; i++) {
+        let max = 0;
+        for (let j = i * step; j < Math.min((i + 1) * step, samples.length); j++) max = Math.max(max, Math.abs(samples[j]));
+        peaks.push(max);
+    }
+    const top = Math.max(...peaks) || 1;
+    item.peaks = peaks.map(p => p / top);
+    item.duration = audio.duration;
+    return item;
 };
 
 export const offlinePacks = async kind => {
@@ -156,13 +248,23 @@ const OPENVERSE_LICENSES = ['cc0', 'pdm', 'by']; // no NC, ND, SA
 const openverseLicense = r => (r.license === 'cc0' ? 'CC0' : r.license === 'pdm' ? 'Public domain' :
     `CC ${r.license.toUpperCase()}${r.license_version ? ` ${r.license_version}` : ''}`);
 
+// Openverse's own preview service fails for SVG files (HTTP 424): use the source's small previews.
+const openverseThumb = r => {
+    const url = r.url || '';
+    const wiki = url.match(/^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\/(\w)\/(\w\w)\/([^/?#]+)$/);
+    if (wiki) return `https://upload.wikimedia.org/wikipedia/commons/thumb/${wiki[1]}/${wiki[2]}/${wiki[3]}/250px-${wiki[3]}${/\.svg$/i.test(wiki[3]) ? '.png' : ''}`;
+    if (/staticflickr\.com\/.*_[a-z]\.jpg$/i.test(url)) return url.replace(/_[a-z]\.jpg$/i, '_n.jpg');
+    if (r.filetype === 'svg' || /\.svg$/i.test(url)) return url;
+    return r.thumbnail;
+};
+
 const openverseItem = (kind, r) => {
     const sound = kind === 'sound';
     const title = (r.title || 'Untitled').trim();
     return {
         key: `openverse:${r.id}`, source: 'openverse', name: niceName(title) || 'Untitled',
         subtitle: [r.creator && `by ${r.creator}`, r.source].filter(Boolean).join(' · '),
-        sound, thumb: sound ? null : r.thumbnail, url: r.url,
+        sound, thumb: sound ? null : openverseThumb(r), url: r.url,
         fallbackUrl: sound ? null : `${OPENVERSE}images/${r.id}/thumb/?full_size=true`,
         svgFit: 360, // big vector drawings would cover the whole stage
         mime: r.filetype ? (MIME[r.filetype] || '') : mimeOf(r.url || ''),
@@ -177,7 +279,9 @@ const openverseItem = (kind, r) => {
 
 // type: images 'illustration' | 'all'; sounds 'sfx' | 'music' | 'all'
 export const searchOpenverse = async (kind, query, page, type) => {
-    const params = new URLSearchParams({q: query, license: OPENVERSE_LICENSES.join(','), page_size: '20', page: String(page)});
+    // filter_dead=false: Openverse skips checking every link (about a third faster); broken previews fall back
+    const params = new URLSearchParams({q: query, license: OPENVERSE_LICENSES.join(','), page_size: '20', page: String(page),
+        filter_dead: 'false'});
     let endpoint = 'images/';
     if (kind === 'sound') {
         endpoint = 'audio/';
@@ -250,13 +354,45 @@ const iconItem = (sets, id) => {
     };
 };
 
-export const searchIconify = async query => {
+const iconifySearch = async (query, limit) => {
     const sets = await loadIconSets();
-    const params = new URLSearchParams({query, limit: '999', prefixes: Object.keys(sets).join(',')});
+    const params = new URLSearchParams({query, limit: String(limit), prefixes: Object.keys(sets).join(',')});
     const res = await fetch(`${ICONIFY}search?${params}`);
     if (!res.ok) throw new Error(`Iconify answered HTTP ${res.status}.`);
     const json = await res.json();
     return (json.icons || []).map(id => iconItem(sets, id)).filter(Boolean);
+};
+
+const unique = lists => {
+    const seen = new Set();
+    const out = [];
+    for (const list of lists) {
+        for (const item of list) {
+            if (!seen.has(item.key)) {
+                seen.add(item.key);
+                out.push(item);
+            }
+        }
+    }
+    return out;
+};
+
+// Everyday subjects for the random mix shown before anything is searched.
+const RANDOM_WORDS = ['star', 'heart', 'sword', 'tree', 'cat', 'dog', 'house', 'car', 'rocket', 'fire', 'water', 'sun',
+    'moon', 'cloud', 'music', 'robot', 'ghost', 'skull', 'crown', 'key', 'gem', 'coin', 'flag', 'flower', 'fish', 'bird',
+    'apple', 'castle', 'shield', 'bomb', 'map', 'book', 'ball', 'bolt', 'leaf', 'mountain', 'planet', 'dragon', 'pizza',
+    'cake', 'gift', 'trophy', 'bell', 'camera', 'clock', 'eye', 'hand', 'smile', 'snow', 'hammer', 'arrow', 'potion',
+    'train', 'plane', 'ship', 'bug', 'paw', 'horse', 'chess', 'dice', 'alien', 'tent', 'candy', 'soccer', 'guitar'];
+const pick = (list, n) => shuffle(list).slice(0, n);
+
+// Iconify search, plus a few related words ("fruit" also searches apple, banana...); without a
+// search, a random mix of three everyday subjects.
+export const searchIconify = async query => {
+    const q = query.trim();
+    if (!q) return shuffle(unique(await Promise.all(pick(RANDOM_WORDS, 3).map(w => iconifySearch(w, 64)))));
+    const related = tokenize(q).length === 1 ? pick(Array.from(relatedWords(q.toLowerCase())), 3) : [];
+    const [main, ...more] = await Promise.all([iconifySearch(q, 999), ...related.map(w => iconifySearch(w, 48))]);
+    return unique([main, ...more]);
 };
 
 // Iconify's tags are the categories of each icon set (e.g. "Animals & Nature"); some sets have none.

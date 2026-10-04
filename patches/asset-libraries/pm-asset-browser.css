@@ -124,7 +124,7 @@
 .tile {
     position: relative;
     width: 150px;
-    height: 168px;
+    height: 132px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -137,6 +137,7 @@
 }
 .tile:hover, .tile:focus { border-color: $motion-primary; outline: none; }
 .thumb {
+    position: relative;
     width: 100%;
     height: 96px;
     display: flex;
@@ -160,17 +161,46 @@
     object-fit: cover;
     image-rendering: auto;
 }
+.sound-thumb { background: #1c1c1c; background-image: none; }
+/* waveform like Freesound's: mirrored bars on a dark background */
+.wave { position: absolute; inset: 6px 4px 18px 4px; width: calc(100% - 8px); height: calc(100% - 24px); }
+.wave rect { fill: #ff9d1a; }
 .play {
-    width: 56px;
-    height: 56px;
+    position: relative;
+    width: 40px;
+    height: 40px;
     border: none;
     border-radius: 50%;
-    background: $motion-primary;
+    background: rgba(0, 195, 255, 0.85);
     color: $ui-white;
-    font-size: 1.4rem;
+    font-size: 1.1rem;
     cursor: pointer;
 }
 .play.playing { background: $error-primary; }
+.duration {
+    position: absolute;
+    left: 4px;
+    bottom: 3px;
+    padding: 0 4px;
+    font-size: 0.65rem;
+    background: rgba(0, 0, 0, 0.65);
+    color: #fff;
+}
+/* needs credit: added to the "credit" sprite automatically */
+.credit-mark {
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ff8c1a;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: bold;
+    line-height: 16px;
+    text-align: center;
+}
 .name {
     width: 100%;
     margin-top: 4px;
@@ -180,26 +210,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.meta {
-    width: 100%;
-    font-size: 0.7rem;
-    opacity: 0.75;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.badge {
-    margin-top: auto;
-    padding: 1px 6px;
-    font-size: 0.65rem;
-    background: #e3e3e3;
-    color: #333;
-    white-space: nowrap;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.badge-credit { background: #ffe7a8; color: #6b4b00; }
 .quick-add {
     position: absolute;
     top: 4px;
@@ -231,8 +241,7 @@
     color: $text-primary;
     opacity: 0.7;
 }
-.more { width: 100%; margin-top: 4px; }
-.more:disabled { opacity: 0.6; cursor: default; }
+.more { width: 100%; min-height: 2rem; text-align: center; color: $text-primary; opacity: 0.7; }
 
 .generators {
     flex-grow: 1;
@@ -301,5 +310,4 @@
         linear-gradient(45deg, #2a2a2a 25%, transparent 25%, transparent 75%, #2a2a2a 75%),
         linear-gradient(45deg, #2a2a2a 25%, transparent 25%, transparent 75%, #2a2a2a 75%);
 }
-[theme="dark"] .badge { background: #444; color: #ddd; }
-[theme="dark"] .badge-credit { background: #6b4b00; color: #ffe7a8; }
+[theme="dark"] .thumb.sound-thumb { background: #1c1c1c; background-image: none; }
