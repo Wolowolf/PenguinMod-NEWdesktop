@@ -57,6 +57,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     compare: "Checking files…",
     write: "Preparing new files…",
     swap: "Installing…",
+    library: "Unpacking the offline library…",
   };
   ipcRenderer.on("update-progress", (_event, msg) => {
     if (!msg || msg.phase === "done") {

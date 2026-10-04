@@ -14,6 +14,7 @@
 //   - same                  -> left alone
 //   - only on disk, inside resources/app (old editor chunks, the old home page, ...) -> removed
 //   - only on disk, anywhere else (for example the installer's "Uninstall ....exe") -> never touched
+//     (this includes resources/offline-library, which has its own download: see the end of this file)
 // Nothing in the install folder is changed until the whole zip has been checked and every
 // new file has been written next to its old one. If a step then fails, everything is rolled back.
 
@@ -318,4 +319,96 @@ async function applyUpdateFromZip(zipPath, installDir, { exeName, leftoversFile,
   };
 }
 
-module.exports = { pickRelease, downloadFile, assertWritable, cleanupLeftovers, applyUpdateFromZip, ZIP_PREFIX };
+// ---------------------------------------------------------------------------------------------
+// Offline library (resources/offline-library: Kenney, game-icons.net, sound generators)
+// ---------------------------------------------------------------------------------------------
+// It is not in win-unpacked.zip (it would make every update ~180 MB bigger). Each app version says
+// which library it needs in app/offline-library.json ({version, tag, asset, size, sha256}); the
+// library is a zip in that release of this repo, with every file under `offline-library/`.
+// It is downloaded only when the installed version (resources/offline-library/version.json) differs.
+
+const LIBRARY_DIR = "resources/offline-library";
+const LIBRARY_PREFIX = "offline-library/";
+
+const libraryDir = (installDir) => path.join(installDir, ...LIBRARY_DIR.split("/"));
+
+function installedLibraryVersion(installDir) {
+  try {
+    return String(JSON.parse(fs.readFileSync(path.join(libraryDir(installDir), "version.json"), "utf8")).version);
+  } catch {
+    return null;
+  }
+}
+
+function readLibraryPin(file) {
+  try {
+    const pin = JSON.parse(fs.readFileSync(file, "utf8"));
+    return pin && pin.version && pin.tag && pin.asset ? pin : null;
+  } catch {
+    return null;
+  }
+}
+
+// The library an update needs: app/offline-library.json inside the update zip (null if it has none).
+async function libraryPinFromZip(zipPath) {
+  const directory = await unzipper.Open.file(zipPath);
+  const entry = directory.files.find((f) => f.path === `${ZIP_PREFIX}resources/app/app/offline-library.json`);
+  if (!entry) return null;
+  const pin = JSON.parse((await entry.buffer()).toString("utf8"));
+  return pin && pin.version && pin.tag && pin.asset ? pin : null;
+}
+
+const libraryNeeded = (installDir, pin) => !!pin && installedLibraryVersion(installDir) !== String(pin.version);
+
+const libraryUrl = (repo, pin) =>
+  `https://github.com/${repo}/releases/download/${encodeURIComponent(pin.tag)}/${encodeURIComponent(pin.asset)}`;
+
+// Unpacks a downloaded (and already checked) library zip next to the old library, then swaps them.
+// If the swap fails, the old library is put back.
+async function installLibraryFromZip(zipPath, installDir, pin, onProgress = noop) {
+  const target = libraryDir(installDir);
+  const staging = target + NEW;
+  const backup = target + OLD;
+  fs.rmSync(staging, { recursive: true, force: true });
+  try {
+    const directory = await unzipper.Open.file(zipPath);
+    const files = directory.files.filter((f) => f.type === "File" && f.path.startsWith(LIBRARY_PREFIX));
+    if (!files.length) throw new Error("The offline library download is empty.");
+    let i = 0;
+    for (const f of files) {
+      const rel = f.path.slice(LIBRARY_PREFIX.length);
+      const dest = safeTarget(staging, rel);
+      if (!dest) throw new Error(`The offline library contains an unsafe path and was rejected: ${rel}`);
+      onProgress("library", Math.round((++i / files.length) * 100), rel);
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      fs.writeFileSync(dest, await f.buffer());
+    }
+    const version = String(JSON.parse(fs.readFileSync(path.join(staging, "version.json"), "utf8")).version);
+    if (version !== String(pin.version)) throw new Error(`The offline library has version ${version}, expected ${pin.version}.`);
+  } catch (err) {
+    fs.rmSync(staging, { recursive: true, force: true });
+    throw err;
+  }
+  fs.rmSync(backup, { recursive: true, force: true });
+  if (fs.existsSync(target)) fs.renameSync(target, backup);
+  try {
+    fs.renameSync(staging, target);
+  } catch (err) {
+    if (fs.existsSync(backup) && !fs.existsSync(target)) fs.renameSync(backup, target);
+    throw err;
+  }
+  try { fs.rmSync(backup, { recursive: true, force: true }); } catch { }
+}
+
+// Removes half-finished or old library folders left by an interrupted install.
+function cleanupLibraryLeftovers(installDir) {
+  for (const p of [libraryDir(installDir) + NEW, libraryDir(installDir) + OLD]) {
+    try { fs.rmSync(p, { recursive: true, force: true }); } catch { }
+  }
+}
+
+module.exports = {
+  pickRelease, downloadFile, assertWritable, cleanupLeftovers, applyUpdateFromZip, ZIP_PREFIX,
+  installedLibraryVersion, readLibraryPin, libraryPinFromZip, libraryNeeded, libraryUrl,
+  installLibraryFromZip, cleanupLibraryLeftovers,
+};
