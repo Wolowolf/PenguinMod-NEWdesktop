@@ -1,0 +1,58 @@
+/* PenguinMod Desktop (patch section 16): unlocking a library with the user's own API key. */
+@import "../../css/units.css";
+@import "../../css/colors.css";
+
+.panel {
+    flex-grow: 1;
+    overflow-y: auto;
+    max-width: 760px;
+    padding: 1rem 1.5rem 2rem 1.5rem;
+    color: $text-primary;
+    line-height: 1.45;
+}
+.title { margin: 0 0 0.5rem 0; font-size: 1.5rem; }
+.subtitle { margin: 0 0 0.5rem 0; font-size: 1.05rem; }
+.about { margin: 0 0 0.4rem 0; }
+.limits { margin: 0 0 0.8rem 0; font-weight: bold; }
+.steps { margin: 0 0 1rem 0; padding-left: 1.4rem; }
+.steps li { margin-bottom: 0.45rem; }
+.link {
+    margin-left: 0.5rem;
+    padding: 0 0.5rem;
+    height: 1.6rem;
+    border: none;
+    background: $motion-primary;
+    color: $ui-white;
+    font-weight: bold;
+    cursor: pointer;
+}
+.box {
+    margin: 0 0 1rem 0;
+    padding: 0.8rem 1rem;
+    border: 2px solid $ui-black-transparent;
+    background: $ui-white;
+}
+.fields { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.6rem; }
+.field { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.85rem; flex: 1 1 240px; }
+.input { height: 2.2rem; padding: 0 0.6rem; border: 2px solid $ui-black-transparent; font-size: 0.95rem; }
+.input:focus { outline: none; border-color: $motion-primary; }
+.primary, .secondary, .danger {
+    height: 2.2rem;
+    padding: 0 1rem;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+.primary { background: $motion-primary; color: $ui-white; }
+.primary:disabled { opacity: 0.6; cursor: default; }
+.secondary { background: #666; color: $ui-white; }
+.danger { background: #c62828; color: $ui-white; }
+.actions { display: flex; gap: 0.6rem; }
+.note { margin: 0.4rem 0 0 0; font-size: 0.8rem; opacity: 0.8; }
+.error { margin: 0 0 0.8rem 0; padding: 0.4rem 0.6rem; background: #ffd9d9; color: #8a0000; }
+.success { margin: 0 0 1rem 0; padding: 0.6rem 1rem; background: #d9f7e3; color: #0b5a26; }
+.success p { margin: 0 0 0.4rem 0; }
+
+[theme="dark"] .panel { color: #eee; }
+[theme="dark"] .box { background: #222; border-color: #444; }
+[theme="dark"] .input { background: #111; color: #eee; border-color: #555; }
