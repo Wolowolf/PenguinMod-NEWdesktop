@@ -75,6 +75,12 @@
 
 ## Change log (newest first)
 
+### Session 14 — remove "See Project Page" and "Upload" buttons (2026-10-04)
+- Asked: remove both buttons; the fork becomes a 2D game engine for serious packaged projects, not a Scratch / TurboWarp sharing platform; say what else should go.
+- Changed: `patches/stage-layout.js` section 14 cuts the two menu-bar blocks (the `CommunityButton` and `ShareButton` blocks in `menu-bar.jsx`) and fails loudly if upstream changed them. To reverse: delete section 14 (or `git revert` the merge).
+- Verified: local test app before (both buttons visible) and after (neither visible, rest of the menu bar unchanged); patch run twice is safe. Not verified: CI build with fresh upstream.
+- Result after build: not yet tested
+
 ### Session 13 — modern CI actions, pinned Electron, x64 only (2026-10-04)
 - Asked: upgrade the deprecated GitHub Actions, pin `electron` / `electron-builder`, drop the ia32 and arm64 targets.
 - Changed:
