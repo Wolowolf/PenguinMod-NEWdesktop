@@ -29,6 +29,12 @@ Kept short on purpose (read at the start of every session). Full history of Sess
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 14 — remove "See Project Page" and "Upload" buttons (2026-10-04)
+- Asked: remove both buttons; the fork becomes a 2D game engine for serious packaged projects, not a Scratch / TurboWarp sharing platform; say what else should go.
+- Changed: `patches/stage-layout.js` section 14 cuts the two menu-bar blocks (the `CommunityButton` and `ShareButton` blocks in `menu-bar.jsx`) and fails loudly if upstream changed them. To reverse: delete section 14 (or `git revert` the merge).
+- Verified: local test app before (both buttons visible) and after (neither visible, rest of the menu bar unchanged); patch run twice is safe. Not verified: CI build with fresh upstream.
+- Result after build: not yet tested
+
 ### Session 13 — modern CI actions, pinned Electron, x64 only (2026-10-04)
 - Asked: upgrade the deprecated GitHub Actions, pin `electron` / `electron-builder`, drop the ia32 and arm64 targets.
 - Changed:
@@ -60,11 +66,6 @@ Kept short on purpose (read at the start of every session). Full history of Sess
     - `cdp.mjs ready` / `drag` (Lists moved to the top) / `eval` / `click` and the usage message worked.
 - Not verified: the real token saving in the next session, which will show it.
 - Result after build: `.md`-only change, builds nothing.
-
-### Session 11 — category drag: last place reachable, order saved in the project
-- Fixed: a box could not be dropped below the last box. The order was only saved the first time, because the addon never updated its Stage comment. A project without a stored order kept the previous project's order. Patch section 13 was extended (13b, 13c).
-- Verified locally with real mouse events: last place works, each re-ordering is saved, save + load restores it, and a long scrolling menu (41 boxes) auto-scrolls. Not verified: a project file saved to disk, custom URL extensions.
-- Result after build: Build #19, not yet tested.
 
 ## Template (keep entries this short)
 
