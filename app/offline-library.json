@@ -1,0 +1,8 @@
+{
+  "_about": "The offline library the app needs (scripts/make-offline-library.mjs builds it). CI and the updater download this file from the release below and check its size and SHA-256.",
+  "version": "1",
+  "tag": "offline-library-1",
+  "asset": "offline-library-1.zip",
+  "size": 190794697,
+  "sha256": "c3bdf553adf959a786983da10443111e4f8efd8e312c7a3c3ec7a948ce2a9bfa"
+}
