@@ -17,6 +17,7 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - 11: the category menu shows colour boxes with the name only. The menu is 4.5rem wide; boxes are one line, the selected box two lines, with white outlined text. It also wraps `Toolbox.Category.createDom` and `Toolbox.getWidth`. (Sessions 6, 9)
   - 12: the "Back to Home" button is removed. (Session 8)
   - 13: dragging a category box to re-order the menu (upstream addon `toolbox-category-drag`). The held box slides and the others make room. The first and last places are reachable. The order is stored in the project's Stage comment, updated on every change, and reset for projects that have no stored order. (Sessions 10–11)
+  - 14: the "See Project Page" and "Upload" buttons are removed from the menu bar (sharing-site buttons; this build is for packaged projects). (Session 14)
 - **Not verified yet:**
   - The updater end to end inside a packaged install.
   - The installer itself (Claude has only tested the local build).
