@@ -75,6 +75,24 @@
 
 ## Change log (newest first)
 
+### Session 16 — pin upstream to fixed commits (2026-10-04)
+- Asked: step 1 of making the app independent from upstream and the internet: builds must stop picking up whatever upstream pushed last.
+- Changed:
+  - New `upstream.json` (8 commits, all equal to what the 2026-10-04 builds used, so the app content doesn't change).
+  - New `scripts/clone-pinned.js` (`git init` + `fetch --depth=1 <commit>` + checkout, sets `core.longpaths`).
+  - `main.yml`: every upstream `git clone` → `node scripts/clone-pinned.js <name>`.
+  - Outside the repo, `run-local-test.ps1` uses the same helper and stops when its cache doesn't match `upstream.json`.
+  - To reverse: `git revert` the merge.
+- Verified:
+  - All 8 projects downloaded by the helper are on the pinned commit, with a clean checkout.
+  - A wrong name or an existing folder fails with a clear message.
+  - The PenguinMod and TurboWarp galleries build from the pinned copies (on Windows).
+  - Workflow YAML parses.
+  - Local test `-Update`: fresh pinned download, `bun i`, patch, build OK, editor opens with all tweaks.
+  - A fake commit in `upstream.json` makes the local test stop before patching.
+  - Not verified: the CI run itself (Linux).
+- Result after build: not yet tested
+
 ### Session 15 — remove cloud variables, Remix, Discord and website links (2026-10-04)
 - Asked: remove the strongest candidates (cloud variables + change username, telemetry, Discord links, credits/About), the links that open the PenguinMod website, and Remix; clean the code; keep the online library, extension and project-server fetches.
 - Changed:

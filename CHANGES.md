@@ -35,6 +35,36 @@ Kept short on purpose (read at the start of every session). Full history of Sess
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 19 — library browsing: random mix, related-words search, endless scroll, waveforms (2026-10-05)
+- Asked:
+  - A random full page when a library opens with an empty search.
+  - Search that finds related assets ("fruit" → apple, orange…), and endless scrolling instead of "Show more".
+  - Tiles with only the name and an orange "C" when credit is needed.
+  - Icon previews in the last studio style.
+  - Sound waveforms and durations.
+  - Fix Openverse previews and speed; remove non-backgrounds from the Kenney backdrops.
+- Changed (`patches/asset-libraries/`):
+  - Search: words from names, packs and tags, ranked (name match, then pack/tag, then related word). Related words come from WordNet: new `scripts/make-search-words.mjs` → `search-words.json` (301 KB; 6,674 search words over our 4,047 name words; WordNet licence notice inside). Iconify searches also include up to 3 related words.
+  - Random order when nothing is typed and no pack/tag is chosen. Iconify: three random everyday subjects mixed.
+  - Endless scroll: IntersectionObserver on a marker after the last tile; it keeps loading until the page is full.
+  - Tiles: name only, details in the tooltip, orange "C" at the bottom right of the preview.
+  - Studio settings are stored in `localStorage` `pmdesktop:iconStudio`; the first default is now "Transparent, black". Game Icons / Iconify previews are drawn in that style, and "+" adds the icon as shown (`studioThumbs`, `quickAddStudio`).
+  - Kenney sounds: waveform (48 bars) and length read from the file (`loadWaveform`), drawn like Freesound.
+  - Kenney: preview / sample / information / instruction / update / changes images hidden everywhere (in the app, the library is unchanged).
+  - Openverse: Wikimedia / Flickr own small previews (its preview service fails for SVG with HTTP 424), fallback to the original file, `filter_dead=false`.
+  - To reverse: `git revert` the merge.
+- Verified (local test app):
+  - A new random mix each time the library opens.
+  - "fruit" finds 161 items and "weapon" 650, with names first.
+  - Scrolling loads 120 more; there's no "Show more" button.
+  - The C marks appear on the right items.
+  - After choosing the Fire preset, Game Icons and Iconify previews followed it and "+" added a Fire-styled icon.
+  - All visible Kenney sounds got a waveform and duration.
+  - The 18 junk backdrops are gone.
+  - Openverse "arrow": 40/40 previews loaded, in 0.7 s.
+  - Not verified: the CI build.
+- Result after build: not yet tested
+
 ### Session 18 — icon studio (game-icons.net Studio controls) + tags (2026-10-04)
 - Asked: the game-icons.net website's Studio controls instead of pre-baked black icons, also for Iconify, plus the website's tag system if possible.
 - Changed:
@@ -96,24 +126,6 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - Updater library functions (13 checks with the real zip: install, SHA-256, wrong version rejected with the old library kept, pin read from an update zip, leftovers cleaned).
   - CI library step simulated against the real release; the test script downloads the release itself.
   - Not verified: the CI build (Linux, `jq`, `zip -x` exclusion; the step fails loudly if wrong), the installer, the updater inside an installed app (library download on update / at start).
-- Result after build: not yet tested
-
-### Session 16 — pin upstream to fixed commits (2026-10-04)
-- Asked: step 1 of making the app independent from upstream and the internet: builds must stop picking up whatever upstream pushed last.
-- Changed:
-  - New `upstream.json` (8 commits, all equal to what the 2026-10-04 builds used, so the app content doesn't change).
-  - New `scripts/clone-pinned.js` (`git init` + `fetch --depth=1 <commit>` + checkout, sets `core.longpaths`).
-  - `main.yml`: every upstream `git clone` → `node scripts/clone-pinned.js <name>`.
-  - Outside the repo, `run-local-test.ps1` uses the same helper and stops when its cache doesn't match `upstream.json`.
-  - To reverse: `git revert` the merge.
-- Verified:
-  - All 8 projects downloaded by the helper are on the pinned commit, with a clean checkout.
-  - A wrong name or an existing folder fails with a clear message.
-  - The PenguinMod and TurboWarp galleries build from the pinned copies (on Windows).
-  - Workflow YAML parses.
-  - Local test `-Update`: fresh pinned download, `bun i`, patch, build OK, editor opens with all tweaks.
-  - A fake commit in `upstream.json` makes the local test stop before patching.
-  - Not verified: the CI run itself (Linux).
 - Result after build: not yet tested
 
 ## Template (keep entries this short)
