@@ -75,6 +75,17 @@
 
 ## Change log (newest first)
 
+### Session 13 — modern CI actions, pinned Electron, x64 only (2026-10-04)
+- Asked: upgrade the deprecated GitHub Actions, pin `electron` / `electron-builder`, drop the ia32 and arm64 targets.
+- Changed:
+  - `main.yml`: `checkout@v4→v7`, `setup-node@v4→v7`, `cache@v3→v6` (twice), `setup-bun@v1→v2`. `create-release@v1` and `upload-release-asset@v1` (deprecated, no newer version) became one `gh release create` step with the same tag, title, notes and prerelease flag. The installer is renamed `PenguinMod.Desktop.Setup.1.0.0.exe` explicitly. `npx electron-builder@<version from package.json>`.
+  - `package.json`: `electron` 44.5.1 and `electron-builder` 26.15.3 (exactly what the last build used); win arch list is x64 only.
+  - `CLAUDE.md`: the "unpinned" and "Node.js 20" lines.
+  - To reverse: `git revert` the merge.
+- Found: the last build (run 37161397599) was already x64 only (`archs=x64`): the `--win nsis` on the command line overrides the arch list in `package.json`. So dropping ia32/arm64 is tidying, not a speed-up. Builds take about 5 minutes either way.
+- Verified: YAML parses; the new release step run with a fake `gh` gives the right arguments, notes text and file name; the version expression gives `26.15.3`; the action tags exist. Not verified: the real CI run with the new action versions and `gh release create` (only a build can show it).
+- Result after build: not yet tested
+
 ### Session 12 — fewer tokens per session (2026-10-04)
 - Asked: cut token usage without losing accuracy; explore every option and apply it.
 - Changed:

@@ -4,8 +4,9 @@ Kept short on purpose (read at the start of every session). Full history of Sess
 
 ## Current state (update when it changes)
 
-- **Baseline:** upstream commit `ab5e25a` (2026-06-15). Local test cache: GUI `24faae9`. Upstream builds stopped after 2026-09-06 (cause unconfirmed).
-- **CI (`main.yml`):** Ubuntu + wine, Bun, Node 26; actions `checkout@v7`, `setup-node@v7`, `cache@v6`, `setup-bun@v2` (Session 13). Clones and builds PenguinMod-ExtensionsGallery, TurboWarp extensions (`package-lock.json` deleted before `bun i`: its git-hosted checksum broke installs, Session 1), SharkPools-Extensions, and the GUI with Vm, Blocks (`develop-builds`), Render (lockfile deleted) and Paint. Runs the patch, writes `app/build-info.json` `{tag, builtAt}`, runs `electron-builder --win nsis` (version read from `package.json`), then `gh release create` publishes the `.exe` (renamed with dots) and `win-unpacked.zip`.
+- **Baseline:** upstream commit `ab5e25a` (2026-06-15). Upstream builds stopped after 2026-09-06 (cause unconfirmed).
+- **Upstream pins (`upstream.json`, Session 16):** CI and the local test download each of the 8 upstream projects at a fixed commit (`scripts/clone-pinned.js`): GUI `24faae9`, Vm `9c8e446`, Blocks `5e0503f`, Render `89a587a`, Paint `37f65d7`, PenguinMod gallery `971b034`, TurboWarp gallery `fe82589`, SharkPool gallery `e168e25` (all = what the 2026-10-04 builds used). Moving to newer upstream = edit the commits, local test with `-Update`, PR. Not pinned: the npm packages they install (lockfiles are partly deleted, see below).
+- **CI (`main.yml`):** Ubuntu + wine, Bun, Node 26; actions `checkout@v7`, `setup-node@v7`, `cache@v6`, `setup-bun@v2` (Session 13). Downloads (pinned) and builds PenguinMod-ExtensionsGallery, TurboWarp extensions (`package-lock.json` deleted before `bun i`: its git-hosted checksum broke installs, Session 1), SharkPools-Extensions, and the GUI with Vm, Blocks (`develop-builds`), Render (lockfile deleted) and Paint. Runs the patch, writes `app/build-info.json` `{tag, builtAt}`, runs `electron-builder --win nsis` (version read from `package.json`), then `gh release create` publishes the `.exe` (renamed with dots) and `win-unpacked.zip`.
 - **`package.json`:** one NSIS installer, x64 only; `electron` 44.5.1 and `electron-builder` 26.15.3 pinned (bump them by hand); unused Linux targets still listed; `asar: false`; dependency `unzipper`; `.pmp` file association.
 - **App:** always opens `https://studio.penguinmod.com/editor.html` (or a `.pmp` given on the command line), served from `app/build`. Extension gallery URLs map to offline folders. Windows and links to penguinmod.com (and its projects./docs. hosts) and Discord are blocked (Session 15).
 - **Updater (`app/updater.js`, Session 5):** System → Check for Updates. Picks this fork's newest published release with a complete `win-unpacked.zip`, compares its tag with `build-info.json`, checks size + SHA-256, then replaces, adds and removes files under `resources/app/` with full rollback on error (`.old` leftovers deleted at next start). Needs a writable install folder (not Program Files). Downloads ~230 MB each time. Restarts the app.
@@ -27,8 +28,30 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - The user hasn't confirmed the builds from Sessions 3–6, 8–9 and 11 (Session 2's build was confirmed, Session 10's partly).
 - **Ideas offered, not applied** (offer when relevant):
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
+  - Offline plan (Session 16), steps 2–4 left. Today the app goes online for: library files when you open or add a sprite, costume, sound or backdrop (1,304 from `assets.scratch.mit.edu` and 586 from `library.penguinmod.com`, about 135 MB estimated from a sample); a hidden `penguinmod.com/embed/editor` login iframe on every start (`home-communication.jsx`); the project server (`projects.penguinmod.com` and `asset-cdn.penguinmod.com`) only when opening a project by its online ID. Steps:
+    - 2: offline library. CI downloads the files, `electron-main.js` maps the hosts. Update zip about 230 → 365 MB.
+    - 3: remove the login iframe and project-ID loading, and block the known PenguinMod and Scratch-asset servers.
+    - 4: own forks or snapshots so builds survive upstream deleting things.
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 16 — pin upstream to fixed commits (2026-10-04)
+- Asked: step 1 of making the app independent from upstream and the internet: builds must stop picking up whatever upstream pushed last.
+- Changed:
+  - New `upstream.json` (8 commits, all equal to what the 2026-10-04 builds used, so the app content doesn't change).
+  - New `scripts/clone-pinned.js` (`git init` + `fetch --depth=1 <commit>` + checkout, sets `core.longpaths`).
+  - `main.yml`: every upstream `git clone` → `node scripts/clone-pinned.js <name>`.
+  - Outside the repo, `run-local-test.ps1` uses the same helper and stops when its cache doesn't match `upstream.json`.
+  - To reverse: `git revert` the merge.
+- Verified:
+  - All 8 projects downloaded by the helper are on the pinned commit, with a clean checkout.
+  - A wrong name or an existing folder fails with a clear message.
+  - The PenguinMod and TurboWarp galleries build from the pinned copies (on Windows).
+  - Workflow YAML parses.
+  - Local test `-Update`: fresh pinned download, `bun i`, patch, build OK, editor opens with all tweaks.
+  - A fake commit in `upstream.json` makes the local test stop before patching.
+  - Not verified: the CI run itself (Linux).
+- Result after build: not yet tested
 
 ### Session 15 — remove cloud variables, Remix, Discord and website links (2026-10-04)
 - Asked: remove the strongest candidates (cloud variables + change username, telemetry, Discord links, credits/About), the links that open the PenguinMod website, and Remix; clean the code; keep the online library, extension and project-server fetches.
@@ -44,17 +67,6 @@ Kept short on purpose (read at the start of every session). Full history of Sess
 - Asked: remove both buttons; the fork becomes a 2D game engine for serious packaged projects, not a Scratch / TurboWarp sharing platform; say what else should go.
 - Changed: `patches/stage-layout.js` section 14 cuts the two menu-bar blocks (the `CommunityButton` and `ShareButton` blocks in `menu-bar.jsx`) and fails loudly if upstream changed them. To reverse: delete section 14 (or `git revert` the merge).
 - Verified: local test app before (both buttons visible) and after (neither visible, rest of the menu bar unchanged); patch run twice is safe. Not verified: CI build with fresh upstream.
-- Result after build: not yet tested
-
-### Session 13 — modern CI actions, pinned Electron, x64 only (2026-10-04)
-- Asked: upgrade the deprecated GitHub Actions, pin `electron` / `electron-builder`, drop the ia32 and arm64 targets.
-- Changed:
-  - `main.yml`: `checkout@v4→v7`, `setup-node@v4→v7`, `cache@v3→v6` (twice), `setup-bun@v1→v2`. `create-release@v1` and `upload-release-asset@v1` (deprecated, no newer version) became one `gh release create` step with the same tag, title, notes and prerelease flag. The installer is renamed `PenguinMod.Desktop.Setup.1.0.0.exe` explicitly. `npx electron-builder@<version from package.json>`.
-  - `package.json`: `electron` 44.5.1 and `electron-builder` 26.15.3 (exactly what the last build used); win arch list is x64 only.
-  - `CLAUDE.md`: the "unpinned" and "Node.js 20" lines.
-  - To reverse: `git revert` the merge.
-- Found: the last build (run 37161397599) was already x64 only (`archs=x64`): the `--win nsis` on the command line overrides the arch list in `package.json`. So dropping ia32/arm64 is tidying, not a speed-up. Builds take about 5 minutes either way.
-- Verified: YAML parses; the new release step run with a fake `gh` gives the right arguments, notes text and file name; the version expression gives `26.15.3`; the action tags exist. Not verified: the real CI run with the new action versions and `gh release create` (only a build can show it).
 - Result after build: not yet tested
 
 ## Template (keep entries this short)
