@@ -1232,7 +1232,8 @@ replaceOnce('src/playground/render-gui.jsx',
 // The original sprite, costume, backdrop and sound libraries are removed. The library windows
 // now show patches/asset-libraries/pm-asset-browser.jsx (Kenney, game-icons.net and three sound
 // generators offline; Iconify and Openverse online), the "Surprise" buttons add a random Kenney
-// item, and pm-credits.js keeps the "credit" sprite. The VM saves each asset's credit record
+// item, and pm-credits.js keeps the "credit" sprite. Clicking a game-icons.net or Iconify icon opens
+// the icon studio (pm-icon-studio.jsx, drawing in pm-icon-svg.js), like the Studio on game-icons.net. The VM saves each asset's credit record
 // (`pmCredit`) in the project. To reverse: delete this section and patches/asset-libraries/.
 const ASSET_LIBS = path.join(__dirname, 'asset-libraries');
 const copyIn = (from, to) => write(to, fs.readFileSync(path.join(ASSET_LIBS, from), 'utf8'));
@@ -1240,6 +1241,11 @@ copyIn('pm-asset-browser.jsx', 'src/components/pm-asset-browser/pm-asset-browser
 copyIn('pm-asset-browser.css', 'src/components/pm-asset-browser/pm-asset-browser.css');
 copyIn('pm-asset-sources.js', 'src/lib/pm-asset-sources.js');
 copyIn('pm-credits.js', 'src/lib/pm-credits.js');
+// the icon studio (game-icons.net and Iconify icons) and the game-icons.net tags / author names
+copyIn('pm-icon-studio.jsx', 'src/components/pm-asset-browser/pm-icon-studio.jsx');
+copyIn('pm-icon-studio.css', 'src/components/pm-asset-browser/pm-icon-studio.css');
+copyIn('pm-icon-svg.js', 'src/lib/pm-icon-svg.js');
+copyIn('game-icons-meta.json', 'src/lib/pm-game-icons-meta.json');
 
 // a. Each library window becomes the asset browser (the file must still be the original one).
 const replaceFile = (rel, mustContain, text) => {

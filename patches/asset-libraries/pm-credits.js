@@ -35,7 +35,7 @@ const creditLine = c => {
             `${c.license}${link(c.licenseUrl)}.${modifiedText(c)}`;
     }
     if (c.src === 'game-icons') {
-        return `Icon "${c.title}" by ${c.by} from game-icons.net${link(c.url)}, recoloured, licensed under ` +
+        return `Icon "${c.title}" by ${c.by} from game-icons.net${link(c.url)}, ${c.changes || 'recoloured'}, licensed under ` +
             `${c.license}${link(c.licenseUrl)}.${modifiedText(c)}`;
     }
     return `"${c.title}" by ${c.by || 'unknown'}${link(c.url)}, ${c.license || 'see source'}${link(c.licenseUrl)}.${modifiedText(c)}`;
@@ -47,7 +47,11 @@ const collectCredits = runtime => {
         if (!target.isOriginal) continue;
         const assets = target.getCostumes().concat(target.getSounds ? target.getSounds() : []);
         for (const asset of assets) {
-            if (asset && asset.pmCredit && asset.pmCredit.needsCredit) lines.add(creditLine(asset.pmCredit));
+            if (!asset || !asset.pmCredit) continue;
+            // an icon made in the studio can also carry the credit of the badge on it (`extra`)
+            for (const c of [asset.pmCredit].concat(asset.pmCredit.extra || [])) {
+                if (c && c.needsCredit) lines.add(creditLine(Object.assign({}, c, c === asset.pmCredit ? {} : {modified: asset.pmCredit.modified})));
+            }
         }
     }
     return Array.from(lines).sort((a, b) => a.localeCompare(b));

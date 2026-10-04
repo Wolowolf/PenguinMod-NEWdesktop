@@ -9,8 +9,9 @@ import VM from 'scratch-vm';
 import Modal from '../../containers/modal.jsx';
 import libraryStyles from '../library/library.css';
 import styles from './pm-asset-browser.css';
+import IconStudio from './pm-icon-studio.jsx';
 import {
-    LIBRARY_URL, addAsset, addGeneratedSound, loadIconSvgs, offlinePacks,
+    LIBRARY_URL, addAsset, addGeneratedSound, gameIconTags, iconifyCategory, loadIconSvgs, offlinePacks,
     searchIconify, searchOffline, searchOpenverse
 } from '../../lib/pm-asset-sources.js';
 
@@ -67,7 +68,8 @@ class AssetBrowser extends React.Component {
         this.state = {
             source, query: '', pack: -1, packs: [], type: (OPENVERSE_TYPES[props.kind] || [[null]])[0][0],
             items: [], shown: PAGE, page: 1, done: true, loading: false, error: null,
-            busy: null, status: null, playing: null, generator: null
+            busy: null, status: null, playing: null, generator: null,
+            tag: '', tags: [], category: null, studioItem: null
         };
         this.searchTimer = null;
         this.searchId = 0;
@@ -93,9 +95,15 @@ class AssetBrowser extends React.Component {
     }
     selectSource (source) {
         this.stopSound();
-        this.setState({source, items: [], shown: PAGE, error: null, status: null, generator: null, pack: -1}, () => {
+        this.setState({
+            source, items: [], shown: PAGE, error: null, status: null, generator: null, pack: -1,
+            tag: '', category: null, studioItem: null
+        }, () => {
             if (source === 'kenney') {
                 offlinePacks(this.props.kind).then(packs => this.setState({packs}), () => {});
+            }
+            if (source === 'gameIcons' && !this.state.tags.length) {
+                gameIconTags().then(tags => this.setState({tags}), () => {});
             }
             if (!isOnline(source) || this.state.query.trim()) this.runSearch(1);
         });
@@ -108,10 +116,25 @@ class AssetBrowser extends React.Component {
         }
     }
     handleQueryKey (e) {
-        if (e.key === 'Enter') this.runSearch(1);
+        if (e.key === 'Enter') this.handleSearch();
     }
     handleSearch () {
-        this.runSearch(1);
+        this.setState({category: null}, () => this.runSearch(1));
+    }
+    // A tag (game-icons) or a set category (Iconify) clicked in the studio: show all its icons.
+    showTag (tag) {
+        const item = this.state.studioItem;
+        if (item && item.source === 'iconify') {
+            this.setState({studioItem: null, query: '', category: {prefix: item.prefix, name: tag, set: item.subtitle}},
+                () => this.runSearch(1));
+        } else {
+            this.setState({studioItem: null, query: '', tag}, () => this.runSearch(1));
+        }
+    }
+    afterAdd () {
+        if (this.props.kind === 'sound' && this.props.onNewSound) this.props.onNewSound();
+        if (this.props.kind === 'sprite' && this.props.onActivateBlocksTab) this.props.onActivateBlocksTab();
+        this.props.onRequestClose();
     }
     async handleMore () {
         const {source, shown, items, done, page} = this.state;
@@ -131,11 +154,11 @@ class AssetBrowser extends React.Component {
         }
     }
     async runSearch (page) {
-        const {source, query, pack, type} = this.state;
+        const {source, query, pack, type, tag, category} = this.state;
         const {kind} = this.props;
         if (source === 'generators') return;
         const id = ++this.searchId;
-        if (isOnline(source) && !query.trim()) {
+        if (isOnline(source) && !query.trim() && !(source === 'iconify' && category)) {
             this.setState({items: [], loading: false, error: null, done: true});
             return;
         }
@@ -148,10 +171,11 @@ class AssetBrowser extends React.Component {
                 items = page > 1 ? this.state.items.concat(result.items) : result.items;
                 done = result.done;
             } else if (source === 'iconify') {
-                items = await searchIconify(query.trim());
+                items = category && !query.trim() ? await iconifyCategory(category.prefix, category.name) :
+                    await searchIconify(query.trim());
                 await loadIconSvgs(items.slice(0, ICON_PAGE));
             } else {
-                items = await searchOffline(source, kind, query, pack);
+                items = await searchOffline(source, kind, query, source === 'gameIcons' ? tag : pack);
             }
             if (id !== this.searchId || this.unmounted) return;
             this.setState({
@@ -173,9 +197,7 @@ class AssetBrowser extends React.Component {
         this.setState({busy: item.name, error: null});
         try {
             await addAsset(this.props.vm, this.props.kind, item);
-            if (this.props.kind === 'sound' && this.props.onNewSound) this.props.onNewSound();
-            if (this.props.kind === 'sprite' && this.props.onActivateBlocksTab) this.props.onActivateBlocksTab();
-            this.props.onRequestClose();
+            this.afterAdd();
         } catch (err) {
             if (!this.unmounted) this.setState({busy: null, error: `Could not add "${item.name}": ${err.message}`});
         }
@@ -241,16 +263,30 @@ class AssetBrowser extends React.Component {
     renderTile (item) {
         const {kind} = this.props;
         const needsCredit = item.credit && item.credit.needsCredit;
+        // icons open the studio; their "+" button adds them as they are
+        const studio = item.studio && (kind === 'sprite' || kind === 'costume');
+        const open = () => (studio ? this.setState({studioItem: item, error: null}) : this.handleSelect(item));
         return (
             <div
                 className={styles.tile}
                 key={item.key}
                 role="button"
                 tabIndex={0}
-                title={[item.name, item.subtitle, item.credit && item.credit.license].filter(Boolean).join('\n')}
-                onClick={() => this.handleSelect(item)}
-                onKeyDown={e => e.key === 'Enter' && this.handleSelect(item)}
+                title={[item.name, item.subtitle, item.credit && item.credit.license,
+                    studio ? 'Click to edit in the studio, + to add as it is' : ''].filter(Boolean).join('\n')}
+                onClick={open}
+                onKeyDown={e => e.key === 'Enter' && open()}
             >
+                {studio && (
+                    <button
+                        className={styles.quickAdd}
+                        title="Add as it is"
+                        onClick={e => {
+                            e.stopPropagation();
+                            this.handleSelect(item);
+                        }}
+                    >{'+'}</button>
+                )}
                 <div className={styles.thumb}>
                     {item.sound ? (
                         <button
@@ -313,8 +349,27 @@ class AssetBrowser extends React.Component {
     }
     render () {
         const {kind} = this.props;
-        const {source, query, items, shown, loading, error, busy, status, packs, pack, type, done} = this.state;
+        const {source, query, items, shown, loading, error, busy, status, packs, pack, type, done,
+            tag, tags, category, studioItem} = this.state;
         const info = SOURCE_INFO[source];
+        if (studioItem) {
+            return (
+                <Modal fullScreen contentLabel={TITLES[kind]} id="pmAssetBrowser" onRequestClose={this.handleClose}>
+                    <div className={styles.browser}>
+                        <IconStudio
+                            vm={this.props.vm}
+                            kind={kind}
+                            item={studioItem}
+                            list={items}
+                            onAdded={() => this.afterAdd()}
+                            onBack={() => this.setState({studioItem: null})}
+                            onOpen={next => this.setState({studioItem: next})}
+                            onTag={t => this.showTag(t)}
+                        />
+                    </div>
+                </Modal>
+            );
+        }
         const types = source === 'openverse' && OPENVERSE_TYPES[kind];
         const visible = items.slice(0, shown);
         const canShowMore = shown < items.length || (source === 'openverse' && !done && items.length > 0);
@@ -366,6 +421,16 @@ class AssetBrowser extends React.Component {
                                         {packs.map(p => <option key={p.i} value={p.i}>{p.title}</option>)}
                                     </select>
                                 )}
+                                {source === 'gameIcons' && tags.length > 0 && (
+                                    <select
+                                        className={styles.select}
+                                        value={tag}
+                                        onChange={e => this.setState({tag: e.target.value}, () => this.runSearch(1))}
+                                    >
+                                        <option value="">{'All tags'}</option>
+                                        {tags.map(t => <option key={t.tag} value={t.tag}>{`${t.tag} (${t.count})`}</option>)}
+                                    </select>
+                                )}
                                 {types && (
                                     <select
                                         className={styles.select}
@@ -381,6 +446,14 @@ class AssetBrowser extends React.Component {
                             </div>
                         )}
                         <div className={styles.notice}>{info.note}</div>
+                        {source === 'iconify' && category && !query.trim() && (
+                            <div className={styles.status}>
+                                {`Category "${category.name}" of ${category.set}. `}
+                                <button className={styles.linkButton} onClick={() => this.setState({category: null, items: []})}>
+                                    {'clear'}
+                                </button>
+                            </div>
+                        )}
                         {error && <div className={styles.error}>{error}</div>}
                         {status && <div className={styles.status}>{status}</div>}
                         {source === 'generators' ? this.renderGenerators() : (
