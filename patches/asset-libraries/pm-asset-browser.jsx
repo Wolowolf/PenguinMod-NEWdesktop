@@ -9,11 +9,14 @@ import VM from 'scratch-vm';
 import Modal from '../../containers/modal.jsx';
 import libraryStyles from '../library/library.css';
 import styles from './pm-asset-browser.css';
-import IconStudio from './pm-icon-studio.jsx';
+import IconStudio, {quickAddStudio, studioThumbs} from './pm-icon-studio.jsx';
 import {
-    LIBRARY_URL, addAsset, addGeneratedSound, gameIconTags, iconifyCategory, loadIconSvgs, offlinePacks,
+    LIBRARY_URL, addAsset, addGeneratedSound, gameIconTags, iconifyCategory, loadIconSvgs, loadWaveform, offlinePacks,
     searchIconify, searchOffline, searchOpenverse
 } from '../../lib/pm-asset-sources.js';
+
+const formatDuration = d => (d < 1 ? `${d.toFixed(2)} s` : d < 10 ? `${d.toFixed(1)} s` :
+    `${Math.floor(d / 60)}:${String(Math.round(d % 60)).padStart(2, '0')}`);
 
 const TITLES = {
     sprite: 'Choose a Sprite', costume: 'Choose a Costume', backdrop: 'Choose a Backdrop', sound: 'Choose a Sound'
@@ -55,7 +58,7 @@ const OPENVERSE_TYPES = {
     costume: [['illustration', 'Illustrations & clip art'], ['all', 'All images']],
     sound: [['sfx', 'Sound effects (Freesound)'], ['music', 'Music (Jamendo)'], ['all', 'Both']]
 };
-const PAGE = 120; // items shown at once; "Show more" adds this many
+const PAGE = 120; // items shown at once; scrolling to the end shows this many more
 const ICON_PAGE = 60; // Iconify: fewer, its public API limits how much one app may ask for
 
 const isOnline = source => source === 'iconify' || source === 'openverse';
@@ -69,12 +72,25 @@ class AssetBrowser extends React.Component {
             source, query: '', pack: -1, packs: [], type: (OPENVERSE_TYPES[props.kind] || [[null]])[0][0],
             items: [], shown: PAGE, page: 1, done: true, loading: false, error: null,
             busy: null, status: null, playing: null, generator: null,
-            tag: '', tags: [], category: null, studioItem: null
+            tag: '', tags: [], category: null, studioItem: null, redraw: 0
         };
         this.searchTimer = null;
+        this.redrawTimer = null;
         this.searchId = 0;
         this.audio = null;
         this.frame = null;
+        this.observer = null;
+        // Endless scrolling: a marker after the last tile loads more when it comes into view.
+        this.setSentinel = el => {
+            if (this.observer) this.observer.disconnect();
+            this.sentinel = el;
+            if (el && typeof IntersectionObserver !== 'undefined') {
+                this.observer = new IntersectionObserver(entries => {
+                    if (entries.some(e => e.isIntersecting)) this.handleMore();
+                }, {root: el.parentElement, rootMargin: '400px'});
+                this.observer.observe(el);
+            }
+        };
         this.handleClose = this.handleClose.bind(this);
         this.handleQueryChange = this.handleQueryChange.bind(this);
         this.handleQueryKey = this.handleQueryKey.bind(this);
@@ -91,7 +107,45 @@ class AssetBrowser extends React.Component {
     componentWillUnmount () {
         this.unmounted = true;
         clearTimeout(this.searchTimer);
+        clearTimeout(this.redrawTimer);
+        if (this.observer) this.observer.disconnect();
         this.stopSound();
+    }
+    // The page is not full yet (marker still in view after loading): load more.
+    fillPage () {
+        setTimeout(() => {
+            if (this.unmounted || !this.sentinel || this.state.loading) return;
+            const box = this.sentinel.parentElement.getBoundingClientRect();
+            if (this.sentinel.getBoundingClientRect().top < box.bottom + 400) this.handleMore();
+        }, 50);
+    }
+    scheduleRedraw () {
+        if (!this.redrawTimer) {
+            this.redrawTimer = setTimeout(() => {
+                this.redrawTimer = null;
+                if (!this.unmounted) this.setState(s => ({redraw: s.redraw + 1}));
+            }, 150);
+        }
+    }
+    // Icon previews in the current studio style, and the waveform and length of sounds.
+    async decorate (items) {
+        try {
+            if (await studioThumbs(items)) this.scheduleRedraw();
+        } catch (e) { /* plain previews */ }
+        const sounds = items.filter(item => item.sound && item.source === 'kenney' && !item.peaks);
+        let next = 0;
+        const worker = async () => {
+            while (next < sounds.length && !this.unmounted) {
+                const item = sounds[next++];
+                try {
+                    await loadWaveform(item);
+                } catch (e) {
+                    item.peaks = [];
+                }
+                this.scheduleRedraw();
+            }
+        };
+        await Promise.all([worker(), worker(), worker(), worker()]);
     }
     selectSource (source) {
         this.stopSound();
@@ -105,7 +159,7 @@ class AssetBrowser extends React.Component {
             if (source === 'gameIcons' && !this.state.tags.length) {
                 gameIconTags().then(tags => this.setState({tags}), () => {});
             }
-            if (!isOnline(source) || this.state.query.trim()) this.runSearch(1);
+            if (source !== 'openverse' || this.state.query.trim()) this.runSearch(1);
         });
     }
     handleQueryChange (e) {
@@ -137,18 +191,21 @@ class AssetBrowser extends React.Component {
         this.props.onRequestClose();
     }
     async handleMore () {
-        const {source, shown, items, done, page} = this.state;
+        const {source, shown, items, done, page, loading} = this.state;
+        if (loading || this.state.studioItem) return;
         if (shown < items.length) {
             const next = shown + pageSize(source);
+            this.setState({loading: true});
             if (source === 'iconify') {
-                this.setState({loading: true});
                 try {
                     await loadIconSvgs(items.slice(shown, next));
                 } catch (err) {
                     if (!this.unmounted) this.setState({error: err.message});
                 }
             }
-            if (!this.unmounted) this.setState({shown: next, loading: false});
+            if (this.unmounted) return;
+            this.setState({shown: next, loading: false}, () => this.fillPage());
+            this.decorate(items.slice(shown, next));
         } else if (source === 'openverse' && !done) {
             this.runSearch(page + 1);
         }
@@ -158,7 +215,7 @@ class AssetBrowser extends React.Component {
         const {kind} = this.props;
         if (source === 'generators') return;
         const id = ++this.searchId;
-        if (isOnline(source) && !query.trim() && !(source === 'iconify' && category)) {
+        if (source === 'openverse' && !query.trim()) {
             this.setState({items: [], loading: false, error: null, done: true});
             return;
         }
@@ -178,10 +235,9 @@ class AssetBrowser extends React.Component {
                 items = await searchOffline(source, kind, query, source === 'gameIcons' ? tag : pack);
             }
             if (id !== this.searchId || this.unmounted) return;
-            this.setState({
-                items, done, page, loading: false,
-                shown: page > 1 ? items.length : pageSize(source)
-            });
+            const shown = page > 1 ? items.length : pageSize(source);
+            this.setState({items, done, page, loading: false, shown}, () => this.fillPage());
+            this.decorate(page > 1 ? items.slice(this.state.shown) : items.slice(0, shown));
         } catch (err) {
             if (id !== this.searchId || this.unmounted) return;
             const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
@@ -189,6 +245,16 @@ class AssetBrowser extends React.Component {
                 loading: false, items: page > 1 ? this.state.items : [],
                 error: offline && isOnline(source) ? `${SOURCE_INFO[source].label} needs an internet connection.` : err.message
             });
+        }
+    }
+    async handleQuickAdd (item) {
+        if (this.state.busy) return;
+        this.setState({busy: item.name, error: null});
+        try {
+            await quickAddStudio(this.props.vm, this.props.kind, item);
+            this.afterAdd();
+        } catch (err) {
+            if (!this.unmounted) this.setState({busy: null, error: `Could not add "${item.name}": ${err.message}`});
         }
     }
     async handleSelect (item) {
@@ -263,9 +329,11 @@ class AssetBrowser extends React.Component {
     renderTile (item) {
         const {kind} = this.props;
         const needsCredit = item.credit && item.credit.needsCredit;
-        // icons open the studio; their "+" button adds them as they are
+        // icons open the studio; their "+" button adds them as their preview shows them
         const studio = item.studio && (kind === 'sprite' || kind === 'costume');
         const open = () => (studio ? this.setState({studioItem: item, error: null}) : this.handleSelect(item));
+        const thumb = (studio && item.styledThumb) || item.thumb;
+        const playing = this.state.playing === item.key;
         return (
             <div
                 className={styles.tile}
@@ -273,31 +341,41 @@ class AssetBrowser extends React.Component {
                 role="button"
                 tabIndex={0}
                 title={[item.name, item.subtitle, item.credit && item.credit.license,
-                    studio ? 'Click to edit in the studio, + to add as it is' : ''].filter(Boolean).join('\n')}
+                    needsCredit ? 'Needs credit: added to the "credit" sprite automatically' : '',
+                    studio ? 'Click to edit in the studio, + to add it as shown' : ''].filter(Boolean).join('\n')}
                 onClick={open}
                 onKeyDown={e => e.key === 'Enter' && open()}
             >
                 {studio && (
                     <button
                         className={styles.quickAdd}
-                        title="Add as it is"
+                        title="Add it as shown"
                         onClick={e => {
                             e.stopPropagation();
-                            this.handleSelect(item);
+                            this.handleQuickAdd(item);
                         }}
                     >{'+'}</button>
                 )}
-                <div className={styles.thumb}>
+                <div className={classNames(styles.thumb, item.sound && styles.soundThumb)}>
                     {item.sound ? (
-                        <button
-                            className={classNames(styles.play, this.state.playing === item.key && styles.playing)}
-                            title={this.state.playing === item.key ? 'Stop' : 'Play'}
-                            onClick={e => this.togglePlay(item, e)}
-                        >{this.state.playing === item.key ? '■' : '▶'}</button>
-                    ) : (item.thumb ? (
+                        <React.Fragment>
+                            {item.peaks && item.peaks.length > 0 && (
+                                <svg className={styles.wave} viewBox={`0 0 ${item.peaks.length} 32`} preserveAspectRatio="none">
+                                    {item.peaks.map((p, i) => (
+                                        <rect key={i} x={i + 0.15} width={0.7} y={16 - Math.max(0.5, p * 15)} height={Math.max(1, p * 30)} />
+                                    ))}
+                                </svg>
+                            )}
+                            <button
+                                className={classNames(styles.play, playing && styles.playing)}
+                                title={playing ? 'Stop' : 'Play'}
+                                onClick={e => this.togglePlay(item, e)}
+                            >{playing ? '■' : '▶'}</button>
+                        </React.Fragment>
+                    ) : (thumb ? (
                         <img
                             className={classNames(styles.image, kind === 'backdrop' && styles.cover)}
-                            src={item.thumb}
+                            src={thumb}
                             onError={e => {
                                 if (item.url && e.target.src !== item.url) e.target.src = item.url;
                             }}
@@ -306,14 +384,10 @@ class AssetBrowser extends React.Component {
                             alt=""
                         />
                     ) : null)}
+                    {item.duration ? <span className={styles.duration}>{formatDuration(item.duration)}</span> : null}
+                    {needsCredit && <span className={styles.creditMark}>{'C'}</span>}
                 </div>
                 <div className={styles.name}>{item.name}</div>
-                <div className={styles.meta}>
-                    {item.duration ? `${Math.round(item.duration)} s · ` : ''}{item.subtitle}
-                </div>
-                <div className={classNames(styles.badge, needsCredit && styles.badgeCredit)}>
-                    {item.credit ? item.credit.license : ''}{needsCredit ? ' · credit' : ''}
-                </div>
             </div>
         );
     }
@@ -365,7 +439,10 @@ class AssetBrowser extends React.Component {
                             item={studioItem}
                             list={items}
                             onAdded={() => this.afterAdd()}
-                            onBack={() => this.setState({studioItem: null})}
+                            onBack={() => {
+                                this.setState({studioItem: null});
+                                this.decorate(this.state.items.slice(0, this.state.shown)); // the studio style may have changed
+                            }}
                             onOpen={next => this.setState({studioItem: next})}
                             onTag={t => this.showTag(t)}
                         />
@@ -396,7 +473,7 @@ class AssetBrowser extends React.Component {
                             </button>
                         ))}
                         <p className={styles.sidebarNote}>
-                            {'Items marked "credit" add their credit line to the "credit" sprite automatically.'}
+                            {'Items with an orange C need credit: it is added to the "credit" sprite automatically.'}
                         </p>
                     </div>
                     <div className={styles.main}>
@@ -464,13 +541,11 @@ class AssetBrowser extends React.Component {
                                 {visible.map(item => this.renderTile(item))}
                                 {!loading && !items.length && !error && (
                                     <div className={styles.empty}>
-                                        {isOnline(source) && !query.trim() ? 'Type something to search.' : 'Nothing found.'}
+                                        {source === 'openverse' && !query.trim() ? 'Type something to search.' : 'Nothing found.'}
                                     </div>
                                 )}
                                 {canShowMore && (
-                                    <button className={styles.more} onClick={this.handleMore} disabled={loading}>
-                                        {'Show more'}
-                                    </button>
+                                    <div className={styles.more} ref={this.setSentinel}>{loading ? 'Loading…' : ''}</div>
                                 )}
                             </div>
                         )}
