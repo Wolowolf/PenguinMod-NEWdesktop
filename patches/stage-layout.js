@@ -1247,6 +1247,10 @@ copyIn('pm-icon-studio.css', 'src/components/pm-asset-browser/pm-icon-studio.css
 copyIn('pm-icon-svg.js', 'src/lib/pm-icon-svg.js');
 copyIn('game-icons-meta.json', 'src/lib/pm-game-icons-meta.json');
 copyIn('search-words.json', 'src/lib/pm-search-words.json'); // related words for the search (WordNet)
+// libraries unlocked with the user's own API key (Pixabay, Europeana, Openverse)
+copyIn('pm-api-keys.js', 'src/lib/pm-api-keys.js');
+copyIn('pm-api-key-panel.jsx', 'src/components/pm-asset-browser/pm-api-key-panel.jsx');
+copyIn('pm-api-key-panel.css', 'src/components/pm-asset-browser/pm-api-key-panel.css');
 
 // a. Each library window becomes the asset browser (the file must still be the original one).
 const replaceFile = (rel, mustContain, text) => {

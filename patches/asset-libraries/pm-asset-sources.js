@@ -10,6 +10,7 @@ import {inlineSvgFonts} from 'scratch-svg-renderer';
 import {costumeUpload, soundUpload, spriteUpload} from './file-uploader.js';
 import gameIconsMeta from './pm-game-icons-meta.json'; // tags and author names from game-icons.net
 import searchWords from './pm-search-words.json'; // related words for the search (from WordNet)
+import {getKey, openverseToken, setKey} from './pm-api-keys.js';
 
 export const LIBRARY_URL = '/__library__/';
 const OPENVERSE = 'https://api.openverse.org/v1/';
@@ -293,14 +294,138 @@ export const searchOpenverse = async (kind, query, page, type) => {
     } else if (type === 'illustration') {
         params.set('category', 'illustration');
     }
-    const res = await fetch(`${OPENVERSE}${endpoint}?${params}`);
-    if (res.status === 401) return {items: [], done: true}; // past the limit for apps without a key
+    const url = `${OPENVERSE}${endpoint}?${params}`;
+    const cached = memo.get(url);
+    if (cached) return cached;
+    // With the user's own key: 100 searches a minute and 10,000 a day (20 and 200 without one).
+    let res = await fetch(url, {headers: {Authorization: `Bearer ${await openverseToken()}`}});
+    if (res.status === 401) {
+        setKey('openverse', Object.assign({}, getKey('openverse'), {token: null})); // the token ran out early
+        res = await fetch(url, {headers: {Authorization: `Bearer ${await openverseToken()}`}});
+    }
+    if (res.status === 429) {
+        throw new Error('Openverse\'s limit is reached for now (100 searches a minute, 10,000 a day; 20 and 200 until your ' +
+            'email address is confirmed). Try again in a minute.');
+    }
     if (!res.ok) throw new Error(`Openverse answered HTTP ${res.status}.`);
     const json = await res.json();
     const items = (json.results || [])
         .filter(r => OPENVERSE_LICENSES.includes(r.license) && r.url)
         .map(r => openverseItem(kind, r));
-    return {items, done: page >= (json.page_count || 0), total: json.result_count || 0};
+    const result = {items, done: page >= (json.page_count || 0), total: json.result_count || 0};
+    memo.set(url, result);
+    return result;
+};
+
+// Results kept for this session (the same search twice costs no request).
+const memo = new Map();
+
+// ---- Pixabay (user's key: 100 searches a minute, no daily limit) ---------------------------------
+// Pixabay asks apps to keep results for 24 hours and to show where the images come from.
+
+const PIXABAY_CACHE = 'pmdesktop:pixabayCache';
+const pixabayCache = () => {
+    try {
+        const all = JSON.parse(localStorage.getItem(PIXABAY_CACHE)) || {};
+        const now = Date.now();
+        for (const k of Object.keys(all)) if (all[k].time < now - 24 * 3600 * 1000) delete all[k];
+        return all;
+    } catch (e) {
+        return {};
+    }
+};
+
+// type: 'vector' | 'illustration' | 'photo' | 'all'. Without a search: a random everyday subject.
+export const searchPixabay = async (kind, query, page, type, randomWord) => {
+    const key = (getKey('pixabay') || {}).key;
+    const q = (query.trim() || randomWord || '').slice(0, 100);
+    const params = new URLSearchParams({
+        q, page: String(page), per_page: '40', safesearch: 'true',
+        image_type: kind === 'backdrop' ? 'photo' : (type || 'all')
+    });
+    if (kind === 'backdrop') params.set('orientation', 'horizontal');
+    const id = params.toString();
+    const cache = pixabayCache();
+    let json = cache[id] && cache[id].json;
+    if (!json) {
+        const res = await fetch(`https://pixabay.com/api/?key=${encodeURIComponent(key)}&${id}`);
+        if (res.status === 429) throw new Error('Pixabay\'s limit of 100 searches a minute is reached. Try again in a minute.');
+        if (res.status === 400 || res.status === 401) throw new Error('Pixabay does not accept your key any more. Change it with "Change key".');
+        if (!res.ok) throw new Error(`Pixabay answered HTTP ${res.status}.`);
+        json = await res.json();
+        // only what the tiles need, so many searches fit in the 24-hour cache
+        json = {totalHits: json.totalHits, hits: (json.hits || []).map(h => ({
+            id: h.id, tags: h.tags, user: h.user, pageURL: h.pageURL, previewURL: h.previewURL,
+            webformatURL: h.webformatURL, largeImageURL: h.largeImageURL, type: h.type
+        }))};
+        cache[id] = {time: Date.now(), json};
+        try {
+            localStorage.setItem(PIXABAY_CACHE, JSON.stringify(cache));
+        } catch (e) { /* cache full: results are still shown */ }
+    }
+    const items = json.hits.map(h => {
+        const name = niceName((h.tags || 'image').split(',')[0]);
+        return {
+            key: `pixabay:${h.id}`, source: 'pixabay', name, subtitle: `by ${h.user}`,
+            thumb: h.webformatURL || h.previewURL, url: h.largeImageURL || h.webformatURL,
+            fallbackUrl: h.webformatURL, mime: mimeOf(h.largeImageURL || h.webformatURL || ''),
+            credit: {
+                src: 'pixabay', id: String(h.id), title: name, by: h.user, url: h.pageURL,
+                license: 'Pixabay Content License', licenseUrl: 'https://pixabay.com/service/license-summary/', needsCredit: false
+            }
+        };
+    });
+    return {items, done: page * 40 >= Math.min(json.totalHits || 0, 500)};
+};
+
+// ---- Europeana (user's key: no limits) ------------------------------------------------------------
+// Museum and archive images. reusability=open also returns CC BY-SA: removed here (no SA, ND or NC).
+
+const EUROPEANA_OK = /creativecommons\.org\/(publicdomain\/(mark|zero)\/|licenses\/by\/)/i;
+const europeanaLicense = rights => {
+    if (/publicdomain\/mark/i.test(rights)) return 'Public domain';
+    if (/publicdomain\/zero/i.test(rights)) return 'CC0';
+    const v = rights.match(/licenses\/by\/([\d.]+)/i);
+    return `CC BY${v ? ` ${v[1]}` : ''}`;
+};
+const first = v => (Array.isArray(v) ? v[0] : v) || '';
+
+export const searchEuropeana = async (kind, query, page, randomWord) => {
+    const key = (getKey('europeana') || {}).key;
+    const rows = 24;
+    const start = (page - 1) * rows + 1;
+    const params = new URLSearchParams({
+        wskey: key, query: query.trim() || randomWord || '*', rows: String(rows), start: String(start),
+        reusability: 'open', media: 'true', qf: 'TYPE:IMAGE', profile: 'standard'
+    });
+    const url = `https://api.europeana.eu/record/v2/search.json?${params}`;
+    let result = memo.get(url);
+    if (result) return result;
+    const res = await fetch(url);
+    if (res.status === 400 || res.status === 401) throw new Error('Europeana does not accept your key any more. Change it with "Change key".');
+    if (!res.ok) throw new Error(`Europeana answered HTTP ${res.status}.`);
+    const json = await res.json();
+    const items = (json.items || []).filter(it => EUROPEANA_OK.test(first(it.rights))).map(it => {
+        const rights = first(it.rights);
+        const title = String(first(it.title) || 'Untitled').trim();
+        const itemPage = String(it.guid || '').replace(/\?.*$/, '');
+        const creator = String(first(it.dcCreator) || '').trim();
+        const institution = String(first(it.dataProvider) || '').trim();
+        return {
+            key: `europeana:${it.id}`, source: 'europeana', name: title.slice(0, 80),
+            subtitle: [creator && `by ${creator}`, institution].filter(Boolean).join(' · '),
+            thumb: first(it.edmPreview), url: first(it.edmIsShownBy) || first(it.edmPreview),
+            fallbackUrl: first(it.edmPreview), mime: '',
+            credit: {
+                src: 'europeana', id: it.id, title, by: creator, institution, url: itemPage,
+                license: europeanaLicense(rights), licenseUrl: rights, needsCredit: /licenses\/by\//i.test(rights)
+            }
+        };
+    });
+    // Europeana pages through the first 1,000 results this way
+    result = {items, done: start + rows > Math.min(json.totalResults || 0, 1000)};
+    memo.set(url, result);
+    return result;
 };
 
 // ---- Iconify -----------------------------------------------------------------------------------
@@ -384,6 +509,7 @@ const RANDOM_WORDS = ['star', 'heart', 'sword', 'tree', 'cat', 'dog', 'house', '
     'cake', 'gift', 'trophy', 'bell', 'camera', 'clock', 'eye', 'hand', 'smile', 'snow', 'hammer', 'arrow', 'potion',
     'train', 'plane', 'ship', 'bug', 'paw', 'horse', 'chess', 'dice', 'alien', 'tent', 'candy', 'soccer', 'guitar'];
 const pick = (list, n) => shuffle(list).slice(0, n);
+export const randomSubject = () => pick(RANDOM_WORDS, 1)[0];
 
 // Iconify search, plus a few related words ("fruit" also searches apple, banana...); without a
 // search, a random mix of three everyday subjects.
@@ -505,19 +631,30 @@ const normalizeSvg = (data, maxSide, fitSide) => {
     return new TextEncoder().encode(new XMLSerializer().serializeToString(doc)).buffer;
 };
 
+// One file: directly, or through the app when the site doesn't allow pages to download it (many
+// museum and photo sites). Returns {data, type} or null.
+const fetchFile = async url => {
+    if (!url) return null;
+    try {
+        const res = await fetch(url);
+        if (res.ok) return {data: await res.arrayBuffer(), type: (res.headers.get('content-type') || '').split(';')[0].trim()};
+    } catch (err) { /* blocked for pages: try through the app */ }
+    if (typeof window !== 'undefined' && window.PMDesktop && window.PMDesktop.fetchBytes) {
+        const res = await window.PMDesktop.fetchBytes(url);
+        if (res && res.ok) return {data: res.data, type: (res.type || '').split(';')[0].trim()};
+    }
+    return null;
+};
+
 const download = async item => {
     if (item.pngData) return {data: item.pngData, type: 'image/png'};
     if (item.svgText) return {data: new TextEncoder().encode(item.svgText).buffer, type: 'image/svg+xml'};
-    let res = null;
-    try {
-        res = await fetch(item.url);
-    } catch (err) {
-        if (!item.fallbackUrl) throw err;
-    }
-    if ((!res || !res.ok) && item.fallbackUrl) res = await fetch(item.fallbackUrl);
-    if (!res.ok) throw new Error(`download failed (HTTP ${res.status})`);
-    const type = item.mime || (res.headers.get('content-type') || '').split(';')[0].trim() || mimeOf(item.url);
-    return {data: await res.arrayBuffer(), type};
+    let file = await fetchFile(item.url);
+    // the full file must really be a picture or a sound (some sites send a web page instead)
+    if (!file || !/^(image|audio)\//.test(file.type || item.mime || mimeOf(item.url))) file = await fetchFile(item.fallbackUrl);
+    if (!file) throw new Error('the file could not be downloaded');
+    const type = /^(image|audio)\//.test(file.type) ? file.type : (item.mime || mimeOf(item.url));
+    return {data: file.data, type};
 };
 
 // Adds a costume made by the studio as it is, centred, bypassing the normal upload:

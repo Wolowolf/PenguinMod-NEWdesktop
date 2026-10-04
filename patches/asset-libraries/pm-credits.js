@@ -30,6 +30,10 @@ const creditLine = c => {
         return `"${c.title || 'Untitled'}" by ${c.by || 'an unknown author'}${link(c.url)}, licensed under ` +
             `${c.license}${link(c.licenseUrl)}.${modifiedText(c)}`;
     }
+    if (c.src === 'europeana') {
+        return `"${c.title || 'Untitled'}"${c.by ? ` by ${c.by}` : ''}${c.institution ? `, ${c.institution}` : ''}` +
+            `${link(c.url)} via Europeana, licensed under ${c.license}${link(c.licenseUrl)}.${modifiedText(c)}`;
+    }
     if (c.src === 'iconify') {
         return `Icon "${c.title}" from ${c.set}, copyright ${c.by}${link(c.byUrl)}, licensed under ` +
             `${c.license}${link(c.licenseUrl)}.${modifiedText(c)}`;

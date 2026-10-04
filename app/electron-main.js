@@ -7,6 +7,7 @@ const {
   protocol,
   net,
   Menu,
+  shell,
 } = require("electron");
 const path = require("path");
 const fs = require("fs");
@@ -276,6 +277,38 @@ function storeLocalFile(filePath) {
   pendingLocalFiles.set(id, buf);
   return `https://studio.penguinmod.com/__localfile__/${id}`;
 }
+
+// ---- asset libraries: key sign-up pages and downloads ----------------------------------------
+
+// Only these pages (where the library keys are made) can be opened in the user's own browser.
+const KEY_PAGES = ["pixabay.com", "pro.europeana.eu", "www.europeana.eu", "api.openverse.org", "docs.openverse.org"];
+ipcMain.handle("pm-open-external", async (_event, url) => {
+  try {
+    const u = new URL(url);
+    if (u.protocol === "https:" && KEY_PAGES.includes(u.host)) {
+      await shell.openExternal(u.href);
+      return true;
+    }
+  } catch (_) { }
+  return false;
+});
+
+// Downloads a picture or a sound for the libraries when its site doesn't allow pages to (no CORS).
+// Only images and audio, at most 40 MB, in a separate session without this app's cookies.
+const MAX_ASSET_BYTES = 40 * 1024 * 1024;
+let assetSession = null;
+ipcMain.handle("pm-fetch-bytes", async (_event, url) => {
+  const u = new URL(url);
+  if (u.protocol !== "https:" && u.protocol !== "http:") return { ok: false, status: 0 };
+  if (!assetSession) assetSession = session.fromPartition("pm-asset-downloads");
+  const res = await assetSession.fetch(u.href, { bypassCustomProtocolHandlers: true });
+  const type = res.headers.get("content-type") || "";
+  if (!res.ok || !/^(image|audio)\//i.test(type)) return { ok: false, status: res.status };
+  if (+(res.headers.get("content-length") || 0) > MAX_ASSET_BYTES) return { ok: false, status: 413 };
+  const data = await res.arrayBuffer();
+  if (data.byteLength > MAX_ASSET_BYTES) return { ok: false, status: 413 };
+  return { ok: true, status: res.status, type, data };
+});
 
 // A file of the offline library, or 404 (never the internet). Paths can't leave LIBRARY_DIR.
 function serveLibraryFile(encodedPath) {
