@@ -10,10 +10,18 @@ import Modal from '../../containers/modal.jsx';
 import libraryStyles from '../library/library.css';
 import styles from './pm-asset-browser.css';
 import IconStudio, {quickAddStudio, studioThumbs} from './pm-icon-studio.jsx';
+import ApiKeyPanel from './pm-api-key-panel.jsx';
+import {hasKey} from '../../lib/pm-api-keys.js';
 import {
     LIBRARY_URL, addAsset, addGeneratedSound, gameIconTags, iconifyCategory, loadIconSvgs, loadWaveform, offlinePacks,
-    searchIconify, searchOffline, searchOpenverse
+    randomSubject, searchEuropeana, searchIconify, searchOffline, searchOpenverse, searchPixabay
 } from '../../lib/pm-asset-sources.js';
+
+// Libraries that need the user's own (free) API key: locked until one is entered.
+const KEY_SOURCES = ['pixabay', 'europeana', 'openverse'];
+const locked = source => KEY_SOURCES.includes(source) && !hasKey(source);
+// Libraries whose results come page by page from the internet.
+const SERVER_PAGED = ['openverse', 'pixabay', 'europeana'];
 
 const formatDuration = d => (d < 1 ? `${d.toFixed(2)} s` : d < 10 ? `${d.toFixed(1)} s` :
     `${Math.floor(d / 60)}:${String(Math.round(d % 60)).padStart(2, '0')}`);
@@ -22,9 +30,9 @@ const TITLES = {
     sprite: 'Choose a Sprite', costume: 'Choose a Costume', backdrop: 'Choose a Backdrop', sound: 'Choose a Sound'
 };
 const SOURCES = {
-    sprite: ['kenney', 'gameIcons', 'iconify', 'openverse'],
-    costume: ['kenney', 'gameIcons', 'iconify', 'openverse'],
-    backdrop: ['kenney', 'openverse'],
+    sprite: ['kenney', 'gameIcons', 'iconify', 'pixabay', 'europeana', 'openverse'],
+    costume: ['kenney', 'gameIcons', 'iconify', 'pixabay', 'europeana', 'openverse'],
+    backdrop: ['kenney', 'pixabay', 'europeana', 'openverse'],
     sound: ['kenney', 'generators', 'openverse']
 };
 const SOURCE_INFO = {
@@ -37,6 +45,15 @@ const SOURCE_INFO = {
         label: 'Iconify', where: 'Online',
         note: 'Icon sets whose licence allows commercial use (no NC, ND, SA, GPL or brand logos). ' +
             'When a set asks for credit, it is added to the "credit" sprite.'
+    },
+    pixabay: {
+        label: 'Pixabay', where: 'Online',
+        note: 'Images from Pixabay (pixabay.com). Pixabay Content License: free for commercial use, no credit needed.'
+    },
+    europeana: {
+        label: 'Europeana', where: 'Online',
+        note: 'Images from European museums and archives via Europeana. Only public domain, CC0 and CC BY; ' +
+            'CC BY items are credited automatically in the "credit" sprite.'
     },
     openverse: {
         label: 'Openverse', where: 'Online',
@@ -58,10 +75,11 @@ const OPENVERSE_TYPES = {
     costume: [['illustration', 'Illustrations & clip art'], ['all', 'All images']],
     sound: [['sfx', 'Sound effects (Freesound)'], ['music', 'Music (Jamendo)'], ['all', 'Both']]
 };
+const PIXABAY_TYPES = [['vector', 'Vector graphics'], ['illustration', 'Illustrations'], ['photo', 'Photos'], ['all', 'All images']];
 const PAGE = 120; // items shown at once; scrolling to the end shows this many more
 const ICON_PAGE = 60; // Iconify: fewer, its public API limits how much one app may ask for
 
-const isOnline = source => source === 'iconify' || source === 'openverse';
+const isOnline = source => source === 'iconify' || SERVER_PAGED.includes(source);
 const pageSize = source => (source === 'iconify' ? ICON_PAGE : PAGE);
 
 class AssetBrowser extends React.Component {
@@ -72,8 +90,9 @@ class AssetBrowser extends React.Component {
             source, query: '', pack: -1, packs: [], type: (OPENVERSE_TYPES[props.kind] || [[null]])[0][0],
             items: [], shown: PAGE, page: 1, done: true, loading: false, error: null,
             busy: null, status: null, playing: null, generator: null,
-            tag: '', tags: [], category: null, studioItem: null, redraw: 0
+            tag: '', tags: [], category: null, studioItem: null, redraw: 0, keyPanel: false
         };
+        this.randomWord = randomSubject(); // the subject shown when an online library opens empty
         this.searchTimer = null;
         this.redrawTimer = null;
         this.searchId = 0;
@@ -151,7 +170,8 @@ class AssetBrowser extends React.Component {
         this.stopSound();
         this.setState({
             source, items: [], shown: PAGE, error: null, status: null, generator: null, pack: -1,
-            tag: '', category: null, studioItem: null
+            tag: '', category: null, studioItem: null, keyPanel: false,
+            type: source === 'pixabay' ? PIXABAY_TYPES[0][0] : (OPENVERSE_TYPES[this.props.kind] || [[null]])[0][0]
         }, () => {
             if (source === 'kenney') {
                 offlinePacks(this.props.kind).then(packs => this.setState({packs}), () => {});
@@ -159,7 +179,7 @@ class AssetBrowser extends React.Component {
             if (source === 'gameIcons' && !this.state.tags.length) {
                 gameIconTags().then(tags => this.setState({tags}), () => {});
             }
-            if (source !== 'openverse' || this.state.query.trim()) this.runSearch(1);
+            if (!locked(source)) this.runSearch(1);
         });
     }
     handleQueryChange (e) {
@@ -206,7 +226,7 @@ class AssetBrowser extends React.Component {
             if (this.unmounted) return;
             this.setState({shown: next, loading: false}, () => this.fillPage());
             this.decorate(items.slice(shown, next));
-        } else if (source === 'openverse' && !done) {
+        } else if (SERVER_PAGED.includes(source) && !done) {
             this.runSearch(page + 1);
         }
     }
@@ -215,7 +235,7 @@ class AssetBrowser extends React.Component {
         const {kind} = this.props;
         if (source === 'generators') return;
         const id = ++this.searchId;
-        if (source === 'openverse' && !query.trim()) {
+        if (locked(source)) {
             this.setState({items: [], loading: false, error: null, done: true});
             return;
         }
@@ -224,9 +244,16 @@ class AssetBrowser extends React.Component {
             let items;
             let done = true;
             if (source === 'openverse') {
-                const result = await searchOpenverse(kind, query.trim(), page, type);
+                const result = await searchOpenverse(kind, query.trim() || this.randomWord, page, type);
                 items = page > 1 ? this.state.items.concat(result.items) : result.items;
                 done = result.done;
+            } else if (source === 'pixabay' || source === 'europeana') {
+                const result = source === 'pixabay' ?
+                    await searchPixabay(kind, query, page, type, this.randomWord) :
+                    await searchEuropeana(kind, query, page, this.randomWord);
+                const seen = new Set(page > 1 ? this.state.items.map(item => item.key) : []);
+                items = (page > 1 ? this.state.items : []).concat(result.items.filter(item => !seen.has(item.key)));
+                done = result.done || (page > 1 && items.length === this.state.items.length);
             } else if (source === 'iconify') {
                 items = category && !query.trim() ? await iconifyCategory(category.prefix, category.name) :
                     await searchIconify(query.trim());
@@ -450,9 +477,11 @@ class AssetBrowser extends React.Component {
                 </Modal>
             );
         }
-        const types = source === 'openverse' && OPENVERSE_TYPES[kind];
+        const types = (source === 'openverse' && OPENVERSE_TYPES[kind]) ||
+            (source === 'pixabay' && kind !== 'backdrop' && PIXABAY_TYPES);
+        const showKeyPanel = locked(source) || this.state.keyPanel;
         const visible = items.slice(0, shown);
-        const canShowMore = shown < items.length || (source === 'openverse' && !done && items.length > 0);
+        const canShowMore = shown < items.length || (SERVER_PAGED.includes(source) && !done && items.length > 0);
         return (
             <Modal
                 fullScreen
@@ -469,7 +498,7 @@ class AssetBrowser extends React.Component {
                                 onClick={() => this.selectSource(s)}
                             >
                                 <span className={styles.sourceLabel}>{SOURCE_INFO[s].label}</span>
-                                <span className={styles.sourceWhere}>{SOURCE_INFO[s].where}</span>
+                                <span className={styles.sourceWhere}>{locked(s) ? '🔒 Key' : SOURCE_INFO[s].where}</span>
                             </button>
                         ))}
                         <p className={styles.sidebarNote}>
@@ -477,7 +506,7 @@ class AssetBrowser extends React.Component {
                         </p>
                     </div>
                     <div className={styles.main}>
-                        {source !== 'generators' && (
+                        {source !== 'generators' && !showKeyPanel && (
                             <div className={styles.toolbar}>
                                 <input
                                     className={styles.search}
@@ -525,7 +554,19 @@ class AssetBrowser extends React.Component {
                                 </span>
                             </div>
                         )}
-                        <div className={styles.notice}>{info.note}</div>
+                        {!showKeyPanel && (
+                            <div className={styles.notice}>
+                                {info.note}
+                                {KEY_SOURCES.includes(source) && (
+                                    <React.Fragment>
+                                        {' '}
+                                        <button className={styles.linkButton} onClick={() => this.setState({keyPanel: true})}>
+                                            {'Change key'}
+                                        </button>
+                                    </React.Fragment>
+                                )}
+                            </div>
+                        )}
                         {source === 'iconify' && category && !query.trim() && (
                             <div className={styles.status}>
                                 {`Category "${category.name}" of ${category.set}. `}
@@ -536,12 +577,21 @@ class AssetBrowser extends React.Component {
                         )}
                         {error && <div className={styles.error}>{error}</div>}
                         {status && <div className={styles.status}>{status}</div>}
-                        {source === 'generators' ? this.renderGenerators() : (
+                        {showKeyPanel ? (
+                            <ApiKeyPanel
+                                key={source}
+                                source={source}
+                                editing={!locked(source)}
+                                onUnlocked={() => this.selectSource(source)}
+                                onCancel={() => this.setState({keyPanel: false})}
+                                onRemoved={() => this.selectSource(source)}
+                            />
+                        ) : source === 'generators' ? this.renderGenerators() : (
                             <div className={styles.grid}>
                                 {visible.map(item => this.renderTile(item))}
                                 {!loading && !items.length && !error && (
                                     <div className={styles.empty}>
-                                        {source === 'openverse' && !query.trim() ? 'Type something to search.' : 'Nothing found.'}
+                                        {'Nothing found.'}
                                     </div>
                                 )}
                                 {canShowMore && (

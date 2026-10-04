@@ -75,6 +75,38 @@
 
 ## Change log (newest first)
 
+### Session 17 — new asset libraries + automatic "credit" sprite (2026-10-04)
+- Asked:
+  - Delete the original libraries.
+  - Sprites: Openverse (2D only) + Iconify + the whole Kenney 2D library (downloaded once by the updater) + game-icons.net.
+  - Sounds: Openverse (sound and music only) + jsfxr, ZzFX, Bfxr + all Kenney sounds.
+  - Backdrops: as sprites, but only images that fill the screen.
+  - Never NC, ND, GPL or SA.
+  - An undeletable "credit" sprite whose note lists every credit needed, kept up to date.
+- Changed:
+  - Patch section 16 + `patches/asset-libraries/`: the 4 library windows and the Surprise buttons, as listed in Current state.
+    - Openverse: sprites with an "Illustrations / All images" choice; backdrops only wide or square JPEGs (never see-through); sounds from Freesound and Jamendo only (Wikimedia audio, mostly speech, left out); only CC0, public domain and CC BY.
+    - Iconify: MIT, ISC, Apache-2.0, BSD, CC0, Unlicense and CC BY sets only, without the "Logos" and "Programming" categories (trademarks).
+    - Added SVGs are redrawn so their size matches their drawing box (otherwise off-centre); icons are 128 px.
+  - Credits:
+    - Each added asset stores `pmCredit` (saved in the project).
+    - The "credit" sprite (blank costume) appears with the first asset that needs credit. Its note lists one line per asset (author, links, licence, "Modified" after an edit in the paint or sound editor).
+    - While credits are needed the sprite can't be deleted or renamed. The note is found by its text, because saving shortens comment ids.
+  - Offline library 1, published as release `offline-library-1` (182 MB, 47,804 files):
+    - Kenney: 42,588 sprites, 349 backdrops (no see-through pixels, ≥192 px, landscape or square; light masks, letter tiles and particles left out), 828 sounds. 5 sheet-only packs cut into tiles; `kenney-fonts` skipped (fonts).
+    - game-icons.net (4,239 icons).
+    - The 3 generators: their own "export WAV" adds the sound to the sprite.
+  - `electron-main.js`, `updater.js`, `preload.js`, `package.json`, `main.yml`, `upstream.json` and the local test script, as listed in Current state.
+  - To reverse: `git revert` the merge (the library release can stay).
+- Verified (local test app and scripts):
+  - Every source adds its asset with the right credit record: Kenney sprite, costume, backdrop and sound; game icon; Iconify; Openverse image, backdrop and sound; all 3 generators; all 4 Surprise buttons.
+  - Credit sprite: created, note lines, Modified after an edit, line removed with the asset, delete and rename blocked, deletable once empty. Saved and reloaded: credits kept and still exactly one credit sprite (a duplicate "credit2" bug was found and fixed).
+  - Icons are centred. Library files are served, paths outside the library give 404, and the patch is safe to run twice.
+  - Updater library functions (13 checks with the real zip: install, SHA-256, wrong version rejected with the old library kept, pin read from an update zip, leftovers cleaned).
+  - CI library step simulated against the real release; the test script downloads the release itself.
+  - Not verified: the CI build (Linux, `jq`, `zip -x` exclusion; the step fails loudly if wrong), the installer, the updater inside an installed app (library download on update / at start).
+- Result after build: not yet tested
+
 ### Session 16 — pin upstream to fixed commits (2026-10-04)
 - Asked: step 1 of making the app independent from upstream and the internet: builds must stop picking up whatever upstream pushed last.
 - Changed:

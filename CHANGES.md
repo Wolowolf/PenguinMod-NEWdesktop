@@ -35,6 +35,33 @@ Kept short on purpose (read at the start of every session). Full history of Sess
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 20 — libraries unlocked with the user's own API key: Pixabay, Europeana, Openverse (2026-10-05)
+- Asked: find more libraries that fit the rules but need an API key (preferably without request limits). They are locked by default and show an easy tutorial with links to get and enter your own key. Openverse goes behind the same lock if it's still relevant, and its preview bug gets looked at.
+- Research (limits with a free key):
+  - Europeana: none.
+  - Pixabay: 100 searches a minute, no daily limit.
+  - Openverse: 100 a minute, 10,000 a day; still relevant as the only source with credit lines plus Freesound / Jamendo audio, so it's kept behind a key.
+  - Not chosen: Jamendo (35,000 a month; already inside Openverse), Pexels (200 an hour), Freesound (2,000 a day), Iconfinder (strict per plan).
+- Changed:
+  - New `patches/asset-libraries/pm-api-keys.js`: keys kept in `localStorage` `pmdesktop:apiKeys`, a test before saving, Openverse registration and token refresh.
+  - New `pm-api-key-panel.jsx` / `.css`: the unlock tutorial (links open in the user's browser), "Change key", "Remove my key".
+  - `pm-asset-sources.js`:
+    - Pixabay search: vector / illustration / photo / all; backdrops = horizontal photos; 24-hour results cache as Pixabay asks.
+    - Europeana search: reusability=open minus SA; credit = creator, institution, item page, licence.
+    - Openverse now sends the token and keeps results for the session.
+    - Downloads fall back through the app when a site blocks pages.
+  - `pm-credits.js`: Europeana credit line.
+  - `app/electron-main.js` + `preload.js`: `pm-open-external` (only https pages of pixabay.com, pro.europeana.eu, www.europeana.eu, api.openverse.org, docs.openverse.org) and `pm-fetch-bytes` (images / audio only, at most 40 MB, separate session without the app's cookies).
+  - Sprite / costume / backdrop libraries: Pixabay, Europeana, Openverse; sound library: Openverse. Every online library opens on a random subject.
+  - To reverse: `git revert` the merge.
+- Verified (local test app):
+  - The three libraries show "🔒 Key" and the tutorial.
+  - With a made-up test key and simulated answers (Europeana: a real answer fetched with its public demo key; Pixabay: its documented format; Openverse: a simulated token with real search results), each unlocks, searches, and Change key / Remove my key work.
+  - A Europeana image from an `http://` museum server was added through the fallback, with full credit data; Pixabay added with its credit record.
+  - The open-in-browser refuses other sites and `http`; the download fallback refuses non-images.
+  - Not verified: real Pixabay and Openverse keys, Openverse registration and email (Claude can't create accounts), the CI build.
+- Result after build: not yet tested
+
 ### Session 19 — library browsing: random mix, related-words search, endless scroll, waveforms (2026-10-05)
 - Asked:
   - A random full page when a library opens with an empty search.
@@ -94,38 +121,6 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - Credit lines including the badge line. `splitPath` checked on all 4,239 icons. Tags for 3 random icons match the website.
   - Kenney / backdrop regression.
   - Not verified: the CI build, the PNG text fonts on another PC.
-- Result after build: not yet tested
-
-### Session 17 — new asset libraries + automatic "credit" sprite (2026-10-04)
-- Asked:
-  - Delete the original libraries.
-  - Sprites: Openverse (2D only) + Iconify + the whole Kenney 2D library (downloaded once by the updater) + game-icons.net.
-  - Sounds: Openverse (sound and music only) + jsfxr, ZzFX, Bfxr + all Kenney sounds.
-  - Backdrops: as sprites, but only images that fill the screen.
-  - Never NC, ND, GPL or SA.
-  - An undeletable "credit" sprite whose note lists every credit needed, kept up to date.
-- Changed:
-  - Patch section 16 + `patches/asset-libraries/`: the 4 library windows and the Surprise buttons, as listed in Current state.
-    - Openverse: sprites with an "Illustrations / All images" choice; backdrops only wide or square JPEGs (never see-through); sounds from Freesound and Jamendo only (Wikimedia audio, mostly speech, left out); only CC0, public domain and CC BY.
-    - Iconify: MIT, ISC, Apache-2.0, BSD, CC0, Unlicense and CC BY sets only, without the "Logos" and "Programming" categories (trademarks).
-    - Added SVGs are redrawn so their size matches their drawing box (otherwise off-centre); icons are 128 px.
-  - Credits:
-    - Each added asset stores `pmCredit` (saved in the project).
-    - The "credit" sprite (blank costume) appears with the first asset that needs credit. Its note lists one line per asset (author, links, licence, "Modified" after an edit in the paint or sound editor).
-    - While credits are needed the sprite can't be deleted or renamed. The note is found by its text, because saving shortens comment ids.
-  - Offline library 1, published as release `offline-library-1` (182 MB, 47,804 files):
-    - Kenney: 42,588 sprites, 349 backdrops (no see-through pixels, ≥192 px, landscape or square; light masks, letter tiles and particles left out), 828 sounds. 5 sheet-only packs cut into tiles; `kenney-fonts` skipped (fonts).
-    - game-icons.net (4,239 icons).
-    - The 3 generators: their own "export WAV" adds the sound to the sprite.
-  - `electron-main.js`, `updater.js`, `preload.js`, `package.json`, `main.yml`, `upstream.json` and the local test script, as listed in Current state.
-  - To reverse: `git revert` the merge (the library release can stay).
-- Verified (local test app and scripts):
-  - Every source adds its asset with the right credit record: Kenney sprite, costume, backdrop and sound; game icon; Iconify; Openverse image, backdrop and sound; all 3 generators; all 4 Surprise buttons.
-  - Credit sprite: created, note lines, Modified after an edit, line removed with the asset, delete and rename blocked, deletable once empty. Saved and reloaded: credits kept and still exactly one credit sprite (a duplicate "credit2" bug was found and fixed).
-  - Icons are centred. Library files are served, paths outside the library give 404, and the patch is safe to run twice.
-  - Updater library functions (13 checks with the real zip: install, SHA-256, wrong version rejected with the old library kept, pin read from an update zip, leftovers cleaned).
-  - CI library step simulated against the real release; the test script downloads the release itself.
-  - Not verified: the CI build (Linux, `jq`, `zip -x` exclusion; the step fails loudly if wrong), the installer, the updater inside an installed app (library download on update / at start).
 - Result after build: not yet tested
 
 ## Template (keep entries this short)

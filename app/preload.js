@@ -16,6 +16,13 @@ contextBridge.exposeInMainWorld("__electronInternalBridge", {
   notifyThemeChanged: () => { } // dummy stub to prevent page exceptions
 });
 
+// For the asset libraries: open a key sign-up page in the user's browser, and download a picture or
+// sound from a site that doesn't let pages download it (see "pm-open-external" / "pm-fetch-bytes").
+contextBridge.exposeInMainWorld("PMDesktop", {
+  openExternal: url => ipcRenderer.invoke("pm-open-external", String(url)),
+  fetchBytes: url => ipcRenderer.invoke("pm-fetch-bytes", String(url)),
+});
+
 window.addEventListener("DOMContentLoaded", async () => {
   webFrame.executeJavaScript(`
   (() => {
