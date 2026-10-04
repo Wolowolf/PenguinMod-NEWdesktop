@@ -21,7 +21,7 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - 13: dragging a category box to re-order the menu (upstream addon `toolbox-category-drag`). The held box slides and the others make room. The first and last places are reachable. The order is stored in the project's Stage comment, updated on every change, and reset for projects that have no stored order. (Sessions 10–11)
   - 14: the "See Project Page" and "Upload" buttons are removed from the menu bar (sharing-site buttons; this build is for packaged projects). (Session 14)
   - 15: no Change Username / cloud variables, Remix, About, Discord links, Help Manual button or analytics script; no cloud server address. (Session 15)
-  - 16: the original sprite, costume, backdrop and sound libraries are removed. The library windows are `patches/asset-libraries/pm-asset-browser.jsx`; sources in `pm-asset-sources.js` (only CC0 / public domain / CC BY / MIT-style licences; never NC, ND, SA, GPL; no brand-logo icon sets). "Surprise" adds a random Kenney item. Every added asset carries a `pmCredit` record, saved in the project by a patch to the VM's `sb3.js`. `pm-credits.js` keeps the "credit" sprite. (Session 17)
+  - 16: the original sprite, costume, backdrop and sound libraries are removed. The library windows are `patches/asset-libraries/pm-asset-browser.jsx`; sources in `pm-asset-sources.js` (only CC0 / public domain / CC BY / MIT-style licences; never NC, ND, SA, GPL; no brand-logo icon sets). "Surprise" adds a random Kenney item. Every added asset carries a `pmCredit` record, saved in the project by a patch to the VM's `sb3.js`. `pm-credits.js` keeps the "credit" sprite. (Session 17) Clicking a game-icons.net or Iconify icon opens the icon studio (`pm-icon-studio.jsx`, `pm-icon-svg.js`); game-icons tags and author names come from `game-icons-meta.json`. (Session 18)
 - **Not verified yet:**
   - The updater end to end inside a packaged install (including the offline-library download, Session 17).
   - The installer itself (Claude has only tested the local build).
@@ -34,6 +34,37 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - Credits screen: turn the "credit" note into an in-game credits list automatically (not asked).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 18 — icon studio (game-icons.net Studio controls) + tags (2026-10-04)
+- Asked: the game-icons.net website's Studio controls instead of pre-baked black icons, also for Iconify, plus the website's tag system if possible.
+- Changed:
+  - New `patches/asset-libraries/pm-icon-studio.jsx` / `.css` (UI) and `pm-icon-svg.js` (drawing), copied in by section 16. Clicking a game-icons.net or Iconify icon (sprite and costume libraries) opens the studio. Its "+" button still adds the icon as it is.
+  - Studio sections:
+    - Background: 15 shapes, plain / linear / radial colour, 8 patterns, Kenney textures, frame.
+    - Foreground: flip, rotate 45°, zoom, position, skew, colour or gradient, shadow / glow / inset, stroke, clip, Break apart with per-part colour and effects (click a part).
+    - Text (6 editor fonts, outline, drag) and badge (the 59 game-icons badges, colours, label, drag).
+    - Size (16–512) and 10 presets; reset per section.
+  - Output: "Add to project" (vector) or "Add as picture" (PNG at double resolution, keeps every effect).
+    - Studio vectors are cleaned with DOMPurify (scripts removed, SVG filters kept) and added directly: the normal upload strips filters and left the parts invisible.
+    - The paint editor still drops filters when the costume is edited (hint shown).
+  - Credits: studio icons say "modified" / "Modified from the original."; a badge adds its own line (`pmCredit.extra`).
+  - Tags:
+    - game-icons.net's 134 tags and 38 author names, fetched once by the new `scripts/fetch-game-icons-meta.mjs` into `patches/asset-libraries/game-icons-meta.json` (184 KB, in the app, not the offline library).
+    - Tag filter in the Game Icons tab; tag rows "‹ previous · tag · next ›" in the studio.
+    - Iconify: the icon set's categories as tags (online); clicking one lists the category.
+  - Fixed:
+    - Badges added from the Game Icons tab had a black symbol on the black disc.
+    - Iconify previews were tiny.
+    - The 429 rate limit of Iconify (Session 17) stays fixed.
+  - The offline library is unchanged (still version 1).
+  - To reverse: `git revert` the merge.
+- Verified (local test app):
+  - Studio: preset, badge, text and drag, break apart with click-to-select and per-part colour, gradient, texture, glow; vector and PNG added on the stage (vector glow visible after the fix, kept after save and reload); costume library studio.
+  - Iconify: monochrome icon with gradient; palette icon (colour locked until broken apart, 4 colour parts); category tag opens 152 icons.
+  - Credit lines including the badge line. `splitPath` checked on all 4,239 icons. Tags for 3 random icons match the website.
+  - Kenney / backdrop regression.
+  - Not verified: the CI build, the PNG text fonts on another PC.
+- Result after build: not yet tested
 
 ### Session 17 — new asset libraries + automatic "credit" sprite (2026-10-04)
 - Asked:
@@ -83,16 +114,6 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - Local test `-Update`: fresh pinned download, `bun i`, patch, build OK, editor opens with all tweaks.
   - A fake commit in `upstream.json` makes the local test stop before patching.
   - Not verified: the CI run itself (Linux).
-- Result after build: not yet tested
-
-### Session 15 — remove cloud variables, Remix, Discord and website links (2026-10-04)
-- Asked: remove the strongest candidates (cloud variables + change username, telemetry, Discord links, credits/About), the links that open the PenguinMod website, and Remix; clean the code; keep the online library, extension and project-server fetches.
-- Changed:
-  - `patches/stage-layout.js` section 15: Edit menu loses "Change Username" and the cloud toggler; the compile-error menu keeps its first line as plain text (no Discord links); every Remix item/button and the About button code are cut, with the imports and handlers only they used; the Sensing "Help Manual" button (opened docs.penguinmod.com) is gone; the add-on settings page loses its Discord button; the Google Tag Manager analytics script is removed from the page template; `cloudHost` is `null` so nothing can connect to a cloud server.
-  - `app/electron-main.js`: windows and navigations to penguinmod.com, www./projects./docs.penguinmod.com, discord.gg and discord.com are blocked (`isBlockedWebsite`). studio.* and extensions.penguinmod.com still work.
-  - To reverse: delete section 15 / `git revert` the merge.
-- Found: the telemetry prompt was already dead (it only opens if something sets `showTelemetryModal`, and nothing does) and nothing in the editor links to the credits page, so both are untouched. The only real analytics was the Google Tag Manager script (removed). It is still in the static contact/privacy/terms pages, which nothing links to.
-- Verified (local test app): Edit menu without the two items, File menu without Remix, error menu shows plain text only, no "Help Manual" in the Sensing palette, no `gtag` in `editor.html`, `window.open` to penguinmod.com / discord.gg / docs.penguinmod.com returns null, patch is safe to run twice. Not verified: `will-navigate` blocking, the add-on settings window (only checked that the built files lost the Discord link, did not look at it), CI build with fresh upstream.
 - Result after build: not yet tested
 
 ## Template (keep entries this short)

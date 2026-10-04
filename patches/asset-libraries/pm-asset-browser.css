@@ -200,6 +200,30 @@
     text-overflow: ellipsis;
 }
 .badge-credit { background: #ffe7a8; color: #6b4b00; }
+.quick-add {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 1.8rem;
+    height: 1.8rem;
+    border: none;
+    background: $motion-primary;
+    color: $ui-white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 1;
+}
+.quick-add:hover { filter: brightness(1.1); }
+.link-button {
+    border: none;
+    background: none;
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+}
 .empty {
     width: 100%;
     padding: 2rem;

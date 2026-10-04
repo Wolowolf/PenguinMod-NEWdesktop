@@ -5,7 +5,10 @@
 // Only licences that allow commercial use and changes are offered: never NC, ND, SA or GPL.
 // Every added costume or sound gets a `pmCredit` record (saved in the project); pm-credits.js
 // turns the ones that need credit into the note of the "credit" sprite.
+import DOMPurify from 'dompurify';
+import {inlineSvgFonts} from 'scratch-svg-renderer';
 import {costumeUpload, soundUpload, spriteUpload} from './file-uploader.js';
+import gameIconsMeta from './pm-game-icons-meta.json'; // tags and author names from game-icons.net
 
 export const LIBRARY_URL = '/__library__/';
 const OPENVERSE = 'https://api.openverse.org/v1/';
@@ -40,21 +43,64 @@ const prepareIndex = index => {
         };
     });
     const authors = index.gameIcons.authors;
+    const squash = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const tagsOf = {};
+    for (const [tag, ids] of Object.entries(gameIconsMeta.tags)) {
+        for (const id of ids) (tagsOf[id] = tagsOf[id] || []).push(tag);
+    }
     const gameIcons = index.gameIcons.icons.map(([author, icon]) => {
-        const [folder, authorName] = authors[author];
-        const url = `${LIBRARY_URL}game-icons/${encodePath(`${folder}/${icon}.svg`)}`;
+        const [folder, folderName] = authors[author];
+        const known = gameIconsMeta.authors[squash(folder)];
+        const authorName = known ? known.name : folderName;
+        const id = `${folder}/${icon}`;
+        const url = `${LIBRARY_URL}game-icons/${encodePath(`${id}.svg`)}`;
         const name = niceName(icon);
+        const tags = tagsOf[id] || [];
         return {
-            key: `game-icons:${folder}/${icon}`, source: 'gameIcons', name, subtitle: `by ${authorName}`,
-            sprite: true, thumb: url, url, mime: 'image/svg+xml', svgSize: 128,
-            search: `${icon} ${folder} ${authorName}`.toLowerCase(),
+            key: `game-icons:${id}`, source: 'gameIcons', name, subtitle: `by ${authorName}`, id, tags,
+            sprite: true, studio: true, badge: folder === 'badges', thumb: url, url, mime: 'image/svg+xml', svgSize: 128,
+            search: `${icon} ${folder} ${authorName} ${tags.join(' ')}`.toLowerCase(),
             credit: {
-                src: 'game-icons', id: `${folder}/${icon}`, title: name, by: authorName,
-                url: `https://game-icons.net/1x1/${folder}/${icon}.html`, ...CC_BY_3, needsCredit: true
+                src: 'game-icons', id, title: name, by: authorName,
+                url: folder === 'badges' && known ? known.url : `https://game-icons.net/1x1/${id}.html`,
+                ...CC_BY_3, needsCredit: true
             }
         };
     });
-    return {packs: index.packs.map(p => p[1]), kenney, gameIcons};
+    const byId = {};
+    for (const item of gameIcons) byId[item.id] = item;
+    const tagLists = {};
+    for (const [tag, ids] of Object.entries(gameIconsMeta.tags)) tagLists[tag] = ids.map(id => byId[id]).filter(Boolean);
+    return {packs: index.packs.map(p => p[1]), categories: index.packs.map(p => p[2]), kenney, gameIcons, tagLists};
+};
+
+// game-icons badges: a dark disc with a white symbol, but the offline library turned the symbol black.
+// Their files are read once and fixed, and used for the tiles and when they are added.
+let badgesLoaded = null;
+export const loadBadges = () => {
+    if (!badgesLoaded) {
+        badgesLoaded = loadOfflineIndex().then(index => Promise.all(index.gameIcons.filter(item => item.badge).map(item =>
+            fetch(item.url).then(res => res.text()).then(svg => {
+                item.svgText = svg.replace(/<path fill="#000"/g, '<path fill="#fff"');
+                item.thumb = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(item.svgText)}`;
+            })
+        )).then(() => index.gameIcons.filter(item => item.badge)));
+        badgesLoaded.catch(() => {
+            badgesLoaded = null;
+        });
+    }
+    return badgesLoaded;
+};
+
+export const gameIconTags = async () => {
+    const index = await loadOfflineIndex();
+    return Object.keys(index.tagLists).map(tag => ({tag, count: index.tagLists[tag].length}));
+};
+
+// Kenney images that can fill a background (the Textures category), for the studio's texture list.
+export const textureItems = async () => {
+    const index = await loadOfflineIndex();
+    return index.kenney.filter(item => item.sprite && index.categories[item.pack] === 'Textures');
 };
 
 export const loadOfflineIndex = () => {
@@ -74,14 +120,28 @@ export const loadOfflineIndex = () => {
 
 const fitsKind = (item, kind) => (kind === 'sound' ? item.sound : kind === 'backdrop' ? item.backdrop : item.sprite);
 
-// Offline search: every word must appear in the pack/folder/file name.
-export const searchOffline = async (source, kind, query, pack) => {
+// Offline search: every word must appear in the pack/folder/file name (or the icon's tags).
+// `filter` is a Kenney pack number, or a game-icons tag.
+export const searchOffline = async (source, kind, query, filter) => {
     const index = await loadOfflineIndex();
-    const list = source === 'gameIcons' ? index.gameIcons : index.kenney;
+    let list = index.kenney;
+    if (source === 'gameIcons') {
+        await loadBadges();
+        list = typeof filter === 'string' && filter ? index.tagLists[filter] || [] : index.gameIcons;
+    }
     const tokens = words(query);
     return list.filter(item => fitsKind(item, kind) &&
-        (pack === undefined || pack < 0 || item.pack === pack) &&
+        (source !== 'kenney' || filter === undefined || filter < 0 || item.pack === filter) &&
         tokens.every(t => item.search.includes(t)));
+};
+
+// The neighbours of an icon in one of its tags (the "‹ tag ›" rows of the studio).
+export const tagNeighbours = async (item, tag) => {
+    const index = await loadOfflineIndex();
+    const list = index.tagLists[tag] || [];
+    const i = list.indexOf(item);
+    if (i === -1 || list.length < 2) return {prev: null, next: null, count: list.length};
+    return {prev: list[(i - 1 + list.length) % list.length], next: list[(i + 1) % list.length], count: list.length};
 };
 
 export const offlinePacks = async kind => {
@@ -172,29 +232,70 @@ const loadIconSets = () => {
     return iconSets;
 };
 
+const iconItem = (sets, id) => {
+    const [prefix, icon] = id.split(':');
+    const set = sets[prefix];
+    if (!set) return null;
+    const spdx = set.license.spdx;
+    return {
+        key: `iconify:${id}`, source: 'iconify', name: niceName(icon), subtitle: set.name, sprite: true, studio: true,
+        prefix, icon, thumb: null, svgText: null, iconSvg: null, // filled in by loadIconSvgs
+        url: `${ICONIFY}${prefix}/${icon}.svg?color=%23000000`, mime: 'image/svg+xml', svgSize: 128,
+        credit: {
+            src: 'iconify', id, title: niceName(icon), set: set.name,
+            by: (set.author && set.author.name) || set.name, byUrl: (set.author && set.author.url) || '',
+            license: set.license.title || spdx, licenseUrl: set.license.url || '', spdx,
+            needsCredit: !ICON_NO_CREDIT.test(spdx)
+        }
+    };
+};
+
 export const searchIconify = async query => {
     const sets = await loadIconSets();
     const params = new URLSearchParams({query, limit: '999', prefixes: Object.keys(sets).join(',')});
     const res = await fetch(`${ICONIFY}search?${params}`);
     if (!res.ok) throw new Error(`Iconify answered HTTP ${res.status}.`);
     const json = await res.json();
-    return (json.icons || []).map(id => {
-        const [prefix, icon] = id.split(':');
-        const set = sets[prefix];
-        if (!set) return null;
-        const spdx = set.license.spdx;
-        return {
-            key: `iconify:${id}`, source: 'iconify', name: niceName(icon), subtitle: set.name, sprite: true,
-            prefix, icon, thumb: null, svgText: null, // filled in by loadIconSvgs
-            url: `${ICONIFY}${prefix}/${icon}.svg?color=%23000000`, mime: 'image/svg+xml', svgSize: 128,
-            credit: {
-                src: 'iconify', id, title: niceName(icon), set: set.name,
-                by: (set.author && set.author.name) || set.name, byUrl: (set.author && set.author.url) || '',
-                license: set.license.title || spdx, licenseUrl: set.license.url || '', spdx,
-                needsCredit: !ICON_NO_CREDIT.test(spdx)
-            }
-        };
-    }).filter(Boolean);
+    return (json.icons || []).map(id => iconItem(sets, id)).filter(Boolean);
+};
+
+// Iconify's tags are the categories of each icon set (e.g. "Animals & Nature"); some sets have none.
+const collections = {};
+const loadCollection = prefix => {
+    if (!collections[prefix]) {
+        collections[prefix] = fetch(`${ICONIFY}collection?prefix=${encodeURIComponent(prefix)}`)
+            .then(res => {
+                if (!res.ok) throw new Error(`Iconify answered HTTP ${res.status}.`);
+                return res.json();
+            })
+            .then(json => json.categories || {});
+        collections[prefix].catch(() => {
+            delete collections[prefix];
+        });
+    }
+    return collections[prefix];
+};
+
+export const iconifyTagsFor = async item => {
+    const categories = await loadCollection(item.prefix);
+    return Object.keys(categories).filter(name => categories[name].includes(item.icon));
+};
+
+// All icons of one category of a set, as library items.
+export const iconifyCategory = async (prefix, category) => {
+    const [sets, categories] = await Promise.all([loadIconSets(), loadCollection(prefix)]);
+    return (categories[category] || []).map(icon => iconItem(sets, `${prefix}:${icon}`)).filter(Boolean);
+};
+
+export const iconifyNeighbours = async (item, category) => {
+    const sets = await loadIconSets();
+    const list = (await loadCollection(item.prefix))[category] || [];
+    const i = list.indexOf(item.icon);
+    if (i === -1 || list.length < 2) return {prev: null, next: null, count: list.length};
+    const prev = iconItem(sets, `${item.prefix}:${list[(i - 1 + list.length) % list.length]}`);
+    const next = iconItem(sets, `${item.prefix}:${list[(i + 1) % list.length]}`);
+    await loadIconSvgs([prev, next]);
+    return {prev, next, count: list.length};
 };
 
 // Fetches the drawings of these Iconify results, one request per icon set (the public API refuses
@@ -215,9 +316,13 @@ export const loadIconSvgs = async items => {
             if (!icon) continue;
             const w = icon.width || json.width || 16;
             const h = icon.height || json.height || 16;
-            item.svgText = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" ` +
-                `viewBox="${icon.left || 0} ${icon.top || 0} ${w} ${h}">${icon.body.replace(/currentColor/g, '#000000')}</svg>`;
-            item.thumb = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(item.svgText)}`;
+            // iconSvg keeps "currentColor" (the studio recolours it); svgText is the plain black version
+            item.iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" ` +
+                `viewBox="${icon.left || 0} ${icon.top || 0} ${w} ${h}">${icon.body}</svg>`;
+            item.svgText = item.iconSvg.replace(/currentColor/g, '#000000');
+            // previews at 96 px tall (many sets draw on a 16-32 px grid, which would look tiny)
+            const thumb = item.svgText.replace(`width="${w}" height="${h}"`, `width="${Math.round(96 * w / h)}" height="96"`);
+            item.thumb = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(thumb)}`;
         }
     }));
 };
@@ -265,6 +370,7 @@ const normalizeSvg = (data, maxSide, fitSide) => {
 };
 
 const download = async item => {
+    if (item.pngData) return {data: item.pngData, type: 'image/png'};
     if (item.svgText) return {data: new TextEncoder().encode(item.svgText).buffer, type: 'image/svg+xml'};
     let res = null;
     try {
@@ -278,6 +384,31 @@ const download = async item => {
     return {data: await res.arrayBuffer(), type};
 };
 
+// Adds a costume made by the studio as it is, centred, bypassing the normal upload:
+//   png: drawn at twice its size; the upload would enlarge it again and make it blurry (resolution 2).
+//   svg: the upload's cleaning removes SVG filters (shadow, outline) and leaves the parts invisible,
+//        so it is cleaned here the same way (DOMPurify, no scripts or links) but with filters allowed.
+const addStudioCostume = (vm, kind, data, format, size, name, credit) => {
+    const storage = vm.runtime.storage;
+    const png = format === 'png';
+    const bytes = png ? new Uint8Array(data) : new TextEncoder().encode(DOMPurify.sanitize(new TextDecoder().decode(data),
+        {USE_PROFILES: {svg: true, svgFilters: true}}));
+    const asset = storage.createAsset(png ? storage.AssetType.ImageBitmap : storage.AssetType.ImageVector,
+        png ? storage.DataFormat.PNG : storage.DataFormat.SVG, bytes, null, true);
+    const center = png ? size : size / 2;
+    const costume = {
+        name, dataFormat: format, asset, md5: `${asset.assetId}.${format}`, assetId: asset.assetId,
+        bitmapResolution: png ? 2 : 1, rotationCenterX: center, rotationCenterY: center, pmCredit: credit
+    };
+    if (kind === 'sprite') {
+        return vm.addSprite(JSON.stringify({
+            name, isStage: false, x: 0, y: 0, visible: true, size: 100, rotationStyle: 'all around', direction: 90,
+            draggable: false, currentCostume: 0, blocks: {}, variables: {}, costumes: [costume], sounds: []
+        }));
+    }
+    return kind === 'backdrop' ? vm.addBackdrop(costume.md5, costume) : vm.addCostume(costume.md5, costume);
+};
+
 // Adds `item` as a new sprite, a costume of the current sprite, a backdrop or a sound.
 export const addAsset = async (vm, kind, item, name = item.name) => {
     const downloaded = await download(item);
@@ -285,6 +416,9 @@ export const addAsset = async (vm, kind, item, name = item.name) => {
     const data = type === 'image/svg+xml' ? normalizeSvg(downloaded.data, item.svgSize, item.svgFit) : downloaded.data;
     const credit = Object.assign({v: 1}, item.credit);
     const assetName = (name || kind).slice(0, 80);
+    if (item.studioSize) {
+        return addStudioCostume(vm, kind, data, item.pngData ? 'png' : 'svg', item.studioSize, assetName, credit);
+    }
     return new Promise((resolve, reject) => {
         if (kind === 'sound') {
             soundUpload(data, type, vm.runtime.storage, vmSound => {
@@ -310,6 +444,57 @@ export const addAsset = async (vm, kind, item, name = item.name) => {
             }, reject);
         }
     });
+};
+
+// ---- icon studio -------------------------------------------------------------------------------
+
+// The icon as the studio needs it: its SVG and the colour that "is" the icon.
+export const loadStudioIcon = async item => {
+    if (item.source === 'iconify') {
+        if (!item.iconSvg) await loadIconSvgs([item]);
+        if (!item.iconSvg) throw new Error('Iconify did not send this icon.');
+        return {svg: item.iconSvg, ink: 'currentColor', badge: false};
+    }
+    if (item.badge) await loadBadges();
+    const svg = item.svgText || await (await fetch(item.url)).text();
+    return {svg, ink: '#000', badge: !!item.badge};
+};
+
+const textureCache = {};
+export const textureDataUrl = async item => {
+    if (!textureCache[item.key]) {
+        const blob = await (await fetch(item.url)).blob();
+        textureCache[item.key] = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    }
+    return textureCache[item.key];
+};
+
+// Draws the studio's SVG at `pixels` × `pixels` into a PNG (fonts embedded so text keeps its font).
+const renderPng = (svg, pixels) => new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = pixels;
+        canvas.getContext('2d').drawImage(img, 0, 0, pixels, pixels);
+        canvas.toBlob(blob => (blob ? blob.arrayBuffer().then(resolve, reject) : reject(new Error('could not draw the picture'))), 'image/png');
+    };
+    img.onerror = () => reject(new Error('could not draw the picture'));
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(inlineSvgFonts(svg))}`;
+});
+
+// Adds an icon made in the studio, as a vector drawing or (png) as a picture that keeps every effect.
+// The credit says the icon was modified; a badge adds its own credit line.
+export const addStudioAsset = async (vm, kind, item, svg, {png, size, badge}) => {
+    const credit = Object.assign({}, item.credit, item.source === 'gameIcons' ? {changes: 'modified'} : {modified: true});
+    if (badge) credit.extra = [Object.assign({}, badge.credit, {changes: 'recoloured'})];
+    const made = {name: item.name, credit, svgText: svg, svgSize: size, studioSize: size};
+    if (png) made.pngData = await renderPng(svg, size * 2);
+    return addAsset(vm, kind, made);
 };
 
 // A sound made with one of the generators (a .wav the generator wanted to download).

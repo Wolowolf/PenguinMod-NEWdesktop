@@ -1,0 +1,175 @@
+/* PenguinMod Desktop (patch section 16): the icon studio. */
+@import "../../css/units.css";
+@import "../../css/colors.css";
+
+.studio {
+    flex-grow: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    padding: 4px;
+}
+.controls {
+    width: 290px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    padding: 6px 10px 12px 6px;
+    color: $text-primary;
+    text-align: right;
+}
+.studio-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.studio-title { font-size: 1.6rem; }
+.heading {
+    margin: 0.9rem 0 0.35rem 0;
+    font-size: 1.1rem;
+    font-weight: normal;
+}
+.group, .row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px 10px;
+}
+.group.disabled { opacity: 0.45; pointer-events: none; }
+.field {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+}
+.field-label { opacity: 0.85; }
+.number { width: 4.2rem; height: 1.8rem; padding: 0 4px; border: 1px solid $ui-black-transparent; }
+.range { width: 7rem; }
+.color { width: 2.2rem; height: 1.8rem; padding: 0; border: 1px solid $ui-black-transparent; background: none; cursor: pointer; }
+.select { height: 2rem; max-width: 100%; border: 1px solid $ui-black-transparent; background: $ui-white; color: $text-primary; }
+.text { width: 100%; height: 2rem; padding: 0 6px; border: 1px solid $ui-black-transparent; }
+.check { display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; cursor: pointer; }
+.hint { margin: 4px 0; font-size: 0.75rem; opacity: 0.8; text-align: right; }
+.tools { display: flex; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
+.tool {
+    width: 2.3rem;
+    height: 2.3rem;
+    border: none;
+    background: #111;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+.tool:hover { background: $motion-primary; }
+.button {
+    height: 2rem;
+    padding: 0 0.8rem;
+    border: none;
+    background: #111;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+.button:disabled { opacity: 0.4; cursor: default; }
+.part-nav { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+.arrow {
+    min-width: 2rem;
+    height: 2rem;
+    border: 1px solid $ui-black-transparent;
+    background: $ui-white;
+    color: $text-primary;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+.arrow:disabled { opacity: 0.35; cursor: default; }
+.badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+.badge-choice {
+    width: 2.4rem;
+    height: 2.4rem;
+    padding: 2px;
+    border: 2px solid transparent;
+    background: #ddd;
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+.badge-choice img { width: 100%; height: 100%; }
+.badge-choice.active { border-color: $motion-primary; }
+
+.stage {
+    flex-grow: 1;
+    min-width: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: $text-primary;
+}
+.top-bar { display: flex; align-items: center; gap: 8px; width: 100%; }
+.icon-name { flex-grow: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; text-align: center; }
+.icon-name strong { font-size: 1.1rem; }
+.icon-name span { font-size: 0.75rem; opacity: 0.8; }
+.error { width: 100%; padding: 0.4rem 0.6rem; background: #ffd9d9; color: #8a0000; font-size: 0.85rem; }
+.preview-box {
+    width: min(360px, 100%);
+    aspect-ratio: 1;
+    background-color: #f2f2f2;
+    background-image:
+        linear-gradient(45deg, #e0e0e0 25%, transparent 25%, transparent 75%, #e0e0e0 75%),
+        linear-gradient(45deg, #e0e0e0 25%, transparent 25%, transparent 75%, #e0e0e0 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+    border: 2px solid $ui-black-transparent;
+}
+.preview { width: 100%; height: 100%; touch-action: none; }
+.preview svg { width: 100%; height: 100%; display: block; }
+.preview [data-part], .preview [data-drag] { cursor: pointer; }
+.preview [data-drag] { cursor: move; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.add, .add-alt {
+    height: 2.4rem;
+    padding: 0 1rem;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+.add { background: $motion-primary; color: white; }
+.add-alt { background: #111; color: white; }
+.add:disabled, .add-alt:disabled { opacity: 0.5; cursor: default; }
+.tags { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.tag-row { display: flex; align-items: center; gap: 6px; }
+.tag-thumb { width: 2.4rem; height: 2.4rem; background: #e6e6e6; cursor: pointer; object-fit: contain; display: inline-block; }
+.tag {
+    min-width: 6rem;
+    height: 2.4rem;
+    padding: 0 0.8rem;
+    border: none;
+    background: #111;
+    color: white;
+    text-decoration: underline;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+[theme="dark"] .controls,
+[theme="dark"] .stage { color: #eee; }
+[theme="dark"] .select,
+[theme="dark"] .number,
+[theme="dark"] .text,
+[theme="dark"] .arrow { background: #222; color: #eee; border-color: #555; }
+[theme="dark"] .tool,
+[theme="dark"] .button,
+[theme="dark"] .add-alt,
+[theme="dark"] .tag { background: #444; }
+[theme="dark"] .tag-thumb { background: #ccc; }
+[theme="dark"] .preview-box {
+    background-color: #333;
+    background-image:
+        linear-gradient(45deg, #2a2a2a 25%, transparent 25%, transparent 75%, #2a2a2a 75%),
+        linear-gradient(45deg, #2a2a2a 25%, transparent 25%, transparent 75%, #2a2a2a 75%);
+}
+[theme="dark"] .badge-choice { background: #555; }

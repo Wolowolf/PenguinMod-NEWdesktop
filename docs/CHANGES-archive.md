@@ -75,6 +75,16 @@
 
 ## Change log (newest first)
 
+### Session 15 — remove cloud variables, Remix, Discord and website links (2026-10-04)
+- Asked: remove the strongest candidates (cloud variables + change username, telemetry, Discord links, credits/About), the links that open the PenguinMod website, and Remix; clean the code; keep the online library, extension and project-server fetches.
+- Changed:
+  - `patches/stage-layout.js` section 15: Edit menu loses "Change Username" and the cloud toggler; the compile-error menu keeps its first line as plain text (no Discord links); every Remix item/button and the About button code are cut, with the imports and handlers only they used; the Sensing "Help Manual" button (opened docs.penguinmod.com) is gone; the add-on settings page loses its Discord button; the Google Tag Manager analytics script is removed from the page template; `cloudHost` is `null` so nothing can connect to a cloud server.
+  - `app/electron-main.js`: windows and navigations to penguinmod.com, www./projects./docs.penguinmod.com, discord.gg and discord.com are blocked (`isBlockedWebsite`). studio.* and extensions.penguinmod.com still work.
+  - To reverse: delete section 15 / `git revert` the merge.
+- Found: the telemetry prompt was already dead (it only opens if something sets `showTelemetryModal`, and nothing does) and nothing in the editor links to the credits page, so both are untouched. The only real analytics was the Google Tag Manager script (removed). It is still in the static contact/privacy/terms pages, which nothing links to.
+- Verified (local test app): Edit menu without the two items, File menu without Remix, error menu shows plain text only, no "Help Manual" in the Sensing palette, no `gtag` in `editor.html`, `window.open` to penguinmod.com / discord.gg / docs.penguinmod.com returns null, patch is safe to run twice. Not verified: `will-navigate` blocking, the add-on settings window (only checked that the built files lost the Discord link, did not look at it), CI build with fresh upstream.
+- Result after build: not yet tested
+
 ### Session 14 — remove "See Project Page" and "Upload" buttons (2026-10-04)
 - Asked: remove both buttons; the fork becomes a 2D game engine for serious packaged projects, not a Scratch / TurboWarp sharing platform; say what else should go.
 - Changed: `patches/stage-layout.js` section 14 cuts the two menu-bar blocks (the `CommunityButton` and `ShareButton` blocks in `menu-bar.jsx`) and fails loudly if upstream changed them. To reverse: delete section 14 (or `git revert` the merge).
