@@ -75,6 +75,37 @@
 
 ## Change log (newest first)
 
+### Session 18 — icon studio (game-icons.net Studio controls) + tags (2026-10-04)
+- Asked: the game-icons.net website's Studio controls instead of pre-baked black icons, also for Iconify, plus the website's tag system if possible.
+- Changed:
+  - New `patches/asset-libraries/pm-icon-studio.jsx` / `.css` (UI) and `pm-icon-svg.js` (drawing), copied in by section 16. Clicking a game-icons.net or Iconify icon (sprite and costume libraries) opens the studio. Its "+" button still adds the icon as it is.
+  - Studio sections:
+    - Background: 15 shapes, plain / linear / radial colour, 8 patterns, Kenney textures, frame.
+    - Foreground: flip, rotate 45°, zoom, position, skew, colour or gradient, shadow / glow / inset, stroke, clip, Break apart with per-part colour and effects (click a part).
+    - Text (6 editor fonts, outline, drag) and badge (the 59 game-icons badges, colours, label, drag).
+    - Size (16–512) and 10 presets; reset per section.
+  - Output: "Add to project" (vector) or "Add as picture" (PNG at double resolution, keeps every effect).
+    - Studio vectors are cleaned with DOMPurify (scripts removed, SVG filters kept) and added directly: the normal upload strips filters and left the parts invisible.
+    - The paint editor still drops filters when the costume is edited (hint shown).
+  - Credits: studio icons say "modified" / "Modified from the original."; a badge adds its own line (`pmCredit.extra`).
+  - Tags:
+    - game-icons.net's 134 tags and 38 author names, fetched once by the new `scripts/fetch-game-icons-meta.mjs` into `patches/asset-libraries/game-icons-meta.json` (184 KB, in the app, not the offline library).
+    - Tag filter in the Game Icons tab; tag rows "‹ previous · tag · next ›" in the studio.
+    - Iconify: the icon set's categories as tags (online); clicking one lists the category.
+  - Fixed:
+    - Badges added from the Game Icons tab had a black symbol on the black disc.
+    - Iconify previews were tiny.
+    - The 429 rate limit of Iconify (Session 17) stays fixed.
+  - The offline library is unchanged (still version 1).
+  - To reverse: `git revert` the merge.
+- Verified (local test app):
+  - Studio: preset, badge, text and drag, break apart with click-to-select and per-part colour, gradient, texture, glow; vector and PNG added on the stage (vector glow visible after the fix, kept after save and reload); costume library studio.
+  - Iconify: monochrome icon with gradient; palette icon (colour locked until broken apart, 4 colour parts); category tag opens 152 icons.
+  - Credit lines including the badge line. `splitPath` checked on all 4,239 icons. Tags for 3 random icons match the website.
+  - Kenney / backdrop regression.
+  - Not verified: the CI build, the PNG text fonts on another PC.
+- Result after build: not yet tested
+
 ### Session 17 — new asset libraries + automatic "credit" sprite (2026-10-04)
 - Asked:
   - Delete the original libraries.
