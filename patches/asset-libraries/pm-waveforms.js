@@ -5,13 +5,15 @@
 //   Kenney and short Openverse sounds: decoded by the browser; a background worker works out the
 //     columns and paints the picture, so scrolling stays smooth. Only tiles that come into view are done.
 //   Openverse sounds from Freesound: Freesound's own coloured waveform picture (no decoding at all).
-//   Openverse songs (Jamendo, minutes long): too big to download for a preview; Openverse's waveform
-//     (loudness only, so one colour) is used instead.
+//   Openverse songs (Jamendo, minutes long): too big to download for a preview. The shape is Openverse's
+//     waveform (loudness), the colours come from 24 short samples spread over the song (~0.4 MB).
 // Each tile shows its waveform as a picture (`item.waveImage`), kept for the rest of the session.
 import {fetchFile, openverseFetch} from './pm-asset-sources.js';
 
 const DECODE_MAX_SECONDS = 60; // longer Openverse sounds are not downloaded for their waveform
 const OPENVERSE_WAVES_PER_MINUTE = 30; // waveform requests to Openverse (it has its own limits)
+const SONG_SAMPLES = 24; // short pieces of a song that give its colours
+const SAMPLE_BYTES = 16384; // about 1.4 s of Jamendo's 96 kbps MP3
 
 // The two functions below also run inside the worker, made from their source text: they are
 // self-contained and written in plain old JavaScript.
@@ -109,9 +111,18 @@ function analyseWave (channels, sampleRate, columns) {
 }
 
 // Paints a waveform into a canvas (a page canvas or a worker's OffscreenCanvas), on a see-through
-// background: analysed columns on Freesound's palette, or Openverse's points (loudness only) in grey.
+// background: analysed columns on Freesound's palette, or Openverse's points (loudness, mirrored),
+// coloured by `wave.colors` (colours sampled evenly over the song, blended in between) or else grey.
 function paintWave (wave, canvas) {
     var palette = [[50, 0, 200], [0, 220, 80], [255, 224, 0], [255, 70, 0]];
+    var colourOf = function (index) {
+        var at = index / 255 * (palette.length - 1);
+        var j = Math.min(palette.length - 2, Math.floor(at));
+        var f = at - j;
+        var rgb = [];
+        for (var k = 0; k < 3; k++) rgb.push(Math.round(palette[j][k] * (1 - f) + palette[j + 1][k] * f));
+        return 'rgb(' + rgb.join(',') + ')';
+    };
     var ctx = canvas.getContext('2d');
     var w = canvas.width;
     var h = canvas.height;
@@ -121,8 +132,15 @@ function paintWave (wave, canvas) {
     var i;
     if (wave.points) {
         var n = wave.points.length;
+        var cs = wave.colors;
         ctx.fillStyle = '#aab6c8';
         for (x = 0; x < w; x++) {
+            if (cs && cs.length) {
+                var pos = Math.max(0, Math.min(cs.length - 1, (x + 0.5) / w * cs.length - 0.5));
+                var c0 = Math.floor(pos);
+                var c1 = Math.min(cs.length - 1, c0 + 1);
+                ctx.fillStyle = colourOf(cs[c0] + (cs[c1] - cs[c0]) * (pos - c0));
+            }
             var a = Math.floor(x * n / w);
             var b = Math.max(a + 1, Math.floor((x + 1) * n / w));
             var p = 0;
@@ -136,12 +154,7 @@ function paintWave (wave, canvas) {
     var cols = wave.min.length;
     for (x = 0; x < w; x++) {
         var c = Math.min(cols - 1, Math.floor(x * cols / w));
-        var at = wave.color[c] / 255 * (palette.length - 1);
-        var j = Math.min(palette.length - 2, Math.floor(at));
-        var f = at - j;
-        var rgb = [];
-        for (i = 0; i < 3; i++) rgb.push(Math.round(palette[j][i] * (1 - f) + palette[j + 1][i] * f));
-        ctx.fillStyle = 'rgb(' + rgb.join(',') + ')';
+        ctx.fillStyle = colourOf(wave.color[c]);
         ctx.fillRect(x, mid - wave.max[c] * amp, 1, Math.max(1, (wave.max[c] - wave.min[c]) * amp));
     }
 }
@@ -157,7 +170,7 @@ const startWorker = () => {
     const source = `var analyseWave = ${analyseWave.toString()};\nvar paintWave = ${paintWave.toString()};\n` +
         'self.onmessage = function (e) {\n' +
         '    var d = e.data;\n' +
-        '    var wave = d.points ? {points: d.points} : analyseWave(d.channels, d.sampleRate, d.width);\n' +
+        '    var wave = d.points ? {points: d.points, colors: d.colors} : analyseWave(d.channels, d.sampleRate, d.width);\n' +
         '    var canvas = new OffscreenCanvas(d.width, d.height);\n' +
         '    paintWave(wave, canvas);\n' +
         '    canvas.convertToBlob({type: "image/png"}).then(function (blob) {\n' +
@@ -201,7 +214,7 @@ const picture = (data, transfer) => {
             worker.postMessage(Object.assign({id}, data), transfer);
         });
     }
-    const wave = data.points ? {points: data.points} : analyseWave(data.channels, data.sampleRate, data.width);
+    const wave = data.points ? {points: data.points, colors: data.colors} : analyseWave(data.channels, data.sampleRate, data.width);
     const canvas = document.createElement('canvas');
     canvas.width = data.width;
     canvas.height = data.height;
@@ -243,17 +256,75 @@ const openverseSlot = async wanted => {
         if (!wanted()) return false;
     }
 };
+// The colours of a long song without downloading it: SONG_SAMPLES short pieces spread over the file
+// (through the app: Jamendo doesn't let pages read its files), each decoded on its own. A piece's
+// colour is the spectral centroid of 8 moments in it, weighted by how loud they are. Pieces that can't
+// be read take their neighbour's colour; null if none could.
+const songColours = async item => {
+    const fetchBytes = typeof window !== 'undefined' && window.PMDesktop && window.PMDesktop.fetchBytes;
+    if (!fetchBytes) return null;
+    // Jamendo's 96 kbps MP3 instead of the bigger one: more seconds in each piece
+    const url = /^https:\/\/[\w-]+\.storage\.jamendo\.com\//.test(item.url) ?
+        item.url.replace(/([?&]format=)mp32\b/, '$1mp31') : item.url;
+    const head = await fetchBytes(url, 'bytes=0-0');
+    const total = head && head.ok ? head.total : 0;
+    if (!total || total < SAMPLE_BYTES * 4) return null;
+    if (!decoder) decoder = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 1, 44100);
+    const colours = new Array(SONG_SAMPLES).fill(-1);
+    let next = 0;
+    const reader = async () => {
+        while (next < SONG_SAMPLES) {
+            const i = next++;
+            const from = Math.max(0, Math.floor(total * (i + 0.5) / SONG_SAMPLES - SAMPLE_BYTES / 2));
+            try {
+                const part = await fetchBytes(url, `bytes=${from}-${Math.min(total, from + SAMPLE_BYTES) - 1}`);
+                if (!part || !part.ok) continue;
+                const audio = await decoder.decodeAudioData(part.data);
+                const channels = [];
+                for (let c = 0; c < Math.min(2, audio.numberOfChannels); c++) channels.push(audio.getChannelData(c));
+                const r = analyseWave(channels, audio.sampleRate, 8);
+                let sum = 0;
+                let weight = 0;
+                for (let k = 0; k < 8; k++) {
+                    const loud = r.max[k] - r.min[k];
+                    sum += r.color[k] * loud;
+                    weight += loud;
+                }
+                if (weight > 0.01) colours[i] = Math.round(sum / weight);
+            } catch (e) { /* this piece could not be read (e.g. the file's tags): its neighbour's colour */ }
+        }
+    };
+    await Promise.all([reader(), reader(), reader(), reader()]);
+    if (colours.every(c => c < 0)) return null;
+    for (let i = 0; i < SONG_SAMPLES; i++) {
+        if (colours[i] >= 0) continue;
+        let d = 1;
+        while (colours[i - d] === undefined || colours[i - d] < 0) {
+            if (colours[i + d] >= 0) break;
+            d++;
+        }
+        colours[i] = colours[i - d] >= 0 ? colours[i - d] : colours[i + d];
+    }
+    return Uint8Array.from(colours);
+};
+
 const openverseWave = async (item, width, height, wanted) => {
     if (!await openverseSlot(wanted)) return;
-    const res = await openverseFetch(item.waveUrl);
+    const [res, colors] = await Promise.all([openverseFetch(item.waveUrl), songColours(item).catch(() => null)]);
     if (!res.ok) throw new Error(`Openverse answered HTTP ${res.status}`);
     const points = Float32Array.from(((await res.json()).points || []).map(Number).filter(v => v >= 0));
     if (!points.length) throw new Error('Openverse sent no waveform');
-    item.waveImage = URL.createObjectURL(await picture({points, width, height}, [points.buffer]));
+    const data = {points, width, height};
+    const transfer = [points.buffer];
+    if (colors) {
+        data.colors = colors;
+        transfer.push(colors.buffer);
+    }
+    item.waveImage = URL.createObjectURL(await picture(data, transfer));
 };
 
 // True for an Openverse sound without a Freesound picture (or whose picture failed) that is too long
-// to download for its waveform (songs): Openverse's own waveform is used, which shows loudness only.
+// to download for its waveform (songs): Openverse's waveform plus colours from short samples.
 export const waveFromOpenverse = item => item.source === 'openverse' &&
     (!item.freesoundPicture || item.freesoundFailed) && item.duration > DECODE_MAX_SECONDS;
 

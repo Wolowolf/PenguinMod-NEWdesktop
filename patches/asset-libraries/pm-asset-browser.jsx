@@ -586,7 +586,7 @@ class AssetBrowser extends React.Component {
                     needsCredit ? 'Needs credit: added to the "credit" sprite automatically' : '',
                     studio ? 'Click to edit in the studio, + to add it as shown' : '',
                     sound ? 'Click to play or stop, + to add it' : '',
-                    item.sound && waveFromOpenverse(item) ? 'Waveform from Openverse: loudness only (the song is not downloaded)' : '']
+                    item.sound && waveFromOpenverse(item) ? 'Song: waveform shape from Openverse, colours from short samples (the whole song is not downloaded)' : '']
                     .filter(Boolean).join('\n')}
                 onClick={open}
                 onKeyDown={e => e.key === 'Enter' && open()}
