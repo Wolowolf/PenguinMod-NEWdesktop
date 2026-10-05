@@ -21,7 +21,7 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - 13: dragging a category box to re-order the menu (upstream addon `toolbox-category-drag`). The held box slides and the others make room. The first and last places are reachable. The order is stored in the project's Stage comment, updated on every change, and reset for projects that have no stored order. (Sessions 10–11)
   - 14: the "See Project Page" and "Upload" buttons are removed from the menu bar (sharing-site buttons; this build is for packaged projects). (Session 14)
   - 15: no Change Username / cloud variables, Remix, About, Discord links, Help Manual button or analytics script; no cloud server address. (Session 15)
-  - 16: the original sprite, costume, backdrop and sound libraries are removed. The library windows are `patches/asset-libraries/pm-asset-browser.jsx`; sources in `pm-asset-sources.js` (only CC0 / public domain / CC BY / MIT-style licences; never NC, ND, SA, GPL; no brand-logo icon sets). "Surprise" adds a random Kenney item. Every added asset carries a `pmCredit` record, saved in the project by a patch to the VM's `sb3.js`. `pm-credits.js` keeps the "credit" sprite. (Session 17) Clicking a game-icons.net or Iconify icon opens the icon studio (`pm-icon-studio.jsx`, `pm-icon-svg.js`); game-icons tags and author names come from `game-icons-meta.json`. (Session 18)
+  - 16: the original sprite, costume, backdrop and sound libraries are removed. The library windows are `patches/asset-libraries/pm-asset-browser.jsx`; sources in `pm-asset-sources.js` (only CC0 / public domain / CC BY / MIT-style licences; never NC, ND, SA, GPL; no brand-logo icon sets). "Surprise" adds a random Kenney item. Every added asset carries a `pmCredit` record, saved in the project by a patch to the VM's `sb3.js`. `pm-credits.js` keeps the "credit" sprite. (Session 17) Clicking a game-icons.net or Iconify icon opens the icon studio (`pm-icon-studio.jsx`, `pm-icon-svg.js`); game-icons tags and author names come from `game-icons-meta.json`. (Session 18) Each library opens on "All", which searches every unlocked source at once (Session 21).
 - **Not verified yet:**
   - The updater end to end inside a packaged install (including the offline-library download, Session 17).
   - The installer itself (Claude has only tested the local build).
@@ -34,6 +34,27 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - Credits screen: turn the "credit" note into an in-game credits list automatically (not asked).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 21 — "All" search in every library (2026-10-05)
+- Asked: a general search per library (sprite/costume, backdrop, sound) as a new first sidebar entry "All", selected when a library opens, searching every default source plus the unlocked key sources at once, mixed round-robin; source in the tooltip; locked sources left out with a hint; respect rate limits; one failing source doesn't stop the others.
+- Changed (`patches/asset-libraries/`):
+  - `pm-asset-sources.js`: new `mixedSearch()`: one feed per library, next batch mixed round-robin; a library's next page loads only when its items run out (at most 3 pages per batch, 20 s timeout); libraries that run out or fail leave their share to the others; per-library counts and failures. Pixabay / Europeana results now report their total.
+  - `pm-asset-browser.jsx`: "All" first in the sidebar ("N libraries"):
+    - sprites/costumes: Kenney, Game Icons, Iconify (+ Pixabay, Europeana, Openverse with a key);
+    - backdrops: Kenney (+ the three keyed ones); sounds: Kenney (+ Openverse), not the generators.
+    - Each library's first choices (all packs/tags, Openverse illustrations / sound effects, Pixabay vectors). Batches of 120; Iconify drawings loaded per batch with `loadIconSvgs`.
+    - Tooltip "From <library>"; count tooltip per library; note naming the searched and the lockable libraries; "Left out for now: …" when one fails.
+    - Searches on Enter when an online library is included, as you type otherwise.
+    - The studio's ‹ › arrows only step through icons; a studio tag opens the icon's own library (Game Icons tag / Iconify category).
+  - To reverse: `git revert` the merge.
+- Verified (local test app, Pixabay / Europeana / Openverse answers simulated with made-up keys; Europeana data from its demo key):
+  - Sprites with all 6 libraries: 20 from each, in turn; scrolling twice gave 360 (60 each), one request per online library per batch.
+  - "fruit": Kenney's 161 matches, names first. Pixabay HTTP 500 + Openverse 429: both left out with a note, one request each; the rest shared fairly.
+  - Backdrops: 30 from each of 4. Sounds: Kenney 60 + Openverse 60; without Openverse: "1 library", search as you type.
+  - Added from All: Kenney sprite, Game Icons "+" (studio style, "modified" credit), Openverse image.
+  - Studio from All; tag "electronic" → Game Icons tab (73); Iconify category "File" → Iconify tab.
+  - Not verified: real keys, the CI build. A Europeana item from muis.ee hangs while adding (also via the app's fallback; curl gets it in 0.6 s): older issue, not caused by this change.
+- Result after build: not yet tested
 
 ### Session 20 — libraries unlocked with the user's own API key: Pixabay, Europeana, Openverse (2026-10-05)
 - Asked: find more libraries that fit the rules but need an API key (preferably without request limits). They are locked by default and show an easy tutorial with links to get and enter your own key. Openverse goes behind the same lock if it's still relevant, and its preview bug gets looked at.
@@ -90,37 +111,6 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - The 18 junk backdrops are gone.
   - Openverse "arrow": 40/40 previews loaded, in 0.7 s.
   - Not verified: the CI build.
-- Result after build: not yet tested
-
-### Session 18 — icon studio (game-icons.net Studio controls) + tags (2026-10-04)
-- Asked: the game-icons.net website's Studio controls instead of pre-baked black icons, also for Iconify, plus the website's tag system if possible.
-- Changed:
-  - New `patches/asset-libraries/pm-icon-studio.jsx` / `.css` (UI) and `pm-icon-svg.js` (drawing), copied in by section 16. Clicking a game-icons.net or Iconify icon (sprite and costume libraries) opens the studio. Its "+" button still adds the icon as it is.
-  - Studio sections:
-    - Background: 15 shapes, plain / linear / radial colour, 8 patterns, Kenney textures, frame.
-    - Foreground: flip, rotate 45°, zoom, position, skew, colour or gradient, shadow / glow / inset, stroke, clip, Break apart with per-part colour and effects (click a part).
-    - Text (6 editor fonts, outline, drag) and badge (the 59 game-icons badges, colours, label, drag).
-    - Size (16–512) and 10 presets; reset per section.
-  - Output: "Add to project" (vector) or "Add as picture" (PNG at double resolution, keeps every effect).
-    - Studio vectors are cleaned with DOMPurify (scripts removed, SVG filters kept) and added directly: the normal upload strips filters and left the parts invisible.
-    - The paint editor still drops filters when the costume is edited (hint shown).
-  - Credits: studio icons say "modified" / "Modified from the original."; a badge adds its own line (`pmCredit.extra`).
-  - Tags:
-    - game-icons.net's 134 tags and 38 author names, fetched once by the new `scripts/fetch-game-icons-meta.mjs` into `patches/asset-libraries/game-icons-meta.json` (184 KB, in the app, not the offline library).
-    - Tag filter in the Game Icons tab; tag rows "‹ previous · tag · next ›" in the studio.
-    - Iconify: the icon set's categories as tags (online); clicking one lists the category.
-  - Fixed:
-    - Badges added from the Game Icons tab had a black symbol on the black disc.
-    - Iconify previews were tiny.
-    - The 429 rate limit of Iconify (Session 17) stays fixed.
-  - The offline library is unchanged (still version 1).
-  - To reverse: `git revert` the merge.
-- Verified (local test app):
-  - Studio: preset, badge, text and drag, break apart with click-to-select and per-part colour, gradient, texture, glow; vector and PNG added on the stage (vector glow visible after the fix, kept after save and reload); costume library studio.
-  - Iconify: monochrome icon with gradient; palette icon (colour locked until broken apart, 4 colour parts); category tag opens 152 icons.
-  - Credit lines including the badge line. `splitPath` checked on all 4,239 icons. Tags for 3 random icons match the website.
-  - Kenney / backdrop regression.
-  - Not verified: the CI build, the PNG text fonts on another PC.
 - Result after build: not yet tested
 
 ## Template (keep entries this short)
