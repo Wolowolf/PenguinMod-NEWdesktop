@@ -22,31 +22,32 @@ const findCreditSprite = runtime => {
 };
 const findNote = target => freeComments(target).find(isNote) || freeComments(target)[0] || null;
 
-const modifiedText = c => (c.modified ? ' Modified from the original.' : '');
+// Credit lines are as short as the licences allow: title, author (Iconify: the copyright holder,
+// which MIT / Apache / BSD require), licence name, "modified" when changed, and the source link.
+// The licence link is listed once at the bottom ("in any reasonable manner", CC BY 4.0 3(a)(2);
+// CC BY 3.0 only asks for it with the copy), unless one licence name has several links.
+const shortUrl = url => String(url || '').replace(/^https?:\/\//i, '');
+const sameUrl = url => shortUrl(url).replace(/\/+$/, '').toLowerCase();
 
-const creditLine = c => {
-    const link = url => (url ? ` (${url})` : '');
-    if (c.src === 'openverse') {
-        return `"${c.title || 'Untitled'}" by ${c.by || 'an unknown author'}${link(c.url)}, licensed under ` +
-            `${c.license}${link(c.licenseUrl)}.${modifiedText(c)}`;
-    }
-    if (c.src === 'europeana') {
-        return `"${c.title || 'Untitled'}"${c.by ? ` by ${c.by}` : ''}${c.institution ? `, ${c.institution}` : ''}` +
-            `${link(c.url)} via Europeana, licensed under ${c.license}${link(c.licenseUrl)}.${modifiedText(c)}`;
-    }
-    if (c.src === 'iconify') {
-        return `Icon "${c.title}" from ${c.set}, copyright ${c.by}${link(c.byUrl)}, licensed under ` +
-            `${c.license}${link(c.licenseUrl)}.${modifiedText(c)}`;
-    }
-    if (c.src === 'game-icons') {
-        return `Icon "${c.title}" by ${c.by} from game-icons.net${link(c.url)}, ${c.changes || 'recoloured'}, licensed under ` +
-            `${c.license}${link(c.licenseUrl)}.${modifiedText(c)}`;
-    }
-    return `"${c.title}" by ${c.by || 'unknown'}${link(c.url)}, ${c.license || 'see source'}${link(c.licenseUrl)}.${modifiedText(c)}`;
+const changesText = c => {
+    if (c.src === 'game-icons') return c.modified || c.changes === 'modified' ? 'modified' : (c.changes || 'recoloured');
+    return c.modified ? 'modified' : '';
 };
 
+const creditLines = (c, licenceListed) => {
+    const title = c.src === 'iconify' ? `"${c.title}" (${c.set})` : `"${c.title || 'Untitled'}"`;
+    const by = c.src === 'iconify' ? `© ${c.by}` : [c.by, c.src === 'europeana' && c.institution].filter(Boolean).join(', ');
+    const source = c.src === 'iconify' ? c.byUrl : c.url;
+    return [
+        [title, by, c.license || 'see source', changesText(c)].filter(Boolean).join(' - '),
+        source && `  (${shortUrl(source)})`,
+        !licenceListed && c.licenseUrl && `  (${shortUrl(c.licenseUrl)})`
+    ].filter(Boolean).join('\n');
+};
+
+// Every credit record the project needs, as [{...record, modified}]
 const collectCredits = runtime => {
-    const lines = new Set();
+    const credits = [];
     for (const target of runtime.targets) {
         if (!target.isOriginal) continue;
         const assets = target.getCostumes().concat(target.getSounds ? target.getSounds() : []);
@@ -54,20 +55,34 @@ const collectCredits = runtime => {
             if (!asset || !asset.pmCredit) continue;
             // an icon made in the studio can also carry the credit of the badge on it (`extra`)
             for (const c of [asset.pmCredit].concat(asset.pmCredit.extra || [])) {
-                if (c && c.needsCredit) lines.add(creditLine(Object.assign({}, c, c === asset.pmCredit ? {} : {modified: asset.pmCredit.modified})));
+                if (c && c.needsCredit) credits.push(Object.assign({}, c, c === asset.pmCredit ? {} : {modified: asset.pmCredit.modified}));
             }
         }
     }
-    return Array.from(lines).sort((a, b) => a.localeCompare(b));
+    return credits;
 };
 
-const noteText = lines => (lines.length ? [
-    'CREDITS',
-    "Show these lines in your game's credits (for example on a credits screen).",
-    'This note updates itself when you add, edit or remove assets that need credit; text you type here is replaced.',
-    '',
-    ...lines.map(line => `• ${line}`)
-].join('\n') : 'No asset in this project needs credit right now, so you can delete this sprite. (This note updates itself.)');
+const noteText = credits => {
+    if (!credits.length) return 'No asset in this project needs credit right now, so you can delete this sprite. (This note updates itself.)';
+    // licence name -> its links (a name with one link goes into the list at the bottom)
+    const links = new Map();
+    for (const c of credits) {
+        if (!c.license || !c.licenseUrl) continue;
+        if (!links.has(c.license)) links.set(c.license, new Map());
+        links.get(c.license).set(sameUrl(c.licenseUrl), shortUrl(c.licenseUrl));
+    }
+    const listed = new Map(Array.from(links).filter(([, urls]) => urls.size === 1)
+        .map(([name, urls]) => [name, Array.from(urls.values())[0]]));
+    const sorted = list => Array.from(new Set(list)).sort((a, b) => a.localeCompare(b));
+    return [
+        'CREDITS',
+        "Show all of this in your game's credits (for example on a credits screen), including the licence links.",
+        'This note updates itself when you add, edit or remove assets that need credit; text you type here is replaced.',
+        '',
+        ...sorted(credits.map(c => creditLines(c, listed.has(c.license)))).map(line => `• ${line}`),
+        ...(listed.size ? ['', 'Licences:', ...sorted(Array.from(listed).map(([name, url]) => `${name}: ${url}`))] : [])
+    ].join('\n');
+};
 
 export default function installCredits (vm) {
     if (vm.pmCreditsInstalled) return;
