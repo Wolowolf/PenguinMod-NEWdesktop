@@ -375,7 +375,7 @@ export const searchPixabay = async (kind, query, page, type, randomWord) => {
             }
         };
     });
-    return {items, done: page * 40 >= Math.min(json.totalHits || 0, 500)};
+    return {items, done: page * 40 >= Math.min(json.totalHits || 0, 500), total: Math.min(json.totalHits || 0, 500)};
 };
 
 // ---- Europeana (user's key: no limits) ------------------------------------------------------------
@@ -423,7 +423,7 @@ export const searchEuropeana = async (kind, query, page, randomWord) => {
         };
     });
     // Europeana pages through the first 1,000 results this way
-    result = {items, done: start + rows > Math.min(json.totalResults || 0, 1000)};
+    result = {items, done: start + rows > Math.min(json.totalResults || 0, 1000), total: Math.min(json.totalResults || 0, 1000)};
     memo.set(url, result);
     return result;
 };
@@ -587,6 +587,96 @@ export const loadIconSvgs = async items => {
             item.thumb = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(thumb)}`;
         }
     }));
+};
+
+// ---- "All": several libraries searched at once ---------------------------------------------------
+// `loaders` maps each library to a function that gives one page of its results ({items, done, total});
+// offline libraries and Iconify give everything at once. next(n) returns the next n items mixed
+// round-robin, so every library shows up in turn and each keeps its own order (best matches first).
+// A library's next page is loaded only when its items run out (at most 3 pages per call, to stay far
+// below the sites' limits). A library that fails or does not answer is left out of this search and
+// its message is kept in failed(); the others go on.
+const FEED_TIMEOUT = 20000;
+export const mixedSearch = loaders => {
+    const feeds = Object.keys(loaders).map(source => ({
+        source, load: loaders[source], items: [], used: 0, page: 0, done: false, total: 0, error: null
+    }));
+    const seen = new Set();
+    const live = () => feeds.filter(f => f.used < f.items.length || (!f.done && !f.error));
+    const fill = async (feed, want) => {
+        for (let tries = 0; tries < 3 && !feed.done && !feed.error && feed.items.length - feed.used < want; tries++) {
+            let timer;
+            try {
+                const result = await Promise.race([feed.load(feed.page + 1), new Promise((resolve, reject) => {
+                    timer = setTimeout(() => reject(new Error('it did not answer in time.')), FEED_TIMEOUT);
+                })]);
+                const known = new Set(feed.items.map(item => item.key));
+                const fresh = result.items.filter(item => !known.has(item.key));
+                feed.page++;
+                feed.items = feed.items.concat(fresh);
+                feed.total = result.total || 0;
+                feed.done = result.done || !fresh.length;
+            } catch (err) {
+                feed.error = err.message;
+            } finally {
+                clearTimeout(timer);
+            }
+        }
+    };
+    // How many items each library should have ready for a fair mix of `want`: libraries that can't load
+    // more and have fewer give all they have; the others share the rest.
+    const shareFor = (active, want) => {
+        let rest = want;
+        let open = active;
+        for (;;) {
+            const share = Math.ceil(rest / open.length);
+            const small = open.filter(f => (f.done || f.error) && f.items.length - f.used < share);
+            if (!small.length || small.length === open.length) return share;
+            for (const f of small) rest -= f.items.length - f.used;
+            open = open.filter(f => !small.includes(f));
+        }
+    };
+    return {
+        next: async want => {
+            // a second pass when libraries ran out or failed during the first one
+            for (let pass = 0; pass < 2; pass++) {
+                const active = live();
+                if (!active.length) return [];
+                const share = shareFor(active, want);
+                const loading = active.filter(f => !f.done && !f.error && f.items.length - f.used < share);
+                if (!loading.length) break;
+                await Promise.all(loading.map(f => fill(f, share)));
+            }
+            const out = [];
+            for (let added = true; added && out.length < want;) {
+                added = false;
+                for (const f of feeds) {
+                    while (f.used < f.items.length && seen.has(f.items[f.used].key)) f.used++;
+                    if (out.length < want && f.used < f.items.length) {
+                        const item = f.items[f.used++];
+                        seen.add(item.key);
+                        out.push(item);
+                        added = true;
+                    }
+                }
+            }
+            return out;
+        },
+        // a library that failed after its items were taken (e.g. Iconify drawings): leave it out from now on
+        fail: (source, message) => {
+            const f = feeds.find(feed => feed.source === source);
+            if (f) {
+                f.error = message;
+                f.used = f.items.length;
+            }
+        },
+        done: () => !live().length,
+        failed: () => feeds.filter(f => f.error).map(f => ({source: f.source, message: f.error})),
+        // how many results each library has: {source, count, more (count not known yet)}
+        counts: () => feeds.filter(f => !f.error || f.items.length).map(f => ({
+            source: f.source, count: Math.max(f.total, f.items.length), more: !f.done && !f.error && !f.total
+        }))
+    };
 };
 
 // ---- adding to the project ---------------------------------------------------------------------

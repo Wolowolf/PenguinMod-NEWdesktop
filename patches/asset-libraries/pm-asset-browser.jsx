@@ -13,8 +13,8 @@ import IconStudio, {quickAddStudio, studioThumbs} from './pm-icon-studio.jsx';
 import ApiKeyPanel from './pm-api-key-panel.jsx';
 import {hasKey} from '../../lib/pm-api-keys.js';
 import {
-    LIBRARY_URL, addAsset, addGeneratedSound, gameIconTags, iconifyCategory, loadIconSvgs, loadWaveform, offlinePacks,
-    randomSubject, searchEuropeana, searchIconify, searchOffline, searchOpenverse, searchPixabay
+    LIBRARY_URL, addAsset, addGeneratedSound, gameIconTags, iconifyCategory, loadIconSvgs, loadWaveform, mixedSearch,
+    offlinePacks, randomSubject, searchEuropeana, searchIconify, searchOffline, searchOpenverse, searchPixabay
 } from '../../lib/pm-asset-sources.js';
 
 // Libraries that need the user's own (free) API key: locked until one is entered.
@@ -30,12 +30,13 @@ const TITLES = {
     sprite: 'Choose a Sprite', costume: 'Choose a Costume', backdrop: 'Choose a Backdrop', sound: 'Choose a Sound'
 };
 const SOURCES = {
-    sprite: ['kenney', 'gameIcons', 'iconify', 'pixabay', 'europeana', 'openverse'],
-    costume: ['kenney', 'gameIcons', 'iconify', 'pixabay', 'europeana', 'openverse'],
-    backdrop: ['kenney', 'pixabay', 'europeana', 'openverse'],
-    sound: ['kenney', 'generators', 'openverse']
+    sprite: ['all', 'kenney', 'gameIcons', 'iconify', 'pixabay', 'europeana', 'openverse'],
+    costume: ['all', 'kenney', 'gameIcons', 'iconify', 'pixabay', 'europeana', 'openverse'],
+    backdrop: ['all', 'kenney', 'pixabay', 'europeana', 'openverse'],
+    sound: ['all', 'kenney', 'generators', 'openverse']
 };
 const SOURCE_INFO = {
+    all: {label: 'All', where: ''}, // its "where" and note depend on which libraries are unlocked
     kenney: {label: 'Kenney', where: 'Offline', note: 'Kenney game assets. CC0: free for any use, no credit needed.'},
     gameIcons: {
         label: 'Game Icons', where: 'Offline',
@@ -82,6 +83,25 @@ const ICON_PAGE = 60; // Iconify: fewer, its public API limits how much one app 
 const isOnline = source => source === 'iconify' || SERVER_PAGED.includes(source);
 const pageSize = source => (source === 'iconify' ? ICON_PAGE : PAGE);
 
+// "All": every library of this kind that is unlocked (not the sound generators), searched at once.
+const allSources = kind => SOURCES[kind].filter(s => s !== 'all' && s !== 'generators' && !locked(s));
+const searchesOnline = (source, kind) => (source === 'all' ? allSources(kind).some(isOnline) : isOnline(source));
+const listWords = words => (words.length < 2 ? words.join('') :
+    `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}`);
+const allWhere = kind => {
+    const n = allSources(kind).length;
+    return `${n} ${n === 1 ? 'library' : 'libraries'}`;
+};
+const allNote = kind => {
+    const labels = list => list.map(x => SOURCE_INFO[x].label);
+    const lockedOnes = SOURCES[kind].filter(locked);
+    const open = allSources(kind);
+    return `Searches ${listWords(labels(open))}${open.length > 1 ? ' at once, mixed so each one shows up' : ''}. ` +
+        'Point at an item to see where it comes from and its licence.' +
+        (lockedOnes.length ? ` ${listWords(labels(lockedOnes))} can join too: open ${lockedOnes.length > 1 ? 'them' : 'it'} ` +
+            'on the left and unlock with your own free key.' : '');
+};
+
 class AssetBrowser extends React.Component {
     constructor (props) {
         super(props);
@@ -90,8 +110,9 @@ class AssetBrowser extends React.Component {
             source, query: '', pack: -1, packs: [], type: (OPENVERSE_TYPES[props.kind] || [[null]])[0][0],
             items: [], shown: PAGE, page: 1, done: true, loading: false, error: null,
             busy: null, status: null, playing: null, generator: null,
-            tag: '', tags: [], category: null, studioItem: null, redraw: 0, keyPanel: false
+            tag: '', tags: [], category: null, studioItem: null, redraw: 0, keyPanel: false, failed: [], counts: []
         };
+        this.mixed = null; // the running "All" search
         this.randomWord = randomSubject(); // the subject shown when an online library opens empty
         this.searchTimer = null;
         this.redrawTimer = null;
@@ -166,13 +187,13 @@ class AssetBrowser extends React.Component {
         };
         await Promise.all([worker(), worker(), worker(), worker()]);
     }
-    selectSource (source) {
+    selectSource (source, extra) {
         this.stopSound();
-        this.setState({
+        this.setState(Object.assign({
             source, items: [], shown: PAGE, error: null, status: null, generator: null, pack: -1,
-            tag: '', category: null, studioItem: null, keyPanel: false,
+            tag: '', category: null, studioItem: null, keyPanel: false, failed: [], counts: [],
             type: source === 'pixabay' ? PIXABAY_TYPES[0][0] : (OPENVERSE_TYPES[this.props.kind] || [[null]])[0][0]
-        }, () => {
+        }, extra), () => {
             if (source === 'kenney') {
                 offlinePacks(this.props.kind).then(packs => this.setState({packs}), () => {});
             }
@@ -184,7 +205,7 @@ class AssetBrowser extends React.Component {
     }
     handleQueryChange (e) {
         this.setState({query: e.target.value});
-        if (!isOnline(this.state.source)) {
+        if (!searchesOnline(this.state.source, this.props.kind)) {
             clearTimeout(this.searchTimer);
             this.searchTimer = setTimeout(() => this.runSearch(1), 200);
         }
@@ -195,14 +216,16 @@ class AssetBrowser extends React.Component {
     handleSearch () {
         this.setState({category: null}, () => this.runSearch(1));
     }
-    // A tag (game-icons) or a set category (Iconify) clicked in the studio: show all its icons.
+    // A tag (game-icons) or a set category (Iconify) clicked in the studio: show all its icons
+    // (in the icon's own library when the studio was opened from "All").
     showTag (tag) {
         const item = this.state.studioItem;
-        if (item && item.source === 'iconify') {
-            this.setState({studioItem: null, query: '', category: {prefix: item.prefix, name: tag, set: item.subtitle}},
-                () => this.runSearch(1));
+        const filter = item && item.source === 'iconify' ?
+            {category: {prefix: item.prefix, name: tag, set: item.subtitle}} : {tag};
+        if (item && item.source !== this.state.source) {
+            this.selectSource(item.source, Object.assign({query: ''}, filter));
         } else {
-            this.setState({studioItem: null, query: '', tag}, () => this.runSearch(1));
+            this.setState(Object.assign({studioItem: null, query: ''}, filter), () => this.runSearch(1));
         }
     }
     afterAdd () {
@@ -213,7 +236,9 @@ class AssetBrowser extends React.Component {
     async handleMore () {
         const {source, shown, items, done, page, loading} = this.state;
         if (loading || this.state.studioItem) return;
-        if (shown < items.length) {
+        if (source === 'all') {
+            if (!done) this.runAll(false);
+        } else if (shown < items.length) {
             const next = shown + pageSize(source);
             this.setState({loading: true});
             if (source === 'iconify') {
@@ -234,6 +259,10 @@ class AssetBrowser extends React.Component {
         const {source, query, pack, type, tag, category} = this.state;
         const {kind} = this.props;
         if (source === 'generators') return;
+        if (source === 'all') {
+            this.runAll(true);
+            return;
+        }
         const id = ++this.searchId;
         if (locked(source)) {
             this.setState({items: [], loading: false, error: null, done: true});
@@ -273,6 +302,59 @@ class AssetBrowser extends React.Component {
                 error: offline && isOnline(source) ? `${SOURCE_INFO[source].label} needs an internet connection.` : err.message
             });
         }
+    }
+    // "All": one loader per unlocked library, each with its library's first choices (all packs and
+    // tags, Openverse illustrations or sound effects, Pixabay vector graphics).
+    allLoaders () {
+        const {kind} = this.props;
+        const {query} = this.state;
+        const whole = promise => promise.then(items => ({items, done: true}));
+        const loaders = {
+            kenney: () => whole(searchOffline('kenney', kind, query, -1)),
+            gameIcons: () => whole(searchOffline('gameIcons', kind, query, '')),
+            iconify: () => whole(searchIconify(query.trim())),
+            pixabay: page => searchPixabay(kind, query, page, PIXABAY_TYPES[0][0], this.randomWord),
+            europeana: page => searchEuropeana(kind, query, page, this.randomWord),
+            openverse: page => searchOpenverse(kind, query.trim() || this.randomWord, page,
+                (OPENVERSE_TYPES[kind] || [[null]])[0][0])
+        };
+        const out = {};
+        for (const s of allSources(kind)) out[s] = loaders[s];
+        return out;
+    }
+    // "All": a new search (fresh), or the next mixed batch when scrolling to the end.
+    async runAll (fresh) {
+        if (!fresh && this.mixedLoading) return; // that batch is still on its way
+        const id = fresh ? ++this.searchId : this.searchId;
+        if (fresh) this.mixed = mixedSearch(this.allLoaders());
+        const mixed = this.mixed;
+        this.mixedLoading = mixed;
+        this.setState({loading: true, error: null});
+        let batch = await mixed.next(PAGE);
+        // Iconify drawings: one request per icon set, for this batch only
+        const icons = batch.filter(item => item.source === 'iconify');
+        if (icons.length) {
+            try {
+                await loadIconSvgs(icons);
+            } catch (err) {
+                mixed.fail('iconify', err.message);
+            }
+            batch = batch.filter(item => item.source !== 'iconify' || item.thumb);
+        }
+        if (this.mixedLoading === mixed) this.mixedLoading = null;
+        if (id !== this.searchId || this.unmounted) return;
+        const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+        const failed = mixed.failed().map(f => {
+            const label = SOURCE_INFO[f.source].label;
+            if (offline && isOnline(f.source)) return `${label} needs an internet connection.`;
+            return f.message.includes(label) ? f.message : `${label}: ${f.message}`;
+        });
+        this.setState(s => {
+            const items = fresh ? batch : s.items.concat(batch);
+            return {items, shown: items.length, done: mixed.done(), loading: false, page: 1,
+                failed: Array.from(new Set(failed)), counts: mixed.counts()};
+        }, () => this.fillPage());
+        this.decorate(batch);
     }
     async handleQuickAdd (item) {
         if (this.state.busy) return;
@@ -367,7 +449,8 @@ class AssetBrowser extends React.Component {
                 key={item.key}
                 role="button"
                 tabIndex={0}
-                title={[item.name, item.subtitle, item.credit && item.credit.license,
+                title={[item.name, this.state.source === 'all' && `From ${SOURCE_INFO[item.source].label}`,
+                    item.subtitle, item.credit && item.credit.license,
                     needsCredit ? 'Needs credit: added to the "credit" sprite automatically' : '',
                     studio ? 'Click to edit in the studio, + to add it as shown' : ''].filter(Boolean).join('\n')}
                 onClick={open}
@@ -454,8 +537,9 @@ class AssetBrowser extends React.Component {
     render () {
         const {kind} = this.props;
         const {source, query, items, shown, loading, error, busy, status, packs, pack, type, done,
-            tag, tags, category, studioItem} = this.state;
-        const info = SOURCE_INFO[source];
+            tag, tags, category, studioItem, failed, counts} = this.state;
+        const info = source === 'all' ? {label: 'everything', note: allNote(kind)} : SOURCE_INFO[source];
+        const online = searchesOnline(source, kind);
         if (studioItem) {
             return (
                 <Modal fullScreen contentLabel={TITLES[kind]} id="pmAssetBrowser" onRequestClose={this.handleClose}>
@@ -464,7 +548,7 @@ class AssetBrowser extends React.Component {
                             vm={this.props.vm}
                             kind={kind}
                             item={studioItem}
-                            list={items}
+                            list={items.filter(i => i.studio)}
                             onAdded={() => this.afterAdd()}
                             onBack={() => {
                                 this.setState({studioItem: null});
@@ -481,7 +565,12 @@ class AssetBrowser extends React.Component {
             (source === 'pixabay' && kind !== 'backdrop' && PIXABAY_TYPES);
         const showKeyPanel = locked(source) || this.state.keyPanel;
         const visible = items.slice(0, shown);
-        const canShowMore = shown < items.length || (SERVER_PAGED.includes(source) && !done && items.length > 0);
+        const canShowMore = shown < items.length ||
+            ((SERVER_PAGED.includes(source) || source === 'all') && !done && items.length > 0);
+        const allCount = counts.reduce((sum, c) => sum + c.count, 0);
+        const countText = source === 'all' ?
+            (allCount ? `${allCount}${counts.some(c => c.more) ? '+' : ''} found` : '') :
+            (items.length ? `${items.length}${done ? '' : '+'} found` : '');
         return (
             <Modal
                 fullScreen
@@ -498,7 +587,9 @@ class AssetBrowser extends React.Component {
                                 onClick={() => this.selectSource(s)}
                             >
                                 <span className={styles.sourceLabel}>{SOURCE_INFO[s].label}</span>
-                                <span className={styles.sourceWhere}>{locked(s) ? '🔒 Key' : SOURCE_INFO[s].where}</span>
+                                <span className={styles.sourceWhere}>
+                                    {locked(s) ? '🔒 Key' : (s === 'all' ? allWhere(kind) : SOURCE_INFO[s].where)}
+                                </span>
                             </button>
                         ))}
                         <p className={styles.sidebarNote}>
@@ -512,12 +603,12 @@ class AssetBrowser extends React.Component {
                                     className={styles.search}
                                     type="search"
                                     autoFocus
-                                    placeholder={isOnline(source) ? `Search ${info.label} and press Enter` : `Search ${info.label}`}
+                                    placeholder={online ? `Search ${info.label} and press Enter` : `Search ${info.label}`}
                                     value={query}
                                     onChange={this.handleQueryChange}
                                     onKeyDown={this.handleQueryKey}
                                 />
-                                {isOnline(source) && (
+                                {online && (
                                     <button className={styles.searchButton} onClick={this.handleSearch}>{'Search'}</button>
                                 )}
                                 {source === 'kenney' && packs.length > 0 && (
@@ -549,8 +640,12 @@ class AssetBrowser extends React.Component {
                                         {types.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                                     </select>
                                 )}
-                                <span className={styles.count}>
-                                    {loading ? 'Searching…' : (items.length ? `${items.length}${done ? '' : '+'} found` : '')}
+                                <span
+                                    className={styles.count}
+                                    title={source === 'all' ? counts.map(c => `${SOURCE_INFO[c.source].label}: ${c.count}${c.more ? '+' : ''}`)
+                                        .join('\n') : null}
+                                >
+                                    {loading ? 'Searching…' : countText}
                                 </span>
                             </div>
                         )}
@@ -576,6 +671,9 @@ class AssetBrowser extends React.Component {
                             </div>
                         )}
                         {error && <div className={styles.error}>{error}</div>}
+                        {source === 'all' && failed.length > 0 && (
+                            <div className={styles.error}>{`Left out for now: ${failed.join(' ')}`}</div>
+                        )}
                         {status && <div className={styles.status}>{status}</div>}
                         {showKeyPanel ? (
                             <ApiKeyPanel
