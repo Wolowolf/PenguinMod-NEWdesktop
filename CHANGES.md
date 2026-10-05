@@ -50,6 +50,10 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - Sound tiles: click plays (orange outline, moving line), stops by itself or on a second click; "+" added "laser3" without playing; icon "+" unchanged.
   - Not verified: real Pixabay limit headers (no key), Openverse's header names for keyed requests, the CI build.
 - Result after build: not yet tested
+- Follow-up asked: Jamendo songs had no colourful waveform (grey shape only).
+- Follow-up changed: `pm-waveforms.js` takes 24 short samples (16 KB, ~1.4 s each, ~0.4 MB per song) spread over the song's 96 kbps MP3 and colours Openverse's shape with their spectral centroids (blended in between); `app/electron-main.js` `pm-fetch-bytes` / `preload.js` `fetchBytes(url, range)` can fetch one part of a file (at most 256 KB, must answer 206; Jamendo doesn't let pages read its files and ignores multi-part requests). Grey shape as before if no sample can be read.
+- Follow-up verified (local test app): 3 real Jamendo songs got their own colour patterns (copies identical), first 10 tiles in 1.5 s. Not verified: the CI build.
+- Follow-up result after build: not yet tested
 
 ### Session 21 — "All" search in every library; Freesound-style waveforms (2026-10-05)
 - Asked: a general search per library (sprite/costume, backdrop, sound) as a new first sidebar entry "All", selected when a library opens, searching every default source plus the unlocked key sources at once, mixed round-robin; source in the tooltip; locked sources left out with a hint; respect rate limits; one failing source doesn't stop the others.

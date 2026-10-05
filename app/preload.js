@@ -20,7 +20,7 @@ contextBridge.exposeInMainWorld("__electronInternalBridge", {
 // sound from a site that doesn't let pages download it (see "pm-open-external" / "pm-fetch-bytes").
 contextBridge.exposeInMainWorld("PMDesktop", {
   openExternal: url => ipcRenderer.invoke("pm-open-external", String(url)),
-  fetchBytes: url => ipcRenderer.invoke("pm-fetch-bytes", String(url)),
+  fetchBytes: (url, range) => ipcRenderer.invoke("pm-fetch-bytes", String(url), range === undefined ? undefined : String(range)),
 });
 
 window.addEventListener("DOMContentLoaded", async () => {
