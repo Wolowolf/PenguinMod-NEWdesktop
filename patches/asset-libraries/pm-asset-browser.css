@@ -103,6 +103,15 @@
     color: $text-primary;
     opacity: 0.85;
 }
+/* the request limits of Openverse and Pixabay (pm-limits.js) */
+.limits {
+    padding: 0 4px 6px 4px;
+    font-size: 0.75rem;
+    color: $text-primary;
+    opacity: 0.85;
+}
+.limit-low { color: #e07800; font-weight: bold; }
+.limit-out { color: $error-primary; font-weight: bold; }
 .error, .status {
     margin: 0 4px 6px 4px;
     padding: 0.4rem 0.6rem;
@@ -165,18 +174,27 @@
 /* waveform like Freesound's: coloured by frequency on a dark background (pm-waveforms.js or Freesound's picture) */
 .wave { position: absolute; inset: 6px 4px 18px 4px; width: calc(100% - 8px); height: calc(100% - 24px); }
 .wave { display: block; object-fit: fill; pointer-events: none; }
-.play {
-    position: relative;
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: 50%;
-    background: rgba(0, 195, 255, 0.85);
-    color: $ui-white;
-    font-size: 1.1rem;
-    cursor: pointer;
+/* a sound that is playing: its tile is outlined and a line moves over the waveform */
+.tile.playing-tile,
+[theme="dark"] .tile.playing-tile { border-color: $error-primary; }
+.playhead {
+    position: absolute;
+    top: 4px;
+    bottom: 16px;
+    left: 4px;
+    width: 2px;
+    background: #fff;
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+    pointer-events: none;
+    z-index: 1;
+    animation-name: playhead-move;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
 }
-.play.playing { background: $error-primary; }
+@keyframes playhead-move {
+    from { left: 4px; }
+    to { left: calc(100% - 6px); }
+}
 .duration {
     position: absolute;
     left: 4px;
@@ -301,6 +319,7 @@
 [theme="dark"] .grid { background: #111; }
 [theme="dark"] .sidebar-note,
 [theme="dark"] .notice,
+[theme="dark"] .limits,
 [theme="dark"] .count,
 [theme="dark"] .empty,
 [theme="dark"] .generator-hint { color: #ddd; }

@@ -11,6 +11,7 @@ import {costumeUpload, soundUpload, spriteUpload} from './file-uploader.js';
 import gameIconsMeta from './pm-game-icons-meta.json'; // tags and author names from game-icons.net
 import searchWords from './pm-search-words.json'; // related words for the search (from WordNet)
 import {getKey, openverseToken, setKey} from './pm-api-keys.js';
+import {checkLimit, noteAnswer, noteRequest} from './pm-limits.js';
 
 export const LIBRARY_URL = '/__library__/';
 const OPENVERSE = 'https://api.openverse.org/v1/';
@@ -268,11 +269,15 @@ const openverseItem = (kind, r) => {
     };
 };
 
-// type: images 'illustration' | 'all'; sounds 'sfx' | 'music' | 'all'
-export const searchOpenverse = async (kind, query, page, type) => {
+// type: images 'illustration' | 'all'; sounds 'sfx' | 'music' | 'all'. Without a search (random mix):
+// everything, at the pages `mix` picks.
+export const searchOpenverse = async (kind, query, page, type, mix) => {
+    const q = query.trim();
+    const sitePage = q ? page : mixPage(mix, `openverse:${kind}:${type}`, page);
     // filter_dead=false: Openverse skips checking every link (about a third faster); broken previews fall back
-    const params = new URLSearchParams({q: query, license: OPENVERSE_LICENSES.join(','), page_size: '20', page: String(page),
+    const params = new URLSearchParams({license: OPENVERSE_LICENSES.join(','), page_size: '20', page: String(sitePage),
         filter_dead: 'false'});
+    if (q) params.set('q', q);
     let endpoint = 'images/';
     if (kind === 'sound') {
         endpoint = 'audio/';
@@ -288,6 +293,8 @@ export const searchOpenverse = async (kind, query, page, type) => {
     const cached = memo.get(url);
     if (cached) return cached;
     // With the user's own key: 100 searches a minute and 10,000 a day (20 and 200 without one).
+    checkLimit('openverse');
+    noteRequest('openverse');
     const res = await openverseFetch(url);
     if (res.status === 429) {
         throw new Error('Openverse\'s limit is reached for now (100 searches a minute, 10,000 a day; 20 and 200 until your ' +
@@ -298,7 +305,8 @@ export const searchOpenverse = async (kind, query, page, type) => {
     const items = (json.results || [])
         .filter(r => OPENVERSE_LICENSES.includes(r.license) && r.url)
         .map(r => openverseItem(kind, r));
-    const result = {items, done: page >= (json.page_count || 0), total: json.result_count || 0};
+    const result = {items, done: q ? page >= (json.page_count || 0) : page >= MIX_PAGES || !items.length,
+        total: json.result_count || 0};
     memo.set(url, result);
     return result;
 };
@@ -308,10 +316,13 @@ const memo = new Map();
 
 // A request to Openverse with the user's access token (fetched again once if it ran out early).
 export const openverseFetch = async url => {
-    const res = await fetch(url, {headers: {Authorization: `Bearer ${await openverseToken()}`}});
-    if (res.status !== 401) return res;
-    setKey('openverse', Object.assign({}, getKey('openverse'), {token: null}));
-    return fetch(url, {headers: {Authorization: `Bearer ${await openverseToken()}`}});
+    let res = await fetch(url, {headers: {Authorization: `Bearer ${await openverseToken()}`}});
+    if (res.status === 401) {
+        setKey('openverse', Object.assign({}, getKey('openverse'), {token: null}));
+        res = await fetch(url, {headers: {Authorization: `Bearer ${await openverseToken()}`}});
+    }
+    noteAnswer('openverse', res); // how much of the limit is left (counter)
+    return res;
 };
 
 // ---- Pixabay (user's key: 100 searches a minute, no daily limit) ---------------------------------
@@ -329,20 +340,25 @@ const pixabayCache = () => {
     }
 };
 
-// type: 'vector' | 'illustration' | 'photo' | 'all'. Without a search: a random everyday subject.
-export const searchPixabay = async (kind, query, page, type, randomWord) => {
+// type: 'vector' | 'illustration' | 'photo' | 'all'. Without a search (random mix): all of Pixabay's
+// popular images, at the pages `mix` picks.
+export const searchPixabay = async (kind, query, page, type, mix) => {
     const key = (getKey('pixabay') || {}).key;
-    const q = (query.trim() || randomWord || '').slice(0, 100);
+    const q = query.trim().slice(0, 100);
     const params = new URLSearchParams({
-        q, page: String(page), per_page: '40', safesearch: 'true',
+        page: String(q ? page : mixPage(mix, `pixabay:${kind}:${type}`, page)), per_page: '40', safesearch: 'true',
         image_type: kind === 'backdrop' ? 'photo' : (type || 'all')
     });
+    if (q) params.set('q', q);
     if (kind === 'backdrop') params.set('orientation', 'horizontal');
     const id = params.toString();
     const cache = pixabayCache();
     let json = cache[id] && cache[id].json;
     if (!json) {
+        checkLimit('pixabay');
+        noteRequest('pixabay');
         const res = await fetch(`https://pixabay.com/api/?key=${encodeURIComponent(key)}&${id}`);
+        noteAnswer('pixabay', res);
         if (res.status === 429) throw new Error('Pixabay\'s limit of 100 searches a minute is reached. Try again in a minute.');
         if (res.status === 400 || res.status === 401) throw new Error('Pixabay does not accept your key any more. Change it with "Change key".');
         if (!res.ok) throw new Error(`Pixabay answered HTTP ${res.status}.`);
@@ -369,7 +385,8 @@ export const searchPixabay = async (kind, query, page, type, randomWord) => {
             }
         };
     });
-    return {items, done: page * 40 >= Math.min(json.totalHits || 0, 500), total: Math.min(json.totalHits || 0, 500)};
+    const total = Math.min(json.totalHits || 0, 500);
+    return {items, done: q ? page * 40 >= total : page >= Math.min(MIX_PAGES, Math.floor(total / 40)) || !items.length, total};
 };
 
 // ---- Europeana (user's key: no limits) ------------------------------------------------------------
@@ -384,14 +401,17 @@ const europeanaLicense = rights => {
 };
 const first = v => (Array.isArray(v) ? v[0] : v) || '';
 
-export const searchEuropeana = async (kind, query, page, randomWord) => {
+// Without a search (random mix): everything in Europeana's random order (the same order while the
+// library is open, so pages don't repeat).
+export const searchEuropeana = async (kind, query, page, mix) => {
     const key = (getKey('europeana') || {}).key;
     const rows = 24;
     const start = (page - 1) * rows + 1;
     const params = new URLSearchParams({
-        wskey: key, query: query.trim() || randomWord || '*', rows: String(rows), start: String(start),
+        wskey: key, query: query.trim() || '*', rows: String(rows), start: String(start),
         reusability: 'open', media: 'true', qf: 'TYPE:IMAGE', profile: 'standard'
     });
+    if (!query.trim()) params.set('sort', `random_${mix ? mix.seed : 1} asc`);
     const url = `https://api.europeana.eu/record/v2/search.json?${params}`;
     let result = memo.get(url);
     if (result) return result;
@@ -496,20 +516,44 @@ const unique = lists => {
     return out;
 };
 
-// Everyday subjects for the random mix shown before anything is searched.
+// Everyday subjects for Iconify's random mix shown before anything is searched.
 const RANDOM_WORDS = ['star', 'heart', 'sword', 'tree', 'cat', 'dog', 'house', 'car', 'rocket', 'fire', 'water', 'sun',
     'moon', 'cloud', 'music', 'robot', 'ghost', 'skull', 'crown', 'key', 'gem', 'coin', 'flag', 'flower', 'fish', 'bird',
     'apple', 'castle', 'shield', 'bomb', 'map', 'book', 'ball', 'bolt', 'leaf', 'mountain', 'planet', 'dragon', 'pizza',
     'cake', 'gift', 'trophy', 'bell', 'camera', 'clock', 'eye', 'hand', 'smile', 'snow', 'hammer', 'arrow', 'potion',
-    'train', 'plane', 'ship', 'bug', 'paw', 'horse', 'chess', 'dice', 'alien', 'tent', 'candy', 'soccer', 'guitar'];
+    'train', 'plane', 'ship', 'bug', 'paw', 'horse', 'chess', 'dice', 'alien', 'tent', 'candy', 'soccer', 'guitar',
+    'bear', 'frog', 'owl', 'cactus', 'mushroom', 'anchor', 'lamp', 'umbrella', 'balloon', 'kite', 'drum', 'wizard',
+    'knight', 'ninja', 'pirate', 'penguin', 'dinosaur', 'butterfly', 'snail', 'bicycle', 'truck', 'island', 'volcano',
+    'rainbow', 'magnet', 'battery', 'compass', 'telescope', 'headphones', 'gamepad', 'puzzle', 'treasure', 'lock'];
 const pick = (list, n) => shuffle(list).slice(0, n);
-export const randomSubject = () => pick(RANDOM_WORDS, 1)[0];
+const ICON_MIX_WORDS = 12;
+
+// The random mix shown when a library opens with an empty search: the online libraries show
+// everything at random pages (or in a random order) instead of one subject. One mix per opening, so
+// going back to a library shows the same items.
+const MIX_PAGES = 12; // Openverse and Pixabay let anyone go this deep (20 and 40 a page)
+export const newRandomMix = () => ({seed: Math.floor(Math.random() * 1e9), pages: {}});
+const mixPage = (mix, key, page) => {
+    const m = mix || newRandomMix();
+    if (!m.pages[key]) m.pages[key] = shuffle(Array.from({length: MIX_PAGES}, (x, i) => i + 1));
+    return m.pages[key][Math.min(page, MIX_PAGES) - 1];
+};
 
 // Iconify search, plus a few related words ("fruit" also searches apple, banana...); without a
-// search, a random mix of three everyday subjects.
+// search, a random mix of 12 everyday subjects, taken in turn so the first icons show all of them.
 export const searchIconify = async query => {
     const q = query.trim();
-    if (!q) return shuffle(unique(await Promise.all(pick(RANDOM_WORDS, 3).map(w => iconifySearch(w, 64)))));
+    if (!q) {
+        const settled = await Promise.all(pick(RANDOM_WORDS, ICON_MIX_WORDS).map(w =>
+            iconifySearch(w, 32).then(list => ({list: shuffle(list)}), error => ({error, list: []}))));
+        if (settled.every(r => r.error)) throw settled[0].error;
+        const lists = settled.map(r => r.list);
+        const mixed = [];
+        for (let i = 0; lists.some(l => i < l.length); i++) {
+            for (const l of lists) if (i < l.length) mixed.push(l[i]);
+        }
+        return unique([mixed]);
+    }
     const related = tokenize(q).length === 1 ? pick(Array.from(relatedWords(q.toLowerCase())), 3) : [];
     const [main, ...more] = await Promise.all([iconifySearch(q, 999), ...related.map(w => iconifySearch(w, 48))]);
     return unique([main, ...more]);
@@ -561,7 +605,10 @@ export const loadIconSvgs = async items => {
     for (const item of items) {
         if (item.source === 'iconify' && !item.svgText) (byPrefix[item.prefix] = byPrefix[item.prefix] || []).push(item);
     }
-    await Promise.all(Object.keys(byPrefix).map(async prefix => {
+    // one icon set after the other, at most 6 at a time (a random mix touches many sets)
+    const prefixes = Object.keys(byPrefix);
+    let failure = null;
+    const loadSet = async prefix => {
         const list = byPrefix[prefix];
         const res = await fetch(`${ICONIFY}${prefix}.json?icons=${list.map(item => encodeURIComponent(item.icon)).join(',')}`);
         if (!res.ok) throw new Error(`Iconify answered HTTP ${res.status}.`);
@@ -580,7 +627,18 @@ export const loadIconSvgs = async items => {
             const thumb = item.svgText.replace(`width="${w}" height="${h}"`, `width="${Math.round(96 * w / h)}" height="96"`);
             item.thumb = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(thumb)}`;
         }
-    }));
+    };
+    const worker = async () => {
+        while (prefixes.length) {
+            try {
+                await loadSet(prefixes.shift());
+            } catch (err) {
+                failure = failure || err;
+            }
+        }
+    };
+    await Promise.all([worker(), worker(), worker(), worker(), worker(), worker()]);
+    if (failure) throw failure;
 };
 
 // ---- "All": several libraries searched at once ---------------------------------------------------
@@ -719,17 +777,42 @@ const normalizeSvg = (data, maxSide, fitSide) => {
 
 // One file: directly, or through the app when the site doesn't allow pages to download it (many
 // museum and photo sites). Returns {data, type} or null.
+// Some servers never answer the page at all (the app's request layer gets stuck on a header with
+// non-English letters, e.g. a museum's file name): after 3 s without an answer, the app is asked too,
+// and the first good answer wins.
+const DIRECT_WAIT = 3000;
+const DIRECT_GIVE_UP = 60000;
 export const fetchFile = async url => {
     if (!url) return null;
-    try {
-        const res = await fetch(url);
-        if (res.ok) return {data: await res.arrayBuffer(), type: (res.headers.get('content-type') || '').split(';')[0].trim()};
-    } catch (err) { /* blocked for pages: try through the app */ }
-    if (typeof window !== 'undefined' && window.PMDesktop && window.PMDesktop.fetchBytes) {
-        const res = await window.PMDesktop.fetchBytes(url);
-        if (res && res.ok) return {data: res.data, type: (res.type || '').split(';')[0].trim()};
-    }
-    return null;
+    const controller = new AbortController();
+    const giveUp = setTimeout(() => controller.abort(), DIRECT_GIVE_UP);
+    const direct = fetch(url, {signal: controller.signal})
+        .then(async res => (res.ok ? {data: await res.arrayBuffer(), type: (res.headers.get('content-type') || '').split(';')[0].trim()} : null))
+        .catch(() => null) // blocked for pages (no CORS), or given up
+        .finally(() => clearTimeout(giveUp));
+    const viaApp = () => {
+        if (typeof window === 'undefined' || !window.PMDesktop || !window.PMDesktop.fetchBytes) return Promise.resolve(null);
+        return window.PMDesktop.fetchBytes(url).then(res => (res && res.ok ?
+            {data: res.data, type: (res.type || '').split(';')[0].trim()} : null), () => null);
+    };
+    let timer;
+    const late = new Promise(resolve => {
+        timer = setTimeout(() => resolve('late'), DIRECT_WAIT);
+    });
+    const first = await Promise.race([direct, late]);
+    clearTimeout(timer);
+    if (first !== 'late') return first || viaApp();
+    const result = await new Promise(resolve => {
+        let left = 2;
+        const take = value => {
+            if (value) resolve(value);
+            else if (--left === 0) resolve(null);
+        };
+        direct.then(take);
+        viaApp().then(take);
+    });
+    controller.abort(); // the slower one is not needed any more
+    return result;
 };
 
 const download = async item => {

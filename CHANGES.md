@@ -21,7 +21,7 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - 13: dragging a category box to re-order the menu (upstream addon `toolbox-category-drag`). The held box slides and the others make room. The first and last places are reachable. The order is stored in the project's Stage comment, updated on every change, and reset for projects that have no stored order. (Sessions 10–11)
   - 14: the "See Project Page" and "Upload" buttons are removed from the menu bar (sharing-site buttons; this build is for packaged projects). (Session 14)
   - 15: no Change Username / cloud variables, Remix, About, Discord links, Help Manual button or analytics script; no cloud server address. (Session 15)
-  - 16: the original sprite, costume, backdrop and sound libraries are removed. The library windows are `patches/asset-libraries/pm-asset-browser.jsx`; sources in `pm-asset-sources.js` (only CC0 / public domain / CC BY / MIT-style licences; never NC, ND, SA, GPL; no brand-logo icon sets). "Surprise" adds a random Kenney item. Every added asset carries a `pmCredit` record, saved in the project by a patch to the VM's `sb3.js`. `pm-credits.js` keeps the "credit" sprite. (Session 17) Clicking a game-icons.net or Iconify icon opens the icon studio (`pm-icon-studio.jsx`, `pm-icon-svg.js`); game-icons tags and author names come from `game-icons-meta.json`. (Session 18) Each library opens on "All", which searches every unlocked source at once (Session 21). Sound waveforms are coloured like Freesound's and made in a background worker, only for tiles in view (Session 21).
+  - 16: the original sprite, costume, backdrop and sound libraries are removed. The library windows are `patches/asset-libraries/pm-asset-browser.jsx`; sources in `pm-asset-sources.js` (only CC0 / public domain / CC BY / MIT-style licences; never NC, ND, SA, GPL; no brand-logo icon sets). "Surprise" adds a random Kenney item. Every added asset carries a `pmCredit` record, saved in the project by a patch to the VM's `sb3.js`. `pm-credits.js` keeps the "credit" sprite. (Session 17) Clicking a game-icons.net or Iconify icon opens the icon studio (`pm-icon-studio.jsx`, `pm-icon-svg.js`); game-icons tags and author names come from `game-icons-meta.json`. (Session 18) Each library opens on "All", which searches every unlocked source at once (Session 21). Sound waveforms are coloured like Freesound's and made in a background worker, only for tiles in view (Session 21). Openverse / Pixabay show a limit counter; sound tiles play on click and add with "+" (Session 22).
 - **Not verified yet:**
   - The updater end to end inside a packaged install (including the offline-library download, Session 17).
   - The installer itself (Claude has only tested the local build).
@@ -34,6 +34,22 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - Credits screen: turn the "credit" note into an in-game credits list automatically (not asked).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 22 — limit counter, Europeana download fix, real random mix, sound tiles (2026-10-05)
+- Asked: a counter for libraries with request limits; fix the Europeana bug (adding hangs); Iconify / Openverse / keyed libraries open on only 3–4 subjects; sound tiles: "+" at the top right like icons, no play button, click anywhere else to play.
+- Changed:
+  - Europeana hang: Electron's `net.fetch` never answers (and logs `TypeError: Cannot convert argument to a ByteString`) when a server sends a header with non-ASCII bytes (muis.ee: `Content-Disposition: …filename=PÕMu…`). `app/electron-main.js` `pm-fetch-bytes` now uses `net.request` (30 s, 40 MB); `fetchFile` (`pm-asset-sources.js`) also asks the app after 3 s without an answer, first good answer wins.
+  - New `patches/asset-libraries/pm-limits.js` (copied by section 16): counts Openverse (100/min, 10,000/day) and Pixabay (100/min) searches in `localStorage` `pmdesktop:apiUsage`, prefers the sites' own numbers (`x-ratelimit-*` headers; `electron-main.js` adds `Access-Control-Expose-Headers` for api.openverse.org and pixabay.com; Cloudflare-cached answers ignored), and stops a search with "limit … used up, more in about N s" instead of sending it. "Limits: …" line under the note (single library and "All"), orange when low, red at 0.
+  - Random mix (`newRandomMix` per opening): Iconify 12 random subjects taken in turn (word list longer; drawings loaded 6 icon sets at a time); Openverse and Pixabay search without a word at random pages (1–12); Europeana `sort=random_<seed> asc`.
+  - Sound tiles: "+" adds, a click plays / stops; the tile is outlined and a line moves over the waveform while playing.
+  - To reverse: `git revert` the merge.
+- Verified (local test app; keyed answers simulated with made-up keys):
+  - The muis.ee image (Europeana "Kass / Cat") added in 4.6 s with its credit; the old error only in the log (no popup: the app already catches main-process errors; the popup the user saw came from Claude's bare Electron test script).
+  - Counter: counts and wording; with simulated Openverse numbers (20/min, 200/day) it switched to them and at 0 sent nothing and said "more in about 33 s". A real anonymous Openverse answer showed its limit headers readable by the page.
+  - Iconify opened on 12 subjects (60 icons, 40 sets); Openverse / Pixabay without a word at random pages; Europeana random order.
+  - Sound tiles: click plays (orange outline, moving line), stops by itself or on a second click; "+" added "laser3" without playing; icon "+" unchanged.
+  - Not verified: real Pixabay limit headers (no key), Openverse's header names for keyed requests, the CI build.
+- Result after build: not yet tested
 
 ### Session 21 — "All" search in every library; Freesound-style waveforms (2026-10-05)
 - Asked: a general search per library (sprite/costume, backdrop, sound) as a new first sidebar entry "All", selected when a library opens, searching every default source plus the unlocked key sources at once, mixed round-robin; source in the tooltip; locked sources left out with a hint; respect rate limits; one failing source doesn't stop the others.
@@ -98,36 +114,6 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - A Europeana image from an `http://` museum server was added through the fallback, with full credit data; Pixabay added with its credit record.
   - The open-in-browser refuses other sites and `http`; the download fallback refuses non-images.
   - Not verified: real Pixabay and Openverse keys, Openverse registration and email (Claude can't create accounts), the CI build.
-- Result after build: not yet tested
-
-### Session 19 — library browsing: random mix, related-words search, endless scroll, waveforms (2026-10-05)
-- Asked:
-  - A random full page when a library opens with an empty search.
-  - Search that finds related assets ("fruit" → apple, orange…), and endless scrolling instead of "Show more".
-  - Tiles with only the name and an orange "C" when credit is needed.
-  - Icon previews in the last studio style.
-  - Sound waveforms and durations.
-  - Fix Openverse previews and speed; remove non-backgrounds from the Kenney backdrops.
-- Changed (`patches/asset-libraries/`):
-  - Search: words from names, packs and tags, ranked (name match, then pack/tag, then related word). Related words come from WordNet: new `scripts/make-search-words.mjs` → `search-words.json` (301 KB; 6,674 search words over our 4,047 name words; WordNet licence notice inside). Iconify searches also include up to 3 related words.
-  - Random order when nothing is typed and no pack/tag is chosen. Iconify: three random everyday subjects mixed.
-  - Endless scroll: IntersectionObserver on a marker after the last tile; it keeps loading until the page is full.
-  - Tiles: name only, details in the tooltip, orange "C" at the bottom right of the preview.
-  - Studio settings are stored in `localStorage` `pmdesktop:iconStudio`; the first default is now "Transparent, black". Game Icons / Iconify previews are drawn in that style, and "+" adds the icon as shown (`studioThumbs`, `quickAddStudio`).
-  - Kenney sounds: waveform (48 bars) and length read from the file (`loadWaveform`), drawn like Freesound.
-  - Kenney: preview / sample / information / instruction / update / changes images hidden everywhere (in the app, the library is unchanged).
-  - Openverse: Wikimedia / Flickr own small previews (its preview service fails for SVG with HTTP 424), fallback to the original file, `filter_dead=false`.
-  - To reverse: `git revert` the merge.
-- Verified (local test app):
-  - A new random mix each time the library opens.
-  - "fruit" finds 161 items and "weapon" 650, with names first.
-  - Scrolling loads 120 more; there's no "Show more" button.
-  - The C marks appear on the right items.
-  - After choosing the Fire preset, Game Icons and Iconify previews followed it and "+" added a Fire-styled icon.
-  - All visible Kenney sounds got a waveform and duration.
-  - The 18 junk backdrops are gone.
-  - Openverse "arrow": 40/40 previews loaded, in 0.7 s.
-  - Not verified: the CI build.
 - Result after build: not yet tested
 
 ## Template (keep entries this short)
