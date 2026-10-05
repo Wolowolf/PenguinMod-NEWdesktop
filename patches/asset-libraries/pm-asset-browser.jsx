@@ -14,8 +14,9 @@ import ApiKeyPanel from './pm-api-key-panel.jsx';
 import {hasKey} from '../../lib/pm-api-keys.js';
 import {
     LIBRARY_URL, addAsset, addGeneratedSound, gameIconTags, iconifyCategory, loadIconSvgs, mixedSearch,
-    offlinePacks, randomSubject, searchEuropeana, searchIconify, searchOffline, searchOpenverse, searchPixabay
+    newRandomMix, offlinePacks, searchEuropeana, searchIconify, searchOffline, searchOpenverse, searchPixabay
 } from '../../lib/pm-asset-sources.js';
+import {limitStatus, onUsage} from '../../lib/pm-limits.js';
 import {dropWaveImage, requestWave, waveFromOpenverse} from '../../lib/pm-waveforms.js';
 
 // Libraries that need the user's own (free) API key: locked until one is entered.
@@ -112,6 +113,52 @@ const watchVisible = (el, callback) => {
     };
 };
 
+// Libraries with a request limit (pm-limits.js) and how much of it is left, updated as requests go out.
+const LIMITED = ['openverse', 'pixabay'];
+const PER = {second: 'this second', minute: 'this minute', hour: 'this hour', day: 'in 24 h'};
+class LimitCounter extends React.Component {
+    componentDidMount () {
+        this.stop = onUsage(() => this.forceUpdate());
+        this.timer = setInterval(() => this.forceUpdate(), 5000); // a minute's count goes down again
+    }
+    componentWillUnmount () {
+        this.stop();
+        clearInterval(this.timer);
+    }
+    render () {
+        const rows = this.props.sources.map(source => ({source, status: limitStatus(source)}))
+            .filter(row => row.status.length);
+        if (!rows.length) return null;
+        return (
+            <div
+                className={styles.limits}
+                title={'The sites\' own numbers when they send them, otherwise this app\'s count.\n' +
+                    'Openverse allows 20 searches a minute and 200 a day until your email address is confirmed.'}
+            >
+                {'Limits: '}
+                {rows.map(({source, status}, i) => (
+                    <span key={source}>
+                        {i ? ' · ' : ''}
+                        <strong>{SOURCE_INFO[source].label}</strong>
+                        {status.map((s, j) => (
+                            <span
+                                key={j}
+                                className={classNames(!s.left ? styles.limitOut : (s.left < s.max * 0.2 && styles.limitLow))}
+                            >
+                                {`${j ? ',' : ''} ${s.left.toLocaleString()} of ${s.max.toLocaleString()}` +
+                                    `${j && status[j - 1].what === s.what ? '' : ` ${s.what} left`} ${PER[s.per]}`}
+                            </span>
+                        ))}
+                    </span>
+                ))}
+            </div>
+        );
+    }
+}
+LimitCounter.propTypes = {
+    sources: PropTypes.arrayOf(PropTypes.string).isRequired
+};
+
 // A sound tile's waveform picture (pm-waveforms.js) and length. The picture is made when the tile
 // comes into view and only this tile is updated (the grid is not re-rendered for it).
 class SoundWave extends React.PureComponent {
@@ -158,6 +205,9 @@ class SoundWave extends React.PureComponent {
         const {duration, image} = this.state;
         return (
             <React.Fragment>
+                {this.props.playing && duration ? (
+                    <div className={styles.playhead} style={{animationDuration: `${duration}s`}} />
+                ) : null}
                 {image ? (
                     <img
                         className={styles.wave}
@@ -174,7 +224,8 @@ class SoundWave extends React.PureComponent {
     }
 }
 SoundWave.propTypes = {
-    item: PropTypes.object.isRequired // eslint-disable-line react/forbid-prop-types
+    item: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
+    playing: PropTypes.bool // shows a line moving over the waveform
 };
 
 // "All": every library of this kind that is unlocked (not the sound generators), searched at once.
@@ -207,7 +258,7 @@ class AssetBrowser extends React.Component {
             tag: '', tags: [], category: null, studioItem: null, redraw: 0, keyPanel: false, failed: [], counts: []
         };
         this.mixed = null; // the running "All" search
-        this.randomWord = randomSubject(); // the subject shown when an online library opens empty
+        this.mix = newRandomMix(); // what the online libraries show when they open with an empty search
         this.searchTimer = null;
         this.redrawTimer = null;
         this.searchId = 0;
@@ -353,13 +404,13 @@ class AssetBrowser extends React.Component {
             let items;
             let done = true;
             if (source === 'openverse') {
-                const result = await searchOpenverse(kind, query.trim() || this.randomWord, page, type);
+                const result = await searchOpenverse(kind, query, page, type, this.mix);
                 items = page > 1 ? this.state.items.concat(result.items) : result.items;
                 done = result.done;
             } else if (source === 'pixabay' || source === 'europeana') {
                 const result = source === 'pixabay' ?
-                    await searchPixabay(kind, query, page, type, this.randomWord) :
-                    await searchEuropeana(kind, query, page, this.randomWord);
+                    await searchPixabay(kind, query, page, type, this.mix) :
+                    await searchEuropeana(kind, query, page, this.mix);
                 const seen = new Set(page > 1 ? this.state.items.map(item => item.key) : []);
                 items = (page > 1 ? this.state.items : []).concat(result.items.filter(item => !seen.has(item.key)));
                 done = result.done || (page > 1 && items.length === this.state.items.length);
@@ -393,10 +444,9 @@ class AssetBrowser extends React.Component {
             kenney: () => whole(searchOffline('kenney', kind, query, -1)),
             gameIcons: () => whole(searchOffline('gameIcons', kind, query, '')),
             iconify: () => whole(searchIconify(query.trim())),
-            pixabay: page => searchPixabay(kind, query, page, PIXABAY_TYPES[0][0], this.randomWord),
-            europeana: page => searchEuropeana(kind, query, page, this.randomWord),
-            openverse: page => searchOpenverse(kind, query.trim() || this.randomWord, page,
-                (OPENVERSE_TYPES[kind] || [[null]])[0][0])
+            pixabay: page => searchPixabay(kind, query, page, PIXABAY_TYPES[0][0], this.mix),
+            europeana: page => searchEuropeana(kind, query, page, this.mix),
+            openverse: page => searchOpenverse(kind, query, page, (OPENVERSE_TYPES[kind] || [[null]])[0][0], this.mix)
         };
         const out = {};
         for (const s of allSources(kind)) out[s] = loaders[s];
@@ -457,8 +507,7 @@ class AssetBrowser extends React.Component {
             if (!this.unmounted) this.setState({busy: null, error: `Could not add "${item.name}": ${err.message}`});
         }
     }
-    togglePlay (item, e) {
-        e.stopPropagation();
+    togglePlay (item) {
         const wasPlaying = this.state.playing === item.key;
         this.stopSound();
         if (wasPlaying) return;
@@ -520,12 +569,15 @@ class AssetBrowser extends React.Component {
         const needsCredit = item.credit && item.credit.needsCredit;
         // icons open the studio; their "+" button adds them as their preview shows them
         const studio = item.studio && (kind === 'sprite' || kind === 'costume');
-        const open = () => (studio ? this.setState({studioItem: item, error: null}) : this.handleSelect(item));
+        // sounds play (or stop) when clicked; their "+" button adds them
+        const sound = !!item.sound;
+        const open = () => (sound ? this.togglePlay(item) :
+            studio ? this.setState({studioItem: item, error: null}) : this.handleSelect(item));
         const thumb = (studio && item.styledThumb) || item.thumb;
         const playing = this.state.playing === item.key;
         return (
             <div
-                className={styles.tile}
+                className={classNames(styles.tile, playing && styles.playingTile)}
                 key={item.key}
                 role="button"
                 tabIndex={0}
@@ -533,32 +585,25 @@ class AssetBrowser extends React.Component {
                     item.subtitle, item.credit && item.credit.license,
                     needsCredit ? 'Needs credit: added to the "credit" sprite automatically' : '',
                     studio ? 'Click to edit in the studio, + to add it as shown' : '',
+                    sound ? 'Click to play or stop, + to add it' : '',
                     item.sound && waveFromOpenverse(item) ? 'Waveform from Openverse: loudness only (the song is not downloaded)' : '']
                     .filter(Boolean).join('\n')}
                 onClick={open}
                 onKeyDown={e => e.key === 'Enter' && open()}
             >
-                {studio && (
+                {(studio || sound) && (
                     <button
                         className={styles.quickAdd}
-                        title="Add it as shown"
+                        title={sound ? 'Add this sound' : 'Add it as shown'}
                         onClick={e => {
                             e.stopPropagation();
-                            this.handleQuickAdd(item);
+                            if (sound) this.handleSelect(item);
+                            else this.handleQuickAdd(item);
                         }}
                     >{'+'}</button>
                 )}
                 <div className={classNames(styles.thumb, item.sound && styles.soundThumb)}>
-                    {item.sound ? (
-                        <React.Fragment>
-                            <SoundWave item={item} />
-                            <button
-                                className={classNames(styles.play, playing && styles.playing)}
-                                title={playing ? 'Stop' : 'Play'}
-                                onClick={e => this.togglePlay(item, e)}
-                            >{playing ? '■' : '▶'}</button>
-                        </React.Fragment>
-                    ) : (thumb ? (
+                    {sound ? <SoundWave item={item} playing={playing} /> : (thumb ? (
                         <img
                             className={classNames(styles.image, kind === 'backdrop' && styles.cover)}
                             src={thumb}
@@ -736,6 +781,11 @@ class AssetBrowser extends React.Component {
                                     </React.Fragment>
                                 )}
                             </div>
+                        )}
+                        {!showKeyPanel && (
+                            <LimitCounter
+                                sources={(source === 'all' ? allSources(kind) : [source]).filter(s => LIMITED.includes(s))}
+                            />
                         )}
                         {source === 'iconify' && category && !query.trim() && (
                             <div className={styles.status}>

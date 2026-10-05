@@ -1253,6 +1253,8 @@ copyIn('pm-api-key-panel.jsx', 'src/components/pm-asset-browser/pm-api-key-panel
 copyIn('pm-api-key-panel.css', 'src/components/pm-asset-browser/pm-api-key-panel.css');
 // sound waveforms (coloured like Freesound's, worked out in a background worker)
 copyIn('pm-waveforms.js', 'src/lib/pm-waveforms.js');
+// request limits of Openverse and Pixabay (the counter in the library window)
+copyIn('pm-limits.js', 'src/lib/pm-limits.js');
 
 // a. Each library window becomes the asset browser (the file must still be the original one).
 const replaceFile = (rel, mustContain, text) => {
