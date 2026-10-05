@@ -1234,7 +1234,8 @@ replaceOnce('src/playground/render-gui.jsx',
 // generators offline; Iconify and Openverse online), the "Surprise" buttons add a random Kenney
 // item, and pm-credits.js keeps the "credit" sprite. Clicking a game-icons.net or Iconify icon opens
 // the icon studio (pm-icon-studio.jsx, drawing in pm-icon-svg.js), like the Studio on game-icons.net. The VM saves each asset's credit record
-// (`pmCredit`) in the project. To reverse: delete this section and patches/asset-libraries/.
+// (`pmCredit`) in the project. The credit sprite holds a credits screen script, and "Package project"
+// warns when no script shows that sprite (f). To reverse: delete this section and patches/asset-libraries/.
 const ASSET_LIBS = path.join(__dirname, 'asset-libraries');
 const copyIn = (from, to) => write(to, fs.readFileSync(path.join(ASSET_LIBS, from), 'utf8'));
 copyIn('pm-asset-browser.jsx', 'src/components/pm-asset-browser/pm-asset-browser.jsx');
@@ -1353,5 +1354,19 @@ if (!read(SB3).includes(MARKER)) {
         '            dataFormat: soundSource.dataFormat,\n            data: null\n        };\n',
         '            dataFormat: soundSource.dataFormat,\n            data: null,\n            pmCredit: soundSource.pmCredit\n        };\n');
 }
+
+// f. "Package project" first checks that a script shows the "credit" sprite (pm-credits.js warns otherwise).
+const PACKAGER = 'src/lib/tw-packager-integration-hoc.jsx';
+replaceOnce(PACKAGER, "import log from './log';\n",
+    "import log from './log';\nimport {confirmPackaging} from './pm-credits.js'; // " + MARKER + ' (section 16)\n');
+replaceOnce(PACKAGER,
+    '            if (this.props.canOpenPackager) {\n' +
+    '                window.open(`${PACKAGER_URL}/?import_from=${location.origin}`);\n' +
+    '            }\n',
+    '            if (this.props.canOpenPackager) {\n' +
+    '                confirmPackaging(this.props.vm).then(ok => {\n' +
+    '                    if (ok) window.open(`${PACKAGER_URL}/?import_from=${location.origin}`);\n' +
+    '                });\n' +
+    '            }\n');
 
 console.log('Stage layout patch applied successfully.');
