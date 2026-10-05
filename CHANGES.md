@@ -21,7 +21,7 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - 13: dragging a category box to re-order the menu (upstream addon `toolbox-category-drag`). The held box slides and the others make room. The first and last places are reachable. The order is stored in the project's Stage comment, updated on every change, and reset for projects that have no stored order. (Sessions 10–11)
   - 14: the "See Project Page" and "Upload" buttons are removed from the menu bar (sharing-site buttons; this build is for packaged projects). (Session 14)
   - 15: no Change Username / cloud variables, Remix, About, Discord links, Help Manual button or analytics script; no cloud server address. (Session 15)
-  - 16: the original sprite, costume, backdrop and sound libraries are removed. The library windows are `patches/asset-libraries/pm-asset-browser.jsx`; sources in `pm-asset-sources.js` (only CC0 / public domain / CC BY / MIT-style licences; never NC, ND, SA, GPL; no brand-logo icon sets). "Surprise" adds a random Kenney item. Every added asset carries a `pmCredit` record, saved in the project by a patch to the VM's `sb3.js`. `pm-credits.js` keeps the "credit" sprite. (Session 17) Clicking a game-icons.net or Iconify icon opens the icon studio (`pm-icon-studio.jsx`, `pm-icon-svg.js`); game-icons tags and author names come from `game-icons-meta.json`. (Session 18) Each library opens on "All", which searches every unlocked source at once (Session 21).
+  - 16: the original sprite, costume, backdrop and sound libraries are removed. The library windows are `patches/asset-libraries/pm-asset-browser.jsx`; sources in `pm-asset-sources.js` (only CC0 / public domain / CC BY / MIT-style licences; never NC, ND, SA, GPL; no brand-logo icon sets). "Surprise" adds a random Kenney item. Every added asset carries a `pmCredit` record, saved in the project by a patch to the VM's `sb3.js`. `pm-credits.js` keeps the "credit" sprite. (Session 17) Clicking a game-icons.net or Iconify icon opens the icon studio (`pm-icon-studio.jsx`, `pm-icon-svg.js`); game-icons tags and author names come from `game-icons-meta.json`. (Session 18) Each library opens on "All", which searches every unlocked source at once (Session 21). Sound waveforms are coloured like Freesound's and made in a background worker, only for tiles in view (Session 21).
 - **Not verified yet:**
   - The updater end to end inside a packaged install (including the offline-library download, Session 17).
   - The installer itself (Claude has only tested the local build).
@@ -35,7 +35,7 @@ Kept short on purpose (read at the start of every session). Full history of Sess
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
-### Session 21 — "All" search in every library (2026-10-05)
+### Session 21 — "All" search in every library; Freesound-style waveforms (2026-10-05)
 - Asked: a general search per library (sprite/costume, backdrop, sound) as a new first sidebar entry "All", selected when a library opens, searching every default source plus the unlocked key sources at once, mixed round-robin; source in the tooltip; locked sources left out with a hint; respect rate limits; one failing source doesn't stop the others.
 - Changed (`patches/asset-libraries/`):
   - `pm-asset-sources.js`: new `mixedSearch()`: one feed per library, next batch mixed round-robin; a library's next page loads only when its items run out (at most 3 pages per batch, 20 s timeout); libraries that run out or fail leave their share to the others; per-library counts and failures. Pixabay / Europeana results now report their total.
@@ -54,7 +54,24 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - Added from All: Kenney sprite, Game Icons "+" (studio style, "modified" credit), Openverse image.
   - Studio from All; tag "electronic" → Game Icons tab (73); Iconify category "File" → Iconify tab.
   - Not verified: real keys, the CI build. A Europeana item from muis.ee hangs while adding (also via the app's fallback; curl gets it in 0.6 s): older issue, not caused by this change.
-- Result after build: not yet tested
+- Result after build: not yet tested (build `build-37245917125-20261005-000240` succeeded)
+- Part 2 asked: sound waveforms as accurate as possible, colour-coded like Freesound, and no more stuttering.
+- Part 2 changed:
+  - New `patches/asset-libraries/pm-waveforms.js` (copied in by section 16):
+    - Kenney and short (≤ 60 s) Openverse sounds: decoded only when the tile comes into view (3 at a time). A background worker works out one column per screen pixel (lowest / highest sample) and colours it by spectral centroid on Freesound's palette (FFT 2048, 100 Hz–22 kHz log scale), then paints a PNG.
+    - Openverse Freesound sounds: Freesound's own picture (`displays/…_wave_M.png`); if it fails: decoded, or Openverse's waveform.
+    - Openverse songs (Jamendo, > 60 s): Openverse's waveform endpoint (loudness only, grey; tooltip says so), at most 30 a minute.
+    - Pictures are kept on the item for the session. Without a worker the same code runs on the page.
+  - `pm-asset-browser.jsx`: `SoundWave` tile part, updated on its own (no more grid re-render every 150 ms); its size comes from the IntersectionObserver (measuring each tile made the page lay out 120 times in a row).
+  - `pm-asset-sources.js`: `loadWaveform` removed; Freesound picture / Openverse waveform links on Openverse sounds; `openverseFetch`, `fetchFile` exported; "All" loads at most 3 pages per library per batch in total (it was up to 6 when the others ran out).
+  - To reverse: `git revert` the merge.
+- Part 2 verified (local test app; CPU slowed 4× via DevTools to imitate a slower PC; 5 s scripted scroll from a fresh start):
+  - Before: 10 long tasks (938 ms), worst frame 240 ms. After: 0 long tasks, worst frame 80 ms (27–40 ms on two other searches). A CPU profile shows no waveform work left on the page.
+  - Only visible tiles (+150 px) are decoded; colours look right (NES square waves yellow, low engines blue, sweeps orange); app-made waveforms of Freesound previews look close to Freesound's own pictures.
+  - Simulated Openverse answers: Freesound pictures load; with them blocked on purpose the short ones were decoded, the long one got Openverse's waveform; a real Jamendo waveform (fetched earlier) drawn in grey.
+  - Play / stop and adding a sound still work; "All" re-checked (sprites 20 × 6; sounds: 3 Openverse requests per batch).
+  - Not verified: real Openverse waveform limits for keyed users, the CI build.
+- Part 2 result after build: not yet tested
 
 ### Session 20 — libraries unlocked with the user's own API key: Pixabay, Europeana, Openverse (2026-10-05)
 - Asked: find more libraries that fit the rules but need an API key (preferably without request limits). They are locked by default and show an easy tutorial with links to get and enter your own key. Openverse goes behind the same lock if it's still relevant, and its preview bug gets looked at.
