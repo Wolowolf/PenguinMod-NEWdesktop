@@ -75,6 +75,33 @@
 
 ## Change log (newest first)
 
+### Session 20 — libraries unlocked with the user's own API key: Pixabay, Europeana, Openverse (2026-10-05)
+- Asked: find more libraries that fit the rules but need an API key (preferably without request limits). They are locked by default and show an easy tutorial with links to get and enter your own key. Openverse goes behind the same lock if it's still relevant, and its preview bug gets looked at.
+- Research (limits with a free key):
+  - Europeana: none.
+  - Pixabay: 100 searches a minute, no daily limit.
+  - Openverse: 100 a minute, 10,000 a day; still relevant as the only source with credit lines plus Freesound / Jamendo audio, so it's kept behind a key.
+  - Not chosen: Jamendo (35,000 a month; already inside Openverse), Pexels (200 an hour), Freesound (2,000 a day), Iconfinder (strict per plan).
+- Changed:
+  - New `patches/asset-libraries/pm-api-keys.js`: keys kept in `localStorage` `pmdesktop:apiKeys`, a test before saving, Openverse registration and token refresh.
+  - New `pm-api-key-panel.jsx` / `.css`: the unlock tutorial (links open in the user's browser), "Change key", "Remove my key".
+  - `pm-asset-sources.js`:
+    - Pixabay search: vector / illustration / photo / all; backdrops = horizontal photos; 24-hour results cache as Pixabay asks.
+    - Europeana search: reusability=open minus SA; credit = creator, institution, item page, licence.
+    - Openverse now sends the token and keeps results for the session.
+    - Downloads fall back through the app when a site blocks pages.
+  - `pm-credits.js`: Europeana credit line.
+  - `app/electron-main.js` + `preload.js`: `pm-open-external` (only https pages of pixabay.com, pro.europeana.eu, www.europeana.eu, api.openverse.org, docs.openverse.org) and `pm-fetch-bytes` (images / audio only, at most 40 MB, separate session without the app's cookies).
+  - Sprite / costume / backdrop libraries: Pixabay, Europeana, Openverse; sound library: Openverse. Every online library opens on a random subject.
+  - To reverse: `git revert` the merge.
+- Verified (local test app):
+  - The three libraries show "🔒 Key" and the tutorial.
+  - With a made-up test key and simulated answers (Europeana: a real answer fetched with its public demo key; Pixabay: its documented format; Openverse: a simulated token with real search results), each unlocks, searches, and Change key / Remove my key work.
+  - A Europeana image from an `http://` museum server was added through the fallback, with full credit data; Pixabay added with its credit record.
+  - The open-in-browser refuses other sites and `http`; the download fallback refuses non-images.
+  - Not verified: real Pixabay and Openverse keys, Openverse registration and email (Claude can't create accounts), the CI build.
+- Result after build: not yet tested
+
 ### Session 19 — library browsing: random mix, related-words search, endless scroll, waveforms (2026-10-05)
 - Asked:
   - A random full page when a library opens with an empty search.
