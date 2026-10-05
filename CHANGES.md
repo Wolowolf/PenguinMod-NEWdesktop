@@ -21,7 +21,7 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - 13: dragging a category box to re-order the menu (upstream addon `toolbox-category-drag`). The held box slides and the others make room. The first and last places are reachable. The order is stored in the project's Stage comment, updated on every change, and reset for projects that have no stored order. (Sessions 10–11)
   - 14: the "See Project Page" and "Upload" buttons are removed from the menu bar (sharing-site buttons; this build is for packaged projects). (Session 14)
   - 15: no Change Username / cloud variables, Remix, About, Discord links, Help Manual button or analytics script; no cloud server address. (Session 15)
-  - 16: the original sprite, costume, backdrop and sound libraries are removed. The library windows are `patches/asset-libraries/pm-asset-browser.jsx`; sources in `pm-asset-sources.js` (only CC0 / public domain / CC BY / MIT-style licences; never NC, ND, SA, GPL; no brand-logo icon sets). "Surprise" adds a random Kenney item. Every added asset carries a `pmCredit` record, saved in the project by a patch to the VM's `sb3.js`. `pm-credits.js` keeps the "credit" sprite. (Session 17) Clicking a game-icons.net or Iconify icon opens the icon studio (`pm-icon-studio.jsx`, `pm-icon-svg.js`); game-icons tags and author names come from `game-icons-meta.json`. (Session 18) Each library opens on "All", which searches every unlocked source at once (Session 21). Sound waveforms are coloured like Freesound's and made in a background worker, only for tiles in view (Session 21). Openverse / Pixabay show a limit counter; sound tiles play on click and add with "+" (Session 22).
+  - 16: the original sprite, costume, backdrop and sound libraries are removed. The library windows are `patches/asset-libraries/pm-asset-browser.jsx`; sources in `pm-asset-sources.js` (only CC0 / public domain / CC BY / MIT-style licences; never NC, ND, SA, GPL; no brand-logo icon sets). "Surprise" adds a random Kenney item. Every added asset carries a `pmCredit` record, saved in the project by a patch to the VM's `sb3.js`. `pm-credits.js` keeps the "credit" sprite. (Session 17) Clicking a game-icons.net or Iconify icon opens the icon studio (`pm-icon-studio.jsx`, `pm-icon-svg.js`); game-icons tags and author names come from `game-icons-meta.json`. (Session 18) Each library opens on "All", which searches every unlocked source at once (Session 21). Sound waveforms are coloured like Freesound's and made in a background worker, only for tiles in view (Session 21). Openverse / Pixabay show a limit counter; sound tiles play on click and add with "+" (Session 22). Credit lines are as short as the licences allow, licence links listed once at the bottom (Session 23).
 - **Not verified yet:**
   - The updater end to end inside a packaged install (including the offline-library download, Session 17).
   - The installer itself (Claude has only tested the local build).
@@ -34,6 +34,12 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - Credits screen: turn the "credit" note into an in-game credits list automatically (not asked).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 23 — shortest legal credit lines (2026-10-05)
+- Asked: make the credit sprite's lines as short as legally possible (example: `"Drink's Afterhouse" - Felixjd - CC BY 3.0 - modified` + source link + licence link), check it's legally sound, shorten more if possible.
+- Changed: `patches/asset-libraries/pm-credits.js`: each line is title - author - licence - modified/recoloured, then the source link without `https://`. The licence links are listed once under "Licences:" at the bottom (CC lets you credit "in any reasonable manner"); a licence name with several links (e.g. Iconify sets' own MIT files) keeps its link on each line. Dropped: "licensed under", "via Europeana", "from game-icons.net", "an unknown author". Kept: title (CC BY 3.0 needs it), Europeana institution, Iconify "© holder" (MIT / Apache / BSD need the copyright notice). Header now says to show the licence links too. Notes in existing projects update when the project is opened. To reverse: `git revert` the merge.
+- Verified: sample records of every library printed through the new code (grouping, http/https of one CC link merged, two MIT links kept per line); local test app: a credited costume made the "credit" sprite with the new note, seen on screen. · Not verified: adding through the library windows (unchanged code), the CI build. Not legal advice: a reading of the licence texts.
+- Result after build: not yet tested
 
 ### Session 22 — limit counter, Europeana download fix, real random mix, sound tiles (2026-10-05)
 - Asked: a counter for libraries with request limits; fix the Europeana bug (adding hangs); Iconify / Openverse / keyed libraries open on only 3–4 subjects; sound tiles: "+" at the top right like icons, no play button, click anywhere else to play.
@@ -92,33 +98,6 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - Play / stop and adding a sound still work; "All" re-checked (sprites 20 × 6; sounds: 3 Openverse requests per batch).
   - Not verified: real Openverse waveform limits for keyed users, the CI build.
 - Part 2 result after build: not yet tested
-
-### Session 20 — libraries unlocked with the user's own API key: Pixabay, Europeana, Openverse (2026-10-05)
-- Asked: find more libraries that fit the rules but need an API key (preferably without request limits). They are locked by default and show an easy tutorial with links to get and enter your own key. Openverse goes behind the same lock if it's still relevant, and its preview bug gets looked at.
-- Research (limits with a free key):
-  - Europeana: none.
-  - Pixabay: 100 searches a minute, no daily limit.
-  - Openverse: 100 a minute, 10,000 a day; still relevant as the only source with credit lines plus Freesound / Jamendo audio, so it's kept behind a key.
-  - Not chosen: Jamendo (35,000 a month; already inside Openverse), Pexels (200 an hour), Freesound (2,000 a day), Iconfinder (strict per plan).
-- Changed:
-  - New `patches/asset-libraries/pm-api-keys.js`: keys kept in `localStorage` `pmdesktop:apiKeys`, a test before saving, Openverse registration and token refresh.
-  - New `pm-api-key-panel.jsx` / `.css`: the unlock tutorial (links open in the user's browser), "Change key", "Remove my key".
-  - `pm-asset-sources.js`:
-    - Pixabay search: vector / illustration / photo / all; backdrops = horizontal photos; 24-hour results cache as Pixabay asks.
-    - Europeana search: reusability=open minus SA; credit = creator, institution, item page, licence.
-    - Openverse now sends the token and keeps results for the session.
-    - Downloads fall back through the app when a site blocks pages.
-  - `pm-credits.js`: Europeana credit line.
-  - `app/electron-main.js` + `preload.js`: `pm-open-external` (only https pages of pixabay.com, pro.europeana.eu, www.europeana.eu, api.openverse.org, docs.openverse.org) and `pm-fetch-bytes` (images / audio only, at most 40 MB, separate session without the app's cookies).
-  - Sprite / costume / backdrop libraries: Pixabay, Europeana, Openverse; sound library: Openverse. Every online library opens on a random subject.
-  - To reverse: `git revert` the merge.
-- Verified (local test app):
-  - The three libraries show "🔒 Key" and the tutorial.
-  - With a made-up test key and simulated answers (Europeana: a real answer fetched with its public demo key; Pixabay: its documented format; Openverse: a simulated token with real search results), each unlocks, searches, and Change key / Remove my key work.
-  - A Europeana image from an `http://` museum server was added through the fallback, with full credit data; Pixabay added with its credit record.
-  - The open-in-browser refuses other sites and `http`; the download fallback refuses non-images.
-  - Not verified: real Pixabay and Openverse keys, Openverse registration and email (Claude can't create accounts), the CI build.
-- Result after build: not yet tested
 
 ## Template (keep entries this short)
 
