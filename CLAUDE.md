@@ -47,7 +47,7 @@ A thin Electron wrapper around the PenguinMod **editor only** (no home page). Th
 | `app/preload.js` | Preload script |
 | `app/updater.js` | Update engine (no Electron dependency); installs this fork's `win-unpacked.zip` |
 | `patches/stage-layout.js` | Almost all visible editor changes (sections 1–16, listed in `CHANGES.md`) |
-| `patches/asset-libraries/` | Files section 16 copies into the editor: the library windows, their sources, the "credit" sprite, the icon studio (`pm-icon-studio.jsx`, drawing in `pm-icon-svg.js`), game-icons tags (`game-icons-meta.json`, from `scripts/fetch-game-icons-meta.mjs`), related words for the search (`search-words.json`, from `scripts/make-search-words.mjs`), libraries unlocked with the user's own API key (`pm-api-keys.js`, `pm-api-key-panel.jsx`: Pixabay, Europeana, Openverse) |
+| `patches/asset-libraries/` | Files section 16 copies into the editor: the library windows, their sources, the "credit" sprite, the icon studio (`pm-icon-studio.jsx`, drawing in `pm-icon-svg.js`), game-icons tags (`game-icons-meta.json`, from `scripts/fetch-game-icons-meta.mjs`), related words for the search (`search-words.json`, from `scripts/make-search-words.mjs`), libraries unlocked with the user's own API key (`pm-api-keys.js`, `pm-api-key-panel.jsx`: Pixabay, Europeana, Openverse), sound waveforms (`pm-waveforms.js`) |
 | `app/offline-library.json` | Which offline library (Kenney, game-icons.net, sound generators) this app version needs |
 | `library/kenney-packs.json`, `scripts/make-offline-library.mjs` | The Kenney pack list and the script that builds the offline library zip (run on a PC) |
 | `.github/workflows/main.yml` | The CI build (Windows only) |

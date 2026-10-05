@@ -1251,6 +1251,8 @@ copyIn('search-words.json', 'src/lib/pm-search-words.json'); // related words fo
 copyIn('pm-api-keys.js', 'src/lib/pm-api-keys.js');
 copyIn('pm-api-key-panel.jsx', 'src/components/pm-asset-browser/pm-api-key-panel.jsx');
 copyIn('pm-api-key-panel.css', 'src/components/pm-asset-browser/pm-api-key-panel.css');
+// sound waveforms (coloured like Freesound's, worked out in a background worker)
+copyIn('pm-waveforms.js', 'src/lib/pm-waveforms.js');
 
 // a. Each library window becomes the asset browser (the file must still be the original one).
 const replaceFile = (rel, mustContain, text) => {

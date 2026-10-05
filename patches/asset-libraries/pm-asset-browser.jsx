@@ -13,9 +13,10 @@ import IconStudio, {quickAddStudio, studioThumbs} from './pm-icon-studio.jsx';
 import ApiKeyPanel from './pm-api-key-panel.jsx';
 import {hasKey} from '../../lib/pm-api-keys.js';
 import {
-    LIBRARY_URL, addAsset, addGeneratedSound, gameIconTags, iconifyCategory, loadIconSvgs, loadWaveform, mixedSearch,
+    LIBRARY_URL, addAsset, addGeneratedSound, gameIconTags, iconifyCategory, loadIconSvgs, mixedSearch,
     offlinePacks, randomSubject, searchEuropeana, searchIconify, searchOffline, searchOpenverse, searchPixabay
 } from '../../lib/pm-asset-sources.js';
+import {dropWaveImage, requestWave, waveFromOpenverse} from '../../lib/pm-waveforms.js';
 
 // Libraries that need the user's own (free) API key: locked until one is entered.
 const KEY_SOURCES = ['pixabay', 'europeana', 'openverse'];
@@ -82,6 +83,99 @@ const ICON_PAGE = 60; // Iconify: fewer, its public API limits how much one app 
 
 const isOnline = source => source === 'iconify' || SERVER_PAGED.includes(source);
 const pageSize = source => (source === 'iconify' ? ICON_PAGE : PAGE);
+
+// Tells each sound tile when it comes into view (or close to it): one IntersectionObserver per grid.
+const watchers = new WeakMap();
+const watchVisible = (el, callback) => {
+    const root = el.closest(`.${styles.grid}`);
+    if (!root || typeof IntersectionObserver === 'undefined') {
+        callback(true);
+        return () => {};
+    }
+    let watch = watchers.get(root);
+    if (!watch) {
+        const callbacks = new Map();
+        const observer = new IntersectionObserver(entries => {
+            for (const e of entries) {
+                const cb = callbacks.get(e.target);
+                if (cb) cb(e.isIntersecting, e.boundingClientRect);
+            }
+        }, {root, rootMargin: '150px 0px'});
+        watch = {callbacks, observer};
+        watchers.set(root, watch);
+    }
+    watch.callbacks.set(el, callback);
+    watch.observer.observe(el);
+    return () => {
+        watch.callbacks.delete(el);
+        watch.observer.unobserve(el);
+    };
+};
+
+// A sound tile's waveform picture (pm-waveforms.js) and length. The picture is made when the tile
+// comes into view and only this tile is updated (the grid is not re-rendered for it).
+class SoundWave extends React.PureComponent {
+    constructor (props) {
+        super(props);
+        this.state = {duration: props.item.duration || 0, image: props.item.waveImage || null};
+        this.box = null;
+        this.setBox = el => {
+            this.box = el;
+        };
+        this.handleImageError = () => {
+            dropWaveImage(this.props.item);
+            this.setState({image: null}, () => this.watch());
+        };
+    }
+    componentDidMount () {
+        if (!this.state.image) this.watch();
+    }
+    componentWillUnmount () {
+        this.gone = true;
+        if (this.unwatch) this.unwatch();
+    }
+    watch () {
+        const item = this.props.item;
+        if (!this.box || this.gone || item.waveFailed) return;
+        // the size comes from the observer: measuring every tile would make the page lay itself out again
+        this.unwatch = watchVisible(this.box, (visible, rect) => {
+            this.visible = visible;
+            if (!visible || this.asked) return;
+            this.asked = true;
+            const ratio = window.devicePixelRatio || 1;
+            const width = Math.max(16, Math.round(rect.width * ratio));
+            const height = Math.max(8, Math.round(rect.height * ratio));
+            requestWave(item, width, height, () => this.visible && !this.gone).then(() => {
+                this.asked = false;
+                if (this.gone || (!item.waveImage && !item.waveFailed)) return; // scrolled away first: later
+                if (this.unwatch) this.unwatch();
+                this.unwatch = null;
+                this.setState({image: item.waveImage || null, duration: item.duration || 0});
+            });
+        });
+    }
+    render () {
+        const {duration, image} = this.state;
+        return (
+            <React.Fragment>
+                {image ? (
+                    <img
+                        className={styles.wave}
+                        src={image}
+                        alt=""
+                        draggable={false}
+                        loading="lazy"
+                        onError={this.handleImageError}
+                    />
+                ) : <div className={styles.wave} ref={this.setBox} />}
+                {duration ? <span className={styles.duration}>{formatDuration(duration)}</span> : null}
+            </React.Fragment>
+        );
+    }
+}
+SoundWave.propTypes = {
+    item: PropTypes.object.isRequired // eslint-disable-line react/forbid-prop-types
+};
 
 // "All": every library of this kind that is unlocked (not the sound generators), searched at once.
 const allSources = kind => SOURCES[kind].filter(s => s !== 'all' && s !== 'generators' && !locked(s));
@@ -167,25 +261,11 @@ class AssetBrowser extends React.Component {
             }, 150);
         }
     }
-    // Icon previews in the current studio style, and the waveform and length of sounds.
+    // Icon previews in the current studio style (sound waveforms draw themselves: SoundWave).
     async decorate (items) {
         try {
             if (await studioThumbs(items)) this.scheduleRedraw();
         } catch (e) { /* plain previews */ }
-        const sounds = items.filter(item => item.sound && item.source === 'kenney' && !item.peaks);
-        let next = 0;
-        const worker = async () => {
-            while (next < sounds.length && !this.unmounted) {
-                const item = sounds[next++];
-                try {
-                    await loadWaveform(item);
-                } catch (e) {
-                    item.peaks = [];
-                }
-                this.scheduleRedraw();
-            }
-        };
-        await Promise.all([worker(), worker(), worker(), worker()]);
     }
     selectSource (source, extra) {
         this.stopSound();
@@ -452,7 +532,9 @@ class AssetBrowser extends React.Component {
                 title={[item.name, this.state.source === 'all' && `From ${SOURCE_INFO[item.source].label}`,
                     item.subtitle, item.credit && item.credit.license,
                     needsCredit ? 'Needs credit: added to the "credit" sprite automatically' : '',
-                    studio ? 'Click to edit in the studio, + to add it as shown' : ''].filter(Boolean).join('\n')}
+                    studio ? 'Click to edit in the studio, + to add it as shown' : '',
+                    item.sound && waveFromOpenverse(item) ? 'Waveform from Openverse: loudness only (the song is not downloaded)' : '']
+                    .filter(Boolean).join('\n')}
                 onClick={open}
                 onKeyDown={e => e.key === 'Enter' && open()}
             >
@@ -469,13 +551,7 @@ class AssetBrowser extends React.Component {
                 <div className={classNames(styles.thumb, item.sound && styles.soundThumb)}>
                     {item.sound ? (
                         <React.Fragment>
-                            {item.peaks && item.peaks.length > 0 && (
-                                <svg className={styles.wave} viewBox={`0 0 ${item.peaks.length} 32`} preserveAspectRatio="none">
-                                    {item.peaks.map((p, i) => (
-                                        <rect key={i} x={i + 0.15} width={0.7} y={16 - Math.max(0.5, p * 15)} height={Math.max(1, p * 30)} />
-                                    ))}
-                                </svg>
-                            )}
+                            <SoundWave item={item} />
                             <button
                                 className={classNames(styles.play, playing && styles.playing)}
                                 title={playing ? 'Stop' : 'Play'}
@@ -494,7 +570,6 @@ class AssetBrowser extends React.Component {
                             alt=""
                         />
                     ) : null)}
-                    {item.duration ? <span className={styles.duration}>{formatDuration(item.duration)}</span> : null}
                     {needsCredit && <span className={styles.creditMark}>{'C'}</span>}
                 </div>
                 <div className={styles.name}>{item.name}</div>

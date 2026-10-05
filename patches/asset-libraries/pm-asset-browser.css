@@ -162,9 +162,9 @@
     image-rendering: auto;
 }
 .sound-thumb { background: #1c1c1c; background-image: none; }
-/* waveform like Freesound's: mirrored bars on a dark background */
+/* waveform like Freesound's: coloured by frequency on a dark background (pm-waveforms.js or Freesound's picture) */
 .wave { position: absolute; inset: 6px 4px 18px 4px; width: calc(100% - 8px); height: calc(100% - 24px); }
-.wave rect { fill: #ff9d1a; }
+.wave { display: block; object-fit: fill; pointer-events: none; }
 .play {
     position: relative;
     width: 40px;
