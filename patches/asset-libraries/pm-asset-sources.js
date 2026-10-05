@@ -215,28 +215,6 @@ export const tagNeighbours = async (item, tag) => {
     return {prev: list[(i - 1 + list.length) % list.length], next: list[(i + 1) % list.length], count: list.length};
 };
 
-// Waveform and length of a sound, read from the file itself (48 peaks between 0 and 1).
-let decoder = null;
-const WAVE_BARS = 48;
-export const loadWaveform = async item => {
-    if (item.peaks) return item;
-    const data = await (await fetch(item.url)).arrayBuffer();
-    if (!decoder) decoder = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 2, 44100);
-    const audio = await decoder.decodeAudioData(data);
-    const samples = audio.getChannelData(0);
-    const step = Math.max(1, Math.floor(samples.length / WAVE_BARS));
-    const peaks = [];
-    for (let i = 0; i < WAVE_BARS; i++) {
-        let max = 0;
-        for (let j = i * step; j < Math.min((i + 1) * step, samples.length); j++) max = Math.max(max, Math.abs(samples[j]));
-        peaks.push(max);
-    }
-    const top = Math.max(...peaks) || 1;
-    item.peaks = peaks.map(p => p / top);
-    item.duration = audio.duration;
-    return item;
-};
-
 export const offlinePacks = async kind => {
     const index = await loadOfflineIndex();
     const used = new Set(index.kenney.filter(item => fitsKind(item, kind)).map(item => item.pack));
@@ -259,6 +237,13 @@ const openverseThumb = r => {
     return r.thumbnail;
 };
 
+// Freesound's own coloured waveform picture of a Freesound preview (195 x 101, see-through), e.g.
+// .../previews/186/186942_2594536-hq.mp3 -> .../displays/186/186942_2594536_wave_M.png
+const freesoundWave = url => {
+    const m = /^https:\/\/cdn\.freesound\.org\/previews\/(\d+)\/(\d+_\d+)-(?:hq|lq)\.(?:mp3|ogg)$/.exec(url || '');
+    return m ? `https://cdn.freesound.org/displays/${m[1]}/${m[2]}_wave_M.png` : null;
+};
+
 const openverseItem = (kind, r) => {
     const sound = kind === 'sound';
     const title = (r.title || 'Untitled').trim();
@@ -270,6 +255,11 @@ const openverseItem = (kind, r) => {
         svgFit: 360, // big vector drawings would cover the whole stage
         mime: r.filetype ? (MIME[r.filetype] || '') : mimeOf(r.url || ''),
         duration: r.duration ? r.duration / 1000 : 0,
+        // waveforms (pm-waveforms.js): Freesound's picture, or Openverse's own waveform of a song
+        freesoundPicture: sound ? freesoundWave(r.url) : null,
+        waveImage: sound ? freesoundWave(r.url) : null,
+        waveUrl: sound ? `${OPENVERSE}audio/${encodeURIComponent(r.id)}/waveform/` : null,
+        music: sound && (r.category === 'music' || r.source === 'jamendo'),
         credit: {
             src: 'openverse', id: r.id, title, by: r.creator || '', byUrl: r.creator_url || '',
             url: r.foreign_landing_url || '', source: r.source || '',
@@ -298,11 +288,7 @@ export const searchOpenverse = async (kind, query, page, type) => {
     const cached = memo.get(url);
     if (cached) return cached;
     // With the user's own key: 100 searches a minute and 10,000 a day (20 and 200 without one).
-    let res = await fetch(url, {headers: {Authorization: `Bearer ${await openverseToken()}`}});
-    if (res.status === 401) {
-        setKey('openverse', Object.assign({}, getKey('openverse'), {token: null})); // the token ran out early
-        res = await fetch(url, {headers: {Authorization: `Bearer ${await openverseToken()}`}});
-    }
+    const res = await openverseFetch(url);
     if (res.status === 429) {
         throw new Error('Openverse\'s limit is reached for now (100 searches a minute, 10,000 a day; 20 and 200 until your ' +
             'email address is confirmed). Try again in a minute.');
@@ -319,6 +305,14 @@ export const searchOpenverse = async (kind, query, page, type) => {
 
 // Results kept for this session (the same search twice costs no request).
 const memo = new Map();
+
+// A request to Openverse with the user's access token (fetched again once if it ran out early).
+export const openverseFetch = async url => {
+    const res = await fetch(url, {headers: {Authorization: `Bearer ${await openverseToken()}`}});
+    if (res.status !== 401) return res;
+    setKey('openverse', Object.assign({}, getKey('openverse'), {token: null}));
+    return fetch(url, {headers: {Authorization: `Bearer ${await openverseToken()}`}});
+};
 
 // ---- Pixabay (user's key: 100 searches a minute, no daily limit) ---------------------------------
 // Pixabay asks apps to keep results for 24 hours and to show where the images come from.
@@ -594,7 +588,7 @@ export const loadIconSvgs = async items => {
 // offline libraries and Iconify give everything at once. next(n) returns the next n items mixed
 // round-robin, so every library shows up in turn and each keeps its own order (best matches first).
 // A library's next page is loaded only when its items run out (at most 3 pages per call, to stay far
-// below the sites' limits). A library that fails or does not answer is left out of this search and
+// below the sites' limits: the batch is smaller then, scrolling loads more). A library that fails or does not answer is left out of this search and
 // its message is kept in failed(); the others go on.
 const FEED_TIMEOUT = 20000;
 export const mixedSearch = loaders => {
@@ -603,8 +597,9 @@ export const mixedSearch = loaders => {
     }));
     const seen = new Set();
     const live = () => feeds.filter(f => f.used < f.items.length || (!f.done && !f.error));
-    const fill = async (feed, want) => {
-        for (let tries = 0; tries < 3 && !feed.done && !feed.error && feed.items.length - feed.used < want; tries++) {
+    const fill = async (feed, want, loads) => {
+        while ((loads.get(feed) || 0) < 3 && !feed.done && !feed.error && feed.items.length - feed.used < want) {
+            loads.set(feed, (loads.get(feed) || 0) + 1);
             let timer;
             try {
                 const result = await Promise.race([feed.load(feed.page + 1), new Promise((resolve, reject) => {
@@ -639,13 +634,14 @@ export const mixedSearch = loaders => {
     return {
         next: async want => {
             // a second pass when libraries ran out or failed during the first one
+            const loads = new Map(); // pages loaded per library in this call
             for (let pass = 0; pass < 2; pass++) {
                 const active = live();
                 if (!active.length) return [];
                 const share = shareFor(active, want);
                 const loading = active.filter(f => !f.done && !f.error && f.items.length - f.used < share);
                 if (!loading.length) break;
-                await Promise.all(loading.map(f => fill(f, share)));
+                await Promise.all(loading.map(f => fill(f, share, loads)));
             }
             const out = [];
             for (let added = true; added && out.length < want;) {
@@ -723,7 +719,7 @@ const normalizeSvg = (data, maxSide, fitSide) => {
 
 // One file: directly, or through the app when the site doesn't allow pages to download it (many
 // museum and photo sites). Returns {data, type} or null.
-const fetchFile = async url => {
+export const fetchFile = async url => {
     if (!url) return null;
     try {
         const res = await fetch(url);
