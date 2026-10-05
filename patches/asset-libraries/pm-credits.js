@@ -15,20 +15,19 @@ const NOTE_ID = 'pmDesktopCreditsNote';
 const SIGNATURE = 'this note updates itself'; // old credit notes and the "no credit needed" note
 const NOTE_MARK = 'the local variable "credit" holds'; // the note (comment ids change when a project is saved)
 const NOTE_TEXT = [
-    'The local variable "credit" holds all the mandatory licensed work that you must include somewhere in your game for attribution.',
+    'The local variable "credit" holds the mandatory credits for all the licensed work in this project: you must show them somewhere in your game.',
     '',
-    '(your game cannot be claimed by these and you can use anything even commercially)',
+    '(their authors cannot claim your game, and you can use everything, even commercially)',
     '',
-    'You can use the block script provided here (also stocked in your backpack) or make your own kind of credit screen as long as it legally align with the licenses involved.'
+    'You can use the script provided here (also stored in your backpack) or make your own kind of credit screen, as long as it complies with the licenses involved.'
 ].join('\n');
 const NO_CREDIT_TEXT = 'No asset in this project needs credit right now, so you can delete this sprite. (This note updates itself.)';
 // as wide as the line in parentheses (measured in the editor's comment font)
-const NOTE = {x: 40, y: 40, width: 640, height: 210};
+const NOTE = {x: 40, y: 40, width: 650, height: 210};
 const BACKPACK_NAME = 'credits screen';
 const END_MESSAGE = 'credits end';
-const WARNING_TEXT = '⚠  ATTENTION ! We detected that the mandatory credit attribution stocked in the "credit" sprite ' +
-    'was not called. We could be wrong but if it is the case you accept the LEGAL RISK and responsibility by ' +
-    'continuing without proper attribution ⚠';
+const WARNING_TEXT = '⚠ ATTENTION! We detected that the mandatory credits stored in the "credit" sprite are never shown. ' +
+    'We could be wrong, but if so, by continuing without proper attribution you accept the LEGAL RISK and responsibility. ⚠';
 
 // Costumes: the button players click, the black screen, and an empty one that marks the text clone.
 const BUTTON = 'warning';

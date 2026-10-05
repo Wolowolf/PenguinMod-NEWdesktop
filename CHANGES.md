@@ -52,6 +52,10 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - Packager: warning with no show block and with a loose one; none with "when flag clicked → show" (packager window opened); "Go back" opens nothing, "Continue anyway" opens it.
   - Not verified: a game made by the online packager, `show [credit]` blocks, adding assets through the library windows, the CI build.
 - Part 2 result after build: not yet tested
+- Part 3 asked (2026-10-06): the user is not a native English speaker; always correct grammar in texts they give.
+- Part 3 changed: `pm-credits.js`: grammar of the note ("holds the mandatory credits for all the licensed work in this project: you must show them…", "(their authors cannot claim your game, and you can use everything, even commercially)", "stored", "complies with") and of the packager warning ("ATTENTION!", "credits stored … are never shown", "if so, by continuing … you accept …"); note width 650 for the new parenthesized line (measured 620 + 24). Existing notes are rewritten when a project opens. To reverse: `git revert` the merge.
+- Part 3 verified (local test app): new note 650 wide, parenthesized line on one line, no scrolling; an old-wording note was replaced; warning shows the new text. Not verified: the CI build.
+- Part 3 result after build: not yet tested
 
 ### Session 22 — limit counter, Europeana download fix, real random mix, sound tiles (2026-10-05)
 - Asked: a counter for libraries with request limits; fix the Europeana bug (adding hangs); Iconify / Openverse / keyed libraries open on only 3–4 subjects; sound tiles: "+" at the top right like icons, no play button, click anywhere else to play.
