@@ -295,12 +295,14 @@ ipcMain.handle("pm-open-external", async (_event, url) => {
 
 // Downloads a picture or a sound for the libraries when its site doesn't allow pages to (no CORS) or
 // doesn't answer the page. Only images and audio, at most 40 MB and 30 s, in a separate session
-// without this app's cookies. net.request, not fetch: Electron's fetch gets stuck (no answer, an error
+// without this app's cookies. With `range` ("bytes=<from>-<to>", at most 256 KB) only that part of the
+// file, e.g. short samples of a song for its waveform colours; `total` is then the file's whole size. net.request, not fetch: Electron's fetch gets stuck (no answer, an error
 // in the log) when a server sends a header with non-English letters, e.g. a museum's file name.
 const MAX_ASSET_BYTES = 40 * 1024 * 1024;
 const ASSET_TIMEOUT = 30000;
+const MAX_RANGE_BYTES = 256 * 1024;
 let assetSession = null;
-ipcMain.handle("pm-fetch-bytes", (_event, url) => new Promise((resolve) => {
+ipcMain.handle("pm-fetch-bytes", (_event, url, range) => new Promise((resolve) => {
   let u;
   try {
     u = new URL(url);
@@ -312,8 +314,14 @@ ipcMain.handle("pm-fetch-bytes", (_event, url) => new Promise((resolve) => {
     resolve({ ok: false, status: 0 });
     return;
   }
+  const part = typeof range === "string" ? /^bytes=(\d{1,10})-(\d{1,10})$/.exec(range) : null;
+  if (range !== undefined && range !== null && (!part || +part[2] < +part[1] || +part[2] - +part[1] >= MAX_RANGE_BYTES)) {
+    resolve({ ok: false, status: 0 });
+    return;
+  }
   if (!assetSession) assetSession = session.fromPartition("pm-asset-downloads");
   const req = net.request({ url: u.href, session: assetSession });
+  if (part) req.setHeader("Range", range);
   const timer = setTimeout(() => finish({ ok: false, status: 408 }), ASSET_TIMEOUT);
   let finished = false;
   function finish(result) {
@@ -326,10 +334,12 @@ ipcMain.handle("pm-fetch-bytes", (_event, url) => new Promise((resolve) => {
   req.on("response", (res) => {
     const header = (name) => String([].concat(res.headers[name] || "")[0]);
     const type = header("content-type");
-    if (res.statusCode < 200 || res.statusCode > 299 || !/^(image|audio)\//i.test(type)) {
+    if (res.statusCode < 200 || res.statusCode > 299 || !/^(image|audio)\//i.test(type) ||
+      (part && res.statusCode !== 206)) { // a server that ignores the range would send the whole file
       finish({ ok: false, status: res.statusCode });
       return;
     }
+    const total = part ? Number((/\/(\d+)$/.exec(header("content-range")) || [])[1]) || 0 : 0;
     if (+(header("content-length") || 0) > MAX_ASSET_BYTES) {
       finish({ ok: false, status: 413 });
       return;
@@ -343,7 +353,7 @@ ipcMain.handle("pm-fetch-bytes", (_event, url) => new Promise((resolve) => {
     });
     res.on("end", () => {
       const buf = Buffer.concat(chunks);
-      finish({ ok: true, status: res.statusCode, type, data: buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.length) });
+      finish({ ok: true, status: res.statusCode, type, total, data: buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.length) });
     });
     res.on("error", () => finish({ ok: false, status: 0 }));
   });
