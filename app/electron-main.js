@@ -293,22 +293,79 @@ ipcMain.handle("pm-open-external", async (_event, url) => {
   return false;
 });
 
-// Downloads a picture or a sound for the libraries when its site doesn't allow pages to (no CORS).
-// Only images and audio, at most 40 MB, in a separate session without this app's cookies.
+// Downloads a picture or a sound for the libraries when its site doesn't allow pages to (no CORS) or
+// doesn't answer the page. Only images and audio, at most 40 MB and 30 s, in a separate session
+// without this app's cookies. net.request, not fetch: Electron's fetch gets stuck (no answer, an error
+// in the log) when a server sends a header with non-English letters, e.g. a museum's file name.
 const MAX_ASSET_BYTES = 40 * 1024 * 1024;
+const ASSET_TIMEOUT = 30000;
 let assetSession = null;
-ipcMain.handle("pm-fetch-bytes", async (_event, url) => {
-  const u = new URL(url);
-  if (u.protocol !== "https:" && u.protocol !== "http:") return { ok: false, status: 0 };
+ipcMain.handle("pm-fetch-bytes", (_event, url) => new Promise((resolve) => {
+  let u;
+  try {
+    u = new URL(url);
+  } catch (_) {
+    resolve({ ok: false, status: 0 });
+    return;
+  }
+  if (u.protocol !== "https:" && u.protocol !== "http:") {
+    resolve({ ok: false, status: 0 });
+    return;
+  }
   if (!assetSession) assetSession = session.fromPartition("pm-asset-downloads");
-  const res = await assetSession.fetch(u.href, { bypassCustomProtocolHandlers: true });
-  const type = res.headers.get("content-type") || "";
-  if (!res.ok || !/^(image|audio)\//i.test(type)) return { ok: false, status: res.status };
-  if (+(res.headers.get("content-length") || 0) > MAX_ASSET_BYTES) return { ok: false, status: 413 };
-  const data = await res.arrayBuffer();
-  if (data.byteLength > MAX_ASSET_BYTES) return { ok: false, status: 413 };
-  return { ok: true, status: res.status, type, data };
-});
+  const req = net.request({ url: u.href, session: assetSession });
+  const timer = setTimeout(() => finish({ ok: false, status: 408 }), ASSET_TIMEOUT);
+  let finished = false;
+  function finish(result) {
+    if (finished) return;
+    finished = true;
+    clearTimeout(timer);
+    if (!result.ok) req.abort();
+    resolve(result);
+  }
+  req.on("response", (res) => {
+    const header = (name) => String([].concat(res.headers[name] || "")[0]);
+    const type = header("content-type");
+    if (res.statusCode < 200 || res.statusCode > 299 || !/^(image|audio)\//i.test(type)) {
+      finish({ ok: false, status: res.statusCode });
+      return;
+    }
+    if (+(header("content-length") || 0) > MAX_ASSET_BYTES) {
+      finish({ ok: false, status: 413 });
+      return;
+    }
+    const chunks = [];
+    let size = 0;
+    res.on("data", (chunk) => {
+      size += chunk.length;
+      if (size > MAX_ASSET_BYTES) finish({ ok: false, status: 413 });
+      else chunks.push(chunk);
+    });
+    res.on("end", () => {
+      const buf = Buffer.concat(chunks);
+      finish({ ok: true, status: res.statusCode, type, data: buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.length) });
+    });
+    res.on("error", () => finish({ ok: false, status: 0 }));
+  });
+  req.on("error", () => finish({ ok: false, status: 0 }));
+  req.end();
+}));
+
+// Openverse and Pixabay say in each answer how much of their request limit is left, but don't let
+// pages read it: these answers get an Access-Control-Expose-Headers entry for the library's counter.
+const LIMIT_HOSTS = ["api.openverse.org", "pixabay.com"];
+function exposeLimitHeaders(res) {
+  const names = [];
+  res.headers.forEach((_value, name) => {
+    if (/ratelimit/i.test(name)) names.push(name);
+  });
+  if (!names.length) return res;
+  const headers = new Headers(res.headers);
+  const exposed = headers.get("access-control-expose-headers");
+  headers.set("access-control-expose-headers", (exposed ? exposed + ", " : "") + names.join(", "));
+  const noBody = [101, 204, 205, 304].includes(res.status);
+  return new Response(noBody ? null : res.body, { status: res.status, statusText: res.statusText, headers });
+}
 
 // A file of the offline library, or 404 (never the internet). Paths can't leave LIBRARY_DIR.
 function serveLibraryFile(encodedPath) {
@@ -387,6 +444,9 @@ function setupProtocol() {
         fileUrl.search = url.search;
         fileUrl.hash = url.hash;
         return net.fetch(fileUrl.href);
+      }
+      if (LIMIT_HOSTS.includes(url.host)) {
+        return net.fetch(request, { bypassCustomProtocolHandlers: true }).then(exposeLimitHeaders);
       }
     } catch (err) {
       console.error(`[HTTPS Interceptor] Error parsing ${request.url}:`, err);
