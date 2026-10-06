@@ -29,6 +29,7 @@
  *  14. New sprite / costume / backdrop / sound libraries (Kenney, game-icons.net and sound
  *      generators offline; Iconify and Openverse online) and the automatic "credit" sprite
  *      (section 16, files in patches/asset-libraries/).
+ *  15. Projects with a monitor no longer break when opened at start-up (section 17, VM).
  *
  * Usage:  node patches/stage-layout.js <path-to-GUI-folder>
  *
@@ -1368,5 +1369,21 @@ replaceOnce(PACKAGER,
     '                    if (ok) window.open(`${PACKAGER_URL}/?import_from=${location.origin}`);\n' +
     '                });\n' +
     '            }\n');
+
+/* ------------------------------------------------------------------ */
+/* 17. VM: no monitor update before a sprite is selected               */
+/* ------------------------------------------------------------------ */
+// A monitor that belongs to no sprite (timer, an extension reporter, ...) is updated on the editing
+// sprite. When a project is opened at start-up (double-clicked .pmp), the VM updates monitors before
+// it has an editing sprite, starts a script with no sprite, and then fails on it every frame: sprites
+// never redraw, the sprite panel keeps old values, scripts stop. Now the update waits for the next
+// frame instead. To reverse: delete this section.
+const RT = 'node_modules/scratch-vm/src/engine/runtime.js';
+if (!read(RT).includes(MARKER)) {
+    replaceOnce(RT,
+        '        if (!optTarget) optTarget = this._editingTarget;\n',
+        '        if (!optTarget) optTarget = this._editingTarget;\n' +
+        '        if (!optTarget) return; // ' + MARKER + ': no sprite yet, try again next frame (section 17)\n');
+}
 
 console.log('Stage layout patch applied successfully.');
