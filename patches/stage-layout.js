@@ -1924,8 +1924,14 @@ fs.appendFileSync(file('src/components/tw-settings-modal/settings-modal.css'), `
     -webkit-appearance: none;
     margin: 0;
 }
-.custom-stage-size-input {
+/* ...and each box is only as wide as its value */
+input.custom-stage-size-input {
     -moz-appearance: textfield;
+    field-sizing: content;
+    width: auto;
+    min-width: 2.25rem;
+    padding: 0 0.5rem;
+    text-align: center;
 }
 .pm-setting-note {
     margin: 0 0 0.25rem;
