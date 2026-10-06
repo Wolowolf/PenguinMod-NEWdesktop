@@ -141,9 +141,8 @@ jobs:
           rm -rf node_modules/scratch-blocks && mv PenguinMod-Blocks node_modules/scratch-blocks
           rm -rf node_modules/scratch-render && mv PenguinMod-Render node_modules/scratch-render
           rm -rf node_modules/scratch-paint && mv PenguinMod-Paint node_modules/scratch-paint
-      # --- Patch GUI: fixed-size stage + drag-to-resize handle ---
-      - name: Patch GUI stage layout
-        run: node patches/stage-layout.js penguinmod.github.io
+      # The editor changes are commits in the forks (branch desktop of the GUI, VM and Render
+      # forks, pinned in upstream.json), so nothing is patched here.
       # --- Build Web App ---
       - name: Build PenguinMod Web
         run: |
