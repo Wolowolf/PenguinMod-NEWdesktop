@@ -1465,4 +1465,31 @@ replaceOnce(SE,
     '        )}\n',
     '');
 
+/* ------------------------------------------------------------------ */
+/* 20. Sound editor: a coloured waveform like the sound library's      */
+/* ------------------------------------------------------------------ */
+// The sound editor drew a smoothed loudness outline in one colour. It now draws the sound like the
+// sound library's tiles (pm-waveforms.js from section 16): lowest to highest sample, coloured by how
+// bright each moment sounds, at the screen's full resolution, with the loudness as a darker core
+// (patches/asset-libraries/pm-sound-wave.jsx). The editor passes it the samples. To reverse: delete
+// this section and pm-sound-wave.jsx (and the export line at the middle of pm-waveforms.js).
+copyIn('pm-sound-wave.jsx', 'src/components/waveform/pm-sound-wave.jsx');
+replaceOnce(SE,
+    "import Waveform from '../waveform/waveform.jsx';\n",
+    "import Waveform from '../waveform/pm-sound-wave.jsx'; // " + MARKER + ': coloured waveform (section 20)\n');
+replaceOnce(SE,
+    '                <Waveform\n' +
+    '                    data={props.chunkLevels}\n' +
+    '                    height={160}\n' +
+    '                    width={600}\n' +
+    '                />\n',
+    '                <Waveform\n' +
+    '                    sampleRate={props.sampleRate}\n' +
+    '                    samples={props.samples}\n' +
+    '                />\n');
+replaceOnce('src/containers/sound-editor.jsx',
+    '                sampleRate={this.props.sampleRate}\n',
+    '                sampleRate={this.props.sampleRate}\n' +
+    '                samples={this.props.samples} // ' + MARKER + ': for the coloured waveform (section 20)\n');
+
 console.log('Stage layout patch applied successfully.');

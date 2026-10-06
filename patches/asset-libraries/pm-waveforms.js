@@ -159,6 +159,9 @@ function paintWave (wave, canvas) {
     }
 }
 
+// also used by the sound editor's waveform (pm-sound-wave.jsx, patch section 20)
+export {analyseWave, paintWave};
+
 // ---- background worker ----------------------------------------------------------------------------
 
 let worker = null;
