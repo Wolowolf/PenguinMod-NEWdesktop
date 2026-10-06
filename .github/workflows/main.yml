@@ -62,7 +62,7 @@ jobs:
       - name: Install PenguinMod ext gallery deps
         run: |
           cd PenguinMod-ExtensionsGallery
-          bun i
+          bun i --frozen-lockfile
           bun run build
 
       # TurboWarp Extension Gallery
@@ -80,8 +80,7 @@ jobs:
       - name: Install TurboWarp deps
         run: |
           cd TurboWarp-ExtensionsGallery
-          rm -f package-lock.json
-          bun i
+          bun i --frozen-lockfile
           bun run build
 
       # SharkPool Extension Gallery
@@ -131,11 +130,13 @@ jobs:
             mv node_modules/scratch-paint/node_modules PenguinMod-Paint/
           fi
           
-          bun i
-          cd PenguinMod-Vm && bun i && cd ..
-          cd PenguinMod-Blocks && bun i && cd ..
-          cd PenguinMod-Render && rm -f package-lock.json && bun i && cd ..
-          cd PenguinMod-Paint && bun i && cd ..
+          # Every project installs exactly what its committed bun.lock says (git packages come from
+          # the forks on this account); an install that would change the lockfile fails instead.
+          bun i --frozen-lockfile
+          cd PenguinMod-Vm && bun i --frozen-lockfile && cd ..
+          cd PenguinMod-Blocks && bun i --frozen-lockfile && cd ..
+          cd PenguinMod-Render && bun i --frozen-lockfile && cd ..
+          cd PenguinMod-Paint && bun i --frozen-lockfile && cd ..
           
           rm -rf node_modules/scratch-vm && mv PenguinMod-Vm node_modules/scratch-vm
           rm -rf node_modules/scratch-blocks && mv PenguinMod-Blocks node_modules/scratch-blocks
@@ -160,7 +161,17 @@ jobs:
         run: |
           rm -rf node_modules
           mkdir node_modules
-          bun i --omit=dev
+          bun i --frozen-lockfile --omit=dev
+
+      # electron-builder and its tools at the versions in bun.lock, installed outside the project so
+      # the app's node_modules stays production-only (ELECTRON_SKIP_BINARY_DOWNLOAD: electron-builder
+      # downloads the Electron zip itself; the npm package's own download isn't needed).
+      - name: Install electron-builder
+        run: |
+          mkdir -p "$RUNNER_TEMP/electron-builder"
+          cp package.json bun.lock "$RUNNER_TEMP/electron-builder/"
+          cd "$RUNNER_TEMP/electron-builder"
+          ELECTRON_SKIP_BINARY_DOWNLOAD=1 bun i --frozen-lockfile
 
       # --- Build Electron App ---
       # Tells the app which release it was built as, so "Check for Updates" can tell if there is a newer one
@@ -185,7 +196,7 @@ jobs:
 
       - name: Build Electron App
         # Windows only (was: --linux AppImage deb rpm --win nsis). See CHANGES.md to bring Linux back.
-        run: npx electron-builder@$(node -p "require('./package.json').devDependencies['electron-builder']") --win nsis --publish never
+        run: '"$RUNNER_TEMP/electron-builder/node_modules/.bin/electron-builder" --win nsis --publish never'
 
       # --- Zip artifacts ---
       - name: Zip win-unpacked

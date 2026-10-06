@@ -1,14 +1,14 @@
 {
-  "_about": "Exact commits the build uses, downloaded from forks on this account by scripts/clone-pinned.js. \"branch\" is where the commit is: \"desktop\" (GUI, VM, Render) = upstream plus this app's editor changes, one commit per change; otherwise the upstream branch it came from (each fork also keeps it on its branch \"pinned\"). The last four are only used by scripts/make-offline-library.mjs. To change the editor or move to newer upstream code, see CLAUDE.md.",
+  "_about": "Exact commits the build uses, downloaded from forks on this account by scripts/clone-pinned.js. \"branch\" is where the commit is: \"desktop\" = upstream plus this app's changes (editor changes one commit each, git dependencies pointed at forks, bun.lock); otherwise the upstream branch it came from (each fork also keeps it on its branch \"pinned\"). The last four are only used by scripts/make-offline-library.mjs. To change the editor or move to newer upstream code, see CLAUDE.md.",
   "penguinmod.github.io": {
     "repo": "https://github.com/Wolowolf/penguinmod.github.io.git",
     "branch": "desktop",
-    "commit": "2dee0706e68eeefdcf7d9f9e405af09a5867df37"
+    "commit": "580e0459b491f12a259a1039f08dcc4928398ef2"
   },
   "PenguinMod-Vm": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Vm.git",
     "branch": "desktop",
-    "commit": "148ab98068bcceeff0bf21d98ccaaa972ffb14f5"
+    "commit": "4f459bb2a3dead389b9fb1c35fa1c496b642be5e"
   },
   "PenguinMod-Blocks": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Blocks.git",
@@ -18,22 +18,22 @@
   "PenguinMod-Render": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Render.git",
     "branch": "desktop",
-    "commit": "b887af4dcf2ff809b18e5ad78d68447ecab8df5b"
+    "commit": "deb3550cbcedd9b7600ab39e93481ebdc8b2a6d6"
   },
   "PenguinMod-Paint": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Paint.git",
-    "branch": "develop",
-    "commit": "37f65d73e7641236011dadc5def14964d5f404ae"
+    "branch": "desktop",
+    "commit": "e33a4fccca274b07b7a52fc0137f6d450c53c594"
   },
   "PenguinMod-ExtensionsGallery": {
     "repo": "https://github.com/Wolowolf/PenguinMod-ExtensionsGallery.git",
-    "branch": "main",
-    "commit": "971b034faf89a59d2903b9eb1e250dc4ed57cf72"
+    "branch": "desktop",
+    "commit": "e0843e44639eb1dd2c43574988f98f319fe10333"
   },
   "TurboWarp-ExtensionsGallery": {
     "repo": "https://github.com/Wolowolf/TurboWarp-ExtensionsGallery.git",
-    "branch": "master",
-    "commit": "fe82589bc3da47207ec6085f984145edae928820"
+    "branch": "desktop",
+    "commit": "7d5e612af2cfab56725133ab7b5a9716ec6a32d3"
   },
   "SharkPools-Extensions": {
     "repo": "https://github.com/Wolowolf/SharkPools-Extensions.git",
