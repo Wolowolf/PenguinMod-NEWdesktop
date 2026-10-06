@@ -75,6 +75,26 @@
 
 ## Change log (newest first)
 
+### Session 22 — limit counter, Europeana download fix, real random mix, sound tiles (2026-10-05)
+- Asked: a counter for libraries with request limits; fix the Europeana bug (adding hangs); Iconify / Openverse / keyed libraries open on only 3–4 subjects; sound tiles: "+" at the top right like icons, no play button, click anywhere else to play.
+- Changed:
+  - Europeana hang: Electron's `net.fetch` never answers (and logs `TypeError: Cannot convert argument to a ByteString`) when a server sends a header with non-ASCII bytes (muis.ee: `Content-Disposition: …filename=PÕMu…`). `app/electron-main.js` `pm-fetch-bytes` now uses `net.request` (30 s, 40 MB); `fetchFile` (`pm-asset-sources.js`) also asks the app after 3 s without an answer, first good answer wins.
+  - New `patches/asset-libraries/pm-limits.js` (copied by section 16): counts Openverse (100/min, 10,000/day) and Pixabay (100/min) searches in `localStorage` `pmdesktop:apiUsage`, prefers the sites' own numbers (`x-ratelimit-*` headers; `electron-main.js` adds `Access-Control-Expose-Headers` for api.openverse.org and pixabay.com; Cloudflare-cached answers ignored), and stops a search with "limit … used up, more in about N s" instead of sending it. "Limits: …" line under the note (single library and "All"), orange when low, red at 0.
+  - Random mix (`newRandomMix` per opening): Iconify 12 random subjects taken in turn (word list longer; drawings loaded 6 icon sets at a time); Openverse and Pixabay search without a word at random pages (1–12); Europeana `sort=random_<seed> asc`.
+  - Sound tiles: "+" adds, a click plays / stops; the tile is outlined and a line moves over the waveform while playing.
+  - To reverse: `git revert` the merge.
+- Verified (local test app; keyed answers simulated with made-up keys):
+  - The muis.ee image (Europeana "Kass / Cat") added in 4.6 s with its credit; the old error only in the log (no popup: the app already catches main-process errors; the popup the user saw came from Claude's bare Electron test script).
+  - Counter: counts and wording; with simulated Openverse numbers (20/min, 200/day) it switched to them and at 0 sent nothing and said "more in about 33 s". A real anonymous Openverse answer showed its limit headers readable by the page.
+  - Iconify opened on 12 subjects (60 icons, 40 sets); Openverse / Pixabay without a word at random pages; Europeana random order.
+  - Sound tiles: click plays (orange outline, moving line), stops by itself or on a second click; "+" added "laser3" without playing; icon "+" unchanged.
+  - Not verified: real Pixabay limit headers (no key), Openverse's header names for keyed requests, the CI build.
+- Result after build: not yet tested
+- Follow-up asked: Jamendo songs had no colourful waveform (grey shape only).
+- Follow-up changed: `pm-waveforms.js` takes 24 short samples (16 KB, ~1.4 s each, ~0.4 MB per song) spread over the song's 96 kbps MP3 and colours Openverse's shape with their spectral centroids (blended in between); `app/electron-main.js` `pm-fetch-bytes` / `preload.js` `fetchBytes(url, range)` can fetch one part of a file (at most 256 KB, must answer 206; Jamendo doesn't let pages read its files and ignores multi-part requests). Grey shape as before if no sample can be read.
+- Follow-up verified (local test app): 3 real Jamendo songs got their own colour patterns (copies identical), first 10 tiles in 1.5 s. Not verified: the CI build.
+- Follow-up result after build: not yet tested
+
 ### Session 21 — "All" search in every library; Freesound-style waveforms (2026-10-05)
 - Asked: a general search per library (sprite/costume, backdrop, sound) as a new first sidebar entry "All", selected when a library opens, searching every default source plus the unlocked key sources at once, mixed round-robin; source in the tooltip; locked sources left out with a hint; respect rate limits; one failing source doesn't stop the others.
 - Changed (`patches/asset-libraries/`):
