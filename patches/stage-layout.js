@@ -1871,6 +1871,16 @@ replaceBlock(SMJ, 'const HighQualityPen = props => (', 'const DisableOffscreenRe
 // CustomStageSize (presets, inputs, large-size warning)
 replaceBlock(SMJ, 'const CustomStageSize = ({', 'const StoreProjectOptions = ',
     '74f9d0e9004570a03e899858f00e28ffe9796ad6840764da66f152774ca19806', '');
+// no section headers (Gameplay here; Remove Limits, Optimizations, Screen Resolution are in the block below)
+replaceOnce(SMJ,
+    '            <Header>\n' +
+    '                <FormattedMessage\n' +
+    '                    defaultMessage="Gameplay"\n' +
+    '                    description="Settings modal section"\n' +
+    '                    id="pm.settingsModal.gameplay"\n' +
+    '                />\n' +
+    '            </Header>\n',
+    '');
 // the rows of the window, from the FPS row to the end (Remove Limits header, Unsupported section)
 replaceBlock(SMJ, '            <CustomFPS\n', '        </Box>\n    </Modal>\n',
     '936d02e7e76fd74405e0a34a281121b655b136589fc9de6eb024a2d48af24a12',
@@ -1882,13 +1892,6 @@ replaceBlock(SMJ, '            <CustomFPS\n', '        </Box>\n    </Modal>\n',
     '                value={props.warpTimer}\n' +
     '                onChange={props.onWarpTimerChange}\n' +
     '            />\n' +
-    '            <Header>\n' +
-    '                <FormattedMessage\n' +
-    '                    defaultMessage="Optimizations"\n' +
-    '                    description="Settings modal section"\n' +
-    '                    id="pm.settingsModal.optimizations"\n' +
-    '                />\n' +
-    '            </Header>\n' +
     '            <DisableOffscreenRendering\n' +
     '                value={props.disableOffscreenRendering}\n' +
     '                onChange={props.onDisableOffscreenRenderingChange}\n' +
@@ -1897,13 +1900,6 @@ replaceBlock(SMJ, '            <CustomFPS\n', '        </Box>\n    </Modal>\n',
     '                value={props.disableDirectionClamping}\n' +
     '                onChange={props.onDisableDirectionClamping}\n' +
     '            />\n' +
-    '            <Header>\n' +
-    '                <FormattedMessage\n' +
-    '                    defaultMessage="Screen Resolution"\n' +
-    '                    description="Settings modal section"\n' +
-    '                    id="pm.settingsModal.screenResolution"\n' +
-    '                />\n' +
-    '            </Header>\n' +
     '            {!props.isEmbedded && (\n' +
     '                <StageSizeSetting\n' +
     '                    width={props.stageWidth}\n' +
@@ -1922,6 +1918,15 @@ replaceBlock(SMJ, '    onCustomizeFramerate: PropTypes.func,\n', '    disableOff
     '    onStageSizeChange: PropTypes.func,\n');
 fs.appendFileSync(file('src/components/tw-settings-modal/settings-modal.css'), `
 /* ${MARKER}: the note under FPS and the stage size chain link (section 21) */
+/* no up / down arrows in the FPS and stage size boxes */
+.custom-stage-size-input::-webkit-inner-spin-button,
+.custom-stage-size-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.custom-stage-size-input {
+    -moz-appearance: textfield;
+}
 .pm-setting-note {
     margin: 0 0 0.25rem;
     font-size: 0.8rem;
