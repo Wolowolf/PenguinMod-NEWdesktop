@@ -736,7 +736,7 @@ write(GC, read(GC).replace(/\s*$/, '\n') + `
 // Each entry in the palette's category menu (Pinned, Motion, Looks, ... and every
 // extension) becomes a box in the colour of that category's blocks, showing only
 // its name. All boxes are as wide as "Pointerlock". A box is one line tall; longer
-// names are cut with a dot. The selected box grows to two lines and shows more of the
+// names are cut off (no "...") with a small dot under the first letter. The selected box grows to two lines and shows more of the
 // name (up to two lines). Text: white with a thin black outline, top left, small padding.
 // To undo this section, delete it from this script (or ask Claude to reverse it).
 
@@ -758,8 +758,29 @@ replaceOnce('src/lib/blocks.js',
                 this.colour_ : '#666666';
             if (this.item_) {
                 this.item_.style.setProperty('--pm-cat-colour', colour);
+                pmMarkCut(this.item_);
             }
         };
+
+        // A name that does not fit is cut without "..."; its box gets data-pm-cut, which
+        // draws a dot under the first letter. Checked again when the box is (de)selected,
+        // since the selected box shows two lines. (setSelected replaces the class name,
+        // so the mark is an attribute.)
+        const pmMarkCut = item => requestAnimationFrame(() => {
+            const label = item.querySelector('.scratchCategoryMenuItemLabel');
+            if (!label) return;
+            item.toggleAttribute('data-pm-cut', label.scrollWidth > label.clientWidth + 1 ||
+                label.scrollHeight > label.clientHeight + 1);
+        });
+        const originalSetSelected = pmCategory.prototype.setSelected;
+        pmCategory.prototype.setSelected = function () {
+            originalSetSelected.apply(this, arguments);
+            if (this.item_) pmMarkCut(this.item_);
+        };
+        if (document.fonts) {
+            document.fonts.ready.then(() => document.querySelectorAll('.scratchCategoryMenuItem')
+                .forEach(pmMarkCut));
+        }
 
         // The blocks library assumes the category menu is 60 px wide (toolbox width =
         // menu + flyout). Ours is wider, so add the difference; otherwise the menu would
@@ -775,7 +796,7 @@ replaceOnce('src/lib/blocks.js',
 `);
 
 // 11b. The look of the boxes.
-//      Not selected: the name on ONE line, cut with a dot when too long.
+//      Not selected: the name on ONE line, cut off when too long (dot under the first letter).
 //      Selected: the box grows to two lines (no frame) and shows up to two lines of the name.
 //      The text is always white with a thin black outline, aligned to the top left.
 const BC = 'src/components/blocks/blocks.css';
@@ -836,19 +857,33 @@ write(BC, read(BC).replace(/\s*$/, '\n') + `
        plus a soft halo are anti-aliased and look smoother than -webkit-text-stroke */
     text-shadow: -0.7px 0 0.6px #000000, 0.7px 0 0.6px #000000, 0 -0.7px 0.6px #000000,
         0 0.7px 0.6px #000000, 0 0 1px #000000;
-    /* one line, cut when too long */
+    /* one line, cut when too long (no "...": the dot below marks a cut name) */
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: clip;
 }
 
-/* selected: up to two lines */
+/* selected: up to two lines (a height limit, not line-clamp, which always adds "...") */
 .blocks :global(.scratchCategoryMenuItem.categorySelected .scratchCategoryMenuItemLabel) {
     white-space: normal;
     overflow-wrap: anywhere;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    max-height: 2.2em;
+}
+
+/* a cut name: one small dot under its first letter, in the box's bottom padding */
+.blocks :global(.scratchCategoryMenuItem) {
+    position: relative;
+}
+
+.blocks :global(.scratchCategoryMenuItem[data-pm-cut]::after) {
+    content: "";
+    position: absolute;
+    left: calc(0.15rem + 2px);
+    bottom: 1px;
+    width: 2px;
+    height: 2px;
+    background: #ffffff;
+    box-shadow: 0 0 0 0.7px #000000;
 }
 `);
 
