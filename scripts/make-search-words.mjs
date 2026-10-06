@@ -1,5 +1,5 @@
 /*
- * Builds patches/asset-libraries/search-words.json: for words someone may search for ("fruit"),
+ * Builds src/lib/pm-search-words.json in a checkout of the GUI fork: for words someone may search for ("fruit"),
  * the words of our asset names that mean that kind of thing ("apple", "banana", "cherry"...).
  * The library search uses it so a search finds related assets, not only exact name matches.
  * It comes from WordNet (Princeton University): each word in the offline library's names and tags
@@ -8,18 +8,17 @@
  *
  * Run it on a PC after the offline library or the game-icons tags change:
  *   npm install --prefix <tools> wordnet-db@3.1.14
- *   node scripts/make-search-words.mjs --tools <tools> --library <offline-library folder>
+ *   node scripts/make-search-words.mjs --tools <tools> --library <offline-library folder> --gui <GUI checkout>
+ * then commit the file in the GUI fork (Wolowolf/penguinmod.github.io, branch desktop).
  */
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
-const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = {};
 for (let i = 2; i < process.argv.length; i += 2) args[process.argv[i].replace(/^--/, '')] = process.argv[i + 1];
-if (!args.tools || !args.library) throw new Error('missing --tools or --library (see the comment at the top of this file)');
+if (!args.tools || !args.library || !args.gui) throw new Error('missing --tools, --library or --gui (see the comment at the top of this file)');
 const dict = path.join(path.resolve(args.tools), 'node_modules', 'wordnet-db', 'dict');
-const out = path.join(repo, 'patches', 'asset-libraries', 'search-words.json');
+const out = path.join(args.gui, 'src', 'lib', 'pm-search-words.json');
 
 const SENSES = 2; // only the most common meanings of a word (fewer odd matches)
 const DEPTH = 6; // how many levels of "more general" words
@@ -30,7 +29,7 @@ const tokens = s => s.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().split(/[
 
 // ---- vocabulary: the words of the offline library's names and the game-icons tags --------------
 const index = JSON.parse(fs.readFileSync(path.join(args.library, 'index.json'), 'utf8'));
-const meta = JSON.parse(fs.readFileSync(path.join(repo, 'patches', 'asset-libraries', 'game-icons-meta.json'), 'utf8'));
+const meta = JSON.parse(fs.readFileSync(path.join(args.gui, 'src', 'lib', 'pm-game-icons-meta.json'), 'utf8'));
 const vocab = new Set();
 for (const [, title] of index.packs) tokens(title).forEach(w => vocab.add(w));
 for (const [, file] of index.kenney) tokens(file).forEach(w => vocab.add(w));
