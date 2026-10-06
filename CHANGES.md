@@ -25,6 +25,7 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - 17: the VM skips a monitor update while no sprite is selected yet (upstream bug: a project with a monitor, opened by double-click, failed every frame). (Session 24)
   - 18: `project_url` (double-clicked `.pmp`) is used once and removed from the address, so File → New and Reload no longer ask for it again (404 crash). (Session 24)
   - 19: no "This sound could be too large to upload to PenguinMod." warning in the sound editor (posting message). (Session 26)
+  - 20: the sound editor's waveform is coloured like the sound library's (`pm-sound-wave.jsx`), at full screen resolution with a darker loudness core. (Session 27)
 - **Not verified yet:**
   - The updater end to end inside a packaged install (including the offline-library download, Session 17).
   - The installer itself (Claude has only tested the local build).
@@ -37,6 +38,12 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - Turn sprite fencing off by default (and keep it off) for every project (user idea, Session 23; changes how all games behave, so its own tweak).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 27 — coloured waveform in the sound editor (2026-10-06)
+- Asked: the sound editor's waveform made with an algorithm like the sound libraries' coloured one, possibly more detailed (only one is shown, not a preview).
+- Changed: `patches/stage-layout.js` new section 20 and new `patches/asset-libraries/pm-sound-wave.jsx`: the sound editor draws a canvas instead of the one-colour loudness outline: lowest to highest sample per column, coloured by spectral centroid (`analyseWave` / `paintWave`, now exported from `pm-waveforms.js`), one column per screen pixel (screen scale included), each column also reaching its neighbours' peaks (else high notes look striped), plus the loudness (RMS) as a darker core. Heights are true sample values (upstream exaggerated quiet sounds). The editor container passes `samples`. To reverse: delete section 20, `pm-sound-wave.jsx` and the export line in `pm-waveforms.js` (or `git revert` the merge).
+- Verified (local test app): Squawk and a 5-minute 96 kHz test sweep drawn coloured (sweep blue → orange each minute, quiet part small); the long one in one ~150 ms step; Softer (real click) redrew it smaller; playhead and selection still on top. · Not verified: the CI build, light theme, resizing the window.
+- Result after build: not yet tested
 
 ### Session 26 — no "too large to upload" sound warning (2026-10-06)
 - Asked: remove every message about posting projects on PenguinMod / TurboWarp / Scratch (example: a long imported sound warned it might be too long to import to PenguinMod).
@@ -53,18 +60,6 @@ Kept short on purpose (read at the start of every session). Full history of Sess
 - Part 2 asked: the dot had a different outline from the letters.
 - Part 2 changed: section 11: the dot uses the same five blurred shadows as the letters (`box-shadow` with the label's `text-shadow` values) instead of one hard 0.7 px outline. To reverse: `git revert` the merge.
 - Part 2 verified (local test app): the computed shadow of the dot on "Text to Speech" matches; enlarged screenshot: soft outline like the letters. · Not verified: the CI build.
-- Part 2 result after build: not yet tested
-
-### Session 24 — projects with a monitor broke when double-clicked (2026-10-06)
-- Asked: the user's `Default project.pmp` was broken (sprite size / position changes not shown until switching sprites, invisible sprites, other problems); find the cause, then fix it.
-- Found: not our changes. Upstream VM bug: `runtime.addMonitorScript` runs a monitor that belongs to no sprite (timer, extension reporters, …) on the editing sprite. A project opened at start-up (double-clicked `.pmp`, i.e. `?project_url=`) has none yet, so a script with no sprite is started and `stepThreads` fails on it every frame: no redraw, sprite panel stale, scripts stopped, thousands of leftover runs. Loading from inside the app was fine (an old editing sprite exists). The project's Sprite1 also has an empty (0×0) costume, so it is invisible by design.
-- Changed: `patches/stage-layout.js` new section 17: `addMonitorScript` returns when there is no target (the monitor updates next frame). To reverse: delete section 17 (or `git revert` the merge).
-- Verified: same bug in the installed app (build `build-37389523012-…`) opened by file argument and by `?project_url=` (served from a local server); a copy with a timer monitor broke too, a copy without a monitor didn't. New local build, same `?project_url=` test: no engine error, no leftover runs, size / x boxes update at once, for the project and the timer copy; the timer monitor keeps counting. · Not verified: a real double-click with the new build (only the installed app takes a file argument), the user's other problems, the CI build.
-- Result after build: confirmed by the user (build `build-37395127940-20261006-003924`, 2026-10-06): all fixed, including the double-clicked project.
-- Part 2 asked: File → New (any project) shows "Oops! Something went wrong … Request returned status 404".
-- Part 2 found: upstream `project-fetcher-hoc.jsx` reads `project_url` from the address on every project load, so New (and Reload) asked again for the double-clicked file's address; `app/electron-main.js` serves `__localfile__/…` only once, so the second request got 404.
-- Part 2 changed: `patches/stage-layout.js` new section 18: `project_url` is removed from the address (`history.replaceState`) as soon as it is read; New makes an empty project, Reload opens the plain editor. To reverse: delete section 18 (or `git revert` the merge).
-- Part 2 verified (local test app, project served once from a local server like `__localfile__`): before, New and Reload gave the 404 crash screen; after, the project opened, New gave an empty project, Reload a plain editor, the file was requested once. New keeps the stage size and loaded extensions, the same as after an in-app load (upstream behaviour). · Not verified: a real double-click with the new build, the "Download Error" button, the CI build.
 - Part 2 result after build: not yet tested
 
 ## Template (keep entries this short)
