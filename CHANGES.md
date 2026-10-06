@@ -24,6 +24,7 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - 16: the original sprite, costume, backdrop and sound libraries are removed. The library windows are `patches/asset-libraries/pm-asset-browser.jsx`; sources in `pm-asset-sources.js` (only CC0 / public domain / CC BY / MIT-style licences; never NC, ND, SA, GPL; no brand-logo icon sets). "Surprise" adds a random Kenney item. Every added asset carries a `pmCredit` record, saved in the project by a patch to the VM's `sb3.js`. `pm-credits.js` keeps the "credit" sprite. (Session 17) Clicking a game-icons.net or Iconify icon opens the icon studio (`pm-icon-studio.jsx`, `pm-icon-svg.js`); game-icons tags and author names come from `game-icons-meta.json`. (Session 18) Each library opens on "All", which searches every unlocked source at once (Session 21). Sound waveforms are coloured like Freesound's and made in a background worker, only for tiles in view (Session 21). Openverse / Pixabay show a limit counter; sound tiles play on click and add with "+" (Session 22). Credit lines are as short as the licences allow, licence links listed once at the bottom; the hidden credit sprite holds them in its variable `credit` with a click-to-play credits screen script (also in the backpack), and "Package project" warns when nothing shows that sprite (Session 23).
   - 17: the VM skips a monitor update while no sprite is selected yet (upstream bug: a project with a monitor, opened by double-click, failed every frame). (Session 24)
   - 18: `project_url` (double-clicked `.pmp`) is used once and removed from the address, so File → New and Reload no longer ask for it again (404 crash). (Session 24)
+  - 19: no "This sound could be too large to upload to PenguinMod." warning in the sound editor (posting message). (Session 26)
 - **Not verified yet:**
   - The updater end to end inside a packaged install (including the offline-library download, Session 17).
   - The installer itself (Claude has only tested the local build).
@@ -36,6 +37,13 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - Turn sprite fencing off by default (and keep it off) for every project (user idea, Session 23; changes how all games behave, so its own tweak).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 26 — no "too large to upload" sound warning (2026-10-06)
+- Asked: remove every message about posting projects on PenguinMod / TurboWarp / Scratch (example: a long imported sound warned it might be too long to import to PenguinMod).
+- Found: the message was "This sound could be too large to upload to PenguinMod." (sound editor, sounds of 10 MB or more): about uploading to the website, not importing. The only other posting messages (cloud variables over Scratch's limit / "won't work until uploaded", cloud badge) can't appear because section 15 removed cloud variables; the "incompatible with Scratch" extension prompt is unused upstream. Kept: the stage-size, OGG-on-Apple, stereo/format and unstable-extension warnings (not about posting).
+- Changed: `patches/stage-layout.js` new section 19: removes that warning and its now unused `SOUND_BYTE_LIMIT` import from `sound-editor.jsx`. To reverse: delete section 19 (or `git revert` the merge).
+- Verified (local test app): the built editor no longer contains the text; a 13.23 MB, 5-minute sound opened in the sound editor (real click) with no warning, size line and tools as before. · Not verified: the CI build.
+- Result after build: not yet tested
 
 ### Session 25 — a dot instead of "..." on cut category names (2026-10-06)
 - Asked: in the category menu, instead of "..." at the end of a cut name, one dot under the first letter (the name is always capped there, so no extra padding needed).
@@ -58,28 +66,6 @@ Kept short on purpose (read at the start of every session). Full history of Sess
 - Part 2 changed: `patches/stage-layout.js` new section 18: `project_url` is removed from the address (`history.replaceState`) as soon as it is read; New makes an empty project, Reload opens the plain editor. To reverse: delete section 18 (or `git revert` the merge).
 - Part 2 verified (local test app, project served once from a local server like `__localfile__`): before, New and Reload gave the 404 crash screen; after, the project opened, New gave an empty project, Reload a plain editor, the file was requested once. New keeps the stage size and loaded extensions, the same as after an in-app load (upstream behaviour). · Not verified: a real double-click with the new build, the "Download Error" button, the CI build.
 - Part 2 result after build: not yet tested
-
-### Session 23 — shortest legal credit lines (2026-10-05)
-- Asked: make the credit sprite's lines as short as legally possible (example: `"Drink's Afterhouse" - Felixjd - CC BY 3.0 - modified` + source link + licence link), check it's legally sound, shorten more if possible.
-- Changed: `patches/asset-libraries/pm-credits.js`: each line is title - author - licence - modified/recoloured, then the source link without `https://`. The licence links are listed once under "Licences:" at the bottom (CC lets you credit "in any reasonable manner"); a licence name with several links (e.g. Iconify sets' own MIT files) keeps its link on each line. Dropped: "licensed under", "via Europeana", "from game-icons.net", "an unknown author". Kept: title (CC BY 3.0 needs it), Europeana institution, Iconify "© holder" (MIT / Apache / BSD need the copyright notice). Header now says to show the licence links too. Notes in existing projects update when the project is opened. To reverse: `git revert` the merge.
-- Verified: sample records of every library printed through the new code (grouping, http/https of one CC link merged, two MIT links kept per line); local test app: a credited costume made the "credit" sprite with the new note, seen on screen. · Not verified: adding through the library windows (unchanged code), the CI build. Not legal advice: a reading of the licence texts.
-- Result after build: not yet tested
-- Part 2 asked (2026-10-06): the credit sprite hidden by default with the user's `warning.svg`; a script in it that, when the sprite is clicked, fades to black, scrolls the credits (white, from below to above the stage, speed changeable), then fades back; credits in a local variable "credit" instead of the note; a fixed note (as wide as its line in parentheses) pointing to the variable and the script (also put in the backpack); "Package project" warns (given text) when no attached "show" block in the credit sprite calls it.
-- Part 2 changed:
-  - `patches/asset-libraries/pm-credits.js`: new sprite = hidden, costumes "warning" / "credits screen" (black 480×360) / "credits text" (empty, marks the text clone), variable `credit` (one paragraph per asset + licence list), note 640×210, three scripts built as sb3 blocks with the Animated Text extension (`extensions: ['text']`): click → clone fades in (ghost 10 steps) → text clone (size 60, Sans Serif, white, width 760, 2 blank lines above and below, the last one a no-break space because trailing empty lines are dropped) goes to y -180, waits one frame (so its height is known), glides to 180 + height at 40 px/s, broadcasts "credits end" → black clone fades out. Clones ignore clicks (costume-name check). Script put once into the local backpack ("credits screen"). Credit sprites from older versions (blank costume, no scripts) are replaced. `confirmPackaging(vm)`: counts `show` / `show [myself / credit]` blocks under a hat block, otherwise the warning with "Go back" / "Continue anyway".
-  - `patches/stage-layout.js` section 16 f: the packager button waits for `confirmPackaging`.
-  - To reverse: `git revert` the merge.
-- Part 2 verified (local test app, 10 test credits):
-  - Sprite, costumes, variable, note (its parenthesized line on one line), scripts laid out without overlap; save + reload keeps all of it with the extension; the old-style sprite was replaced; no-credit state empties the variable and allows deleting.
-  - Real clicks: black fade-in, text scrolls at 40/s (23.8 s for 36 lines), fade-out, only the button left; clicking the black screen starts nothing. Stage pixels read each frame: no text in the bottom strip before it scrolls in and none at the top before the clone is deleted, with fencing on and off.
-  - Backpack item (warning picture) dropped into Sprite1: all 3 scripts, a local `credit` variable.
-  - Packager: warning with no show block and with a loose one; none with "when flag clicked → show" (packager window opened); "Go back" opens nothing, "Continue anyway" opens it.
-  - Not verified: a game made by the online packager, `show [credit]` blocks, adding assets through the library windows, the CI build.
-- Part 2 result after build: not yet tested
-- Part 3 asked (2026-10-06): the user is not a native English speaker; always correct grammar in texts they give.
-- Part 3 changed: `pm-credits.js`: grammar of the note ("holds the mandatory credits for all the licensed work in this project: you must show them…", "(their authors cannot claim your game, and you can use everything, even commercially)", "stored", "complies with") and of the packager warning ("ATTENTION!", "credits stored … are never shown", "if so, by continuing … you accept …"); note width 650 for the new parenthesized line (measured 620 + 24). Existing notes are rewritten when a project opens. To reverse: `git revert` the merge.
-- Part 3 verified (local test app): new note 650 wide, parenthesized line on one line, no scrolling; an old-wording note was replaced; warning shows the new text. Not verified: the CI build.
-- Part 3 result after build: not yet tested
 
 ## Template (keep entries this short)
 

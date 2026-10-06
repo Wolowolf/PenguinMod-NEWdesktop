@@ -75,6 +75,28 @@
 
 ## Change log (newest first)
 
+### Session 23 — shortest legal credit lines (2026-10-05)
+- Asked: make the credit sprite's lines as short as legally possible (example: `"Drink's Afterhouse" - Felixjd - CC BY 3.0 - modified` + source link + licence link), check it's legally sound, shorten more if possible.
+- Changed: `patches/asset-libraries/pm-credits.js`: each line is title - author - licence - modified/recoloured, then the source link without `https://`. The licence links are listed once under "Licences:" at the bottom (CC lets you credit "in any reasonable manner"); a licence name with several links (e.g. Iconify sets' own MIT files) keeps its link on each line. Dropped: "licensed under", "via Europeana", "from game-icons.net", "an unknown author". Kept: title (CC BY 3.0 needs it), Europeana institution, Iconify "© holder" (MIT / Apache / BSD need the copyright notice). Header now says to show the licence links too. Notes in existing projects update when the project is opened. To reverse: `git revert` the merge.
+- Verified: sample records of every library printed through the new code (grouping, http/https of one CC link merged, two MIT links kept per line); local test app: a credited costume made the "credit" sprite with the new note, seen on screen. · Not verified: adding through the library windows (unchanged code), the CI build. Not legal advice: a reading of the licence texts.
+- Result after build: not yet tested
+- Part 2 asked (2026-10-06): the credit sprite hidden by default with the user's `warning.svg`; a script in it that, when the sprite is clicked, fades to black, scrolls the credits (white, from below to above the stage, speed changeable), then fades back; credits in a local variable "credit" instead of the note; a fixed note (as wide as its line in parentheses) pointing to the variable and the script (also put in the backpack); "Package project" warns (given text) when no attached "show" block in the credit sprite calls it.
+- Part 2 changed:
+  - `patches/asset-libraries/pm-credits.js`: new sprite = hidden, costumes "warning" / "credits screen" (black 480×360) / "credits text" (empty, marks the text clone), variable `credit` (one paragraph per asset + licence list), note 640×210, three scripts built as sb3 blocks with the Animated Text extension (`extensions: ['text']`): click → clone fades in (ghost 10 steps) → text clone (size 60, Sans Serif, white, width 760, 2 blank lines above and below, the last one a no-break space because trailing empty lines are dropped) goes to y -180, waits one frame (so its height is known), glides to 180 + height at 40 px/s, broadcasts "credits end" → black clone fades out. Clones ignore clicks (costume-name check). Script put once into the local backpack ("credits screen"). Credit sprites from older versions (blank costume, no scripts) are replaced. `confirmPackaging(vm)`: counts `show` / `show [myself / credit]` blocks under a hat block, otherwise the warning with "Go back" / "Continue anyway".
+  - `patches/stage-layout.js` section 16 f: the packager button waits for `confirmPackaging`.
+  - To reverse: `git revert` the merge.
+- Part 2 verified (local test app, 10 test credits):
+  - Sprite, costumes, variable, note (its parenthesized line on one line), scripts laid out without overlap; save + reload keeps all of it with the extension; the old-style sprite was replaced; no-credit state empties the variable and allows deleting.
+  - Real clicks: black fade-in, text scrolls at 40/s (23.8 s for 36 lines), fade-out, only the button left; clicking the black screen starts nothing. Stage pixels read each frame: no text in the bottom strip before it scrolls in and none at the top before the clone is deleted, with fencing on and off.
+  - Backpack item (warning picture) dropped into Sprite1: all 3 scripts, a local `credit` variable.
+  - Packager: warning with no show block and with a loose one; none with "when flag clicked → show" (packager window opened); "Go back" opens nothing, "Continue anyway" opens it.
+  - Not verified: a game made by the online packager, `show [credit]` blocks, adding assets through the library windows, the CI build.
+- Part 2 result after build: not yet tested
+- Part 3 asked (2026-10-06): the user is not a native English speaker; always correct grammar in texts they give.
+- Part 3 changed: `pm-credits.js`: grammar of the note ("holds the mandatory credits for all the licensed work in this project: you must show them…", "(their authors cannot claim your game, and you can use everything, even commercially)", "stored", "complies with") and of the packager warning ("ATTENTION!", "credits stored … are never shown", "if so, by continuing … you accept …"); note width 650 for the new parenthesized line (measured 620 + 24). Existing notes are rewritten when a project opens. To reverse: `git revert` the merge.
+- Part 3 verified (local test app): new note 650 wide, parenthesized line on one line, no scrolling; an old-wording note was replaced; warning shows the new text. Not verified: the CI build.
+- Part 3 result after build: not yet tested
+
 ### Session 22 — limit counter, Europeana download fix, real random mix, sound tiles (2026-10-05)
 - Asked: a counter for libraries with request limits; fix the Europeana bug (adding hangs); Iconify / Openverse / keyed libraries open on only 3–4 subjects; sound tiles: "+" at the top right like icons, no play button, click anywhere else to play.
 - Changed:
