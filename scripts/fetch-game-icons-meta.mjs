@@ -1,15 +1,16 @@
 /*
  * Saves the game-icons.net tags and author names (they are only on the website, not in the icon
- * files) to patches/asset-libraries/game-icons-meta.json, which the editor uses for the tag browser
- * and for credits. Run it once on a PC when the icons are updated:
- *   node scripts/fetch-game-icons-meta.mjs
+ * files) to src/lib/pm-game-icons-meta.json in a checkout of the GUI fork (Wolowolf/penguinmod.github.io,
+ * branch desktop), which the editor uses for the tag browser and for credits. Run it once on a PC when
+ * the icons are updated, then commit the file in the GUI fork:
+ *   node scripts/fetch-game-icons-meta.mjs --gui <GUI checkout>
  */
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
-const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const out = path.join(repo, 'patches', 'asset-libraries', 'game-icons-meta.json');
+const gui = process.argv[2] === '--gui' && process.argv[3];
+if (!gui || !fs.existsSync(path.join(gui, 'src', 'lib'))) throw new Error('usage: node scripts/fetch-game-icons-meta.mjs --gui <GUI checkout>');
+const out = path.join(gui, 'src', 'lib', 'pm-game-icons-meta.json');
 const SITE = 'https://game-icons.net';
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const get = async url => {
