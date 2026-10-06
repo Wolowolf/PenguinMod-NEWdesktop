@@ -26,6 +26,7 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - 18: `project_url` (double-clicked `.pmp`) is used once and removed from the address, so File → New and Reload no longer ask for it again (404 crash). (Session 24)
   - 19: no "This sound could be too large to upload to PenguinMod." warning in the sound editor (posting message). (Session 26)
   - 20: the sound editor's waveform is coloured like the sound library's (`pm-sound-wave.jsx`), at full screen resolution with a darker loudness core. (Session 27)
+  - 21: settings. Always on, no switch (VM + renderer): high quality pen, infinite clones, remove fencing, remove misc limits, dangerous optimizations. On by default, still switchable: disable off-screen rendering, warp timer. Interpolation removed everywhere (`vm.setInterpolation` is an empty function). Settings window: "FPS: [60]" box with a note, stage size = width / chain link (keep ratio) / height (`pm-settings-parts.jsx`, container replaced by `tw-settings-modal.jsx`). New projects 60 FPS and 1920×1080; opened projects Scratch's 30 FPS / 480×360 unless they stored settings; settings are stored in the project on every save. (Session 28)
 - **Not verified yet:**
   - The updater end to end inside a packaged install (including the offline-library download, Session 17).
   - The installer itself (Claude has only tested the local build).
@@ -35,9 +36,14 @@ Kept short on purpose (read at the start of every session). Full history of Sess
 - **Ideas offered, not applied** (offer when relevant):
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
   - Offline plan (Session 16): step 2 was replaced by Session 17 (new libraries). Still left: 3, remove the hidden `penguinmod.com/embed/editor` login iframe (`home-communication.jsx`, loads on every start) and project-ID loading (`projects.penguinmod.com`, `asset-cdn.penguinmod.com`), and block those servers; 4, own forks or snapshots so builds survive upstream deleting things.
-  - Turn sprite fencing off by default (and keep it off) for every project (user idea, Session 23; changes how all games behave, so its own tweak).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 28 — settings always on, FPS box, 1920×1080, no interpolation (2026-10-06)
+- Asked: always on and not switchable: custom FPS as "FPS: [60]" with a note, high quality pen, infinite clones, remove fencing, remove misc limits, dangerous optimizations; on by default: disable off-screen rendering, warp timer; remove interpolation and its code; stage size without presets or note, default 1920×1080, chain link to keep the ratio.
+- Changed: `patches/stage-layout.js` new section 21, new `patches/asset-libraries/pm-settings-parts.jsx` and `tw-settings-modal.jsx` (see section 21 above). Reading taken: "default 60 / 1920×1080" = for new projects; opened projects keep what they were made with. FPS box accepts 1–250; sizes 1–4096. Upstream blocks it replaces are checked by SHA-256. Note text grammar fixed ("Runs … times", "don’t use … in"). To reverse: `git revert` the merge.
+- Verified (local test app): new project and File → New (real clicks) = 60 FPS, 1920×1080, the 5 options on; window as described; ratio link on (1920→1280 gave 720), off by real click (remembered), relinked; FPS 30 → note "30 times"; 0 ignored, 999 → 250; switching the always-on options or HQ pen off from code has no effect; save → config comment stored, reopened with the same FPS/size; project without stored settings → 30 FPS, 480×360; runs ~60 steps/s, sprite at x 5000 not fenced, 5000 clones allowed. · Not verified: the CI build, the replace-project confirmation (native dialog, not clickable here), light theme, the Runtime extension blocks.
+- Result after build: not yet tested
 
 ### Session 27 — coloured waveform in the sound editor (2026-10-06)
 - Asked: the sound editor's waveform made with an algorithm like the sound libraries' coloured one, possibly more detailed (only one is shown, not a preview).
@@ -51,16 +57,6 @@ Kept short on purpose (read at the start of every session). Full history of Sess
 - Changed: `patches/stage-layout.js` new section 19: removes that warning and its now unused `SOUND_BYTE_LIMIT` import from `sound-editor.jsx`. To reverse: delete section 19 (or `git revert` the merge).
 - Verified (local test app): the built editor no longer contains the text; a 13.23 MB, 5-minute sound opened in the sound editor (real click) with no warning, size line and tools as before. · Not verified: the CI build.
 - Result after build: not yet tested
-
-### Session 25 — a dot instead of "..." on cut category names (2026-10-06)
-- Asked: in the category menu, instead of "..." at the end of a cut name, one dot under the first letter (the name is always capped there, so no extra padding needed).
-- Changed: `patches/stage-layout.js` section 11: the name is cut off without "..." (one line: `text-overflow: clip`; selected box: a two-line height limit instead of `line-clamp`, which always adds "..."). A box whose name does not fit gets `data-pm-cut` (checked when it is made, when it is (de)selected and once fonts are loaded) and shows a 2 px white dot with a black outline in its bottom padding, under the first letter. Names that fit get no dot. To reverse: `git revert` the merge.
-- Verified (local test app): default menu, no dots (all names fit); "Text to Speech" cut with the dot under the T; clicked (real click), it shows both lines and no dot; another box clicked, its dot came back; a name renamed on screen to be too long for two lines kept its dot when selected. · Not verified: the CI build, other extensions with long names (only on-screen checks above).
-- Result after build: not yet tested
-- Part 2 asked: the dot had a different outline from the letters.
-- Part 2 changed: section 11: the dot uses the same five blurred shadows as the letters (`box-shadow` with the label's `text-shadow` values) instead of one hard 0.7 px outline. To reverse: `git revert` the merge.
-- Part 2 verified (local test app): the computed shadow of the dot on "Text to Speech" matches; enlarged screenshot: soft outline like the letters. · Not verified: the CI build.
-- Part 2 result after build: not yet tested
 
 ## Template (keep entries this short)
 

@@ -75,6 +75,17 @@
 
 ## Change log (newest first)
 
+### Session 25 — a dot instead of "..." on cut category names (2026-10-06)
+- Asked: in the category menu, instead of "..." at the end of a cut name, one dot under the first letter (the name is always capped there, so no extra padding needed).
+- Changed: `patches/stage-layout.js` section 11: the name is cut off without "..." (one line: `text-overflow: clip`; selected box: a two-line height limit instead of `line-clamp`, which always adds "..."). A box whose name does not fit gets `data-pm-cut` (checked when it is made, when it is (de)selected and once fonts are loaded) and shows a 2 px white dot with a black outline in its bottom padding, under the first letter. Names that fit get no dot. To reverse: `git revert` the merge.
+- Verified (local test app): default menu, no dots (all names fit); "Text to Speech" cut with the dot under the T; clicked (real click), it shows both lines and no dot; another box clicked, its dot came back; a name renamed on screen to be too long for two lines kept its dot when selected. · Not verified: the CI build, other extensions with long names (only on-screen checks above).
+- Result after build: not yet tested
+- Part 2 asked: the dot had a different outline from the letters.
+- Part 2 changed: section 11: the dot uses the same five blurred shadows as the letters (`box-shadow` with the label's `text-shadow` values) instead of one hard 0.7 px outline. To reverse: `git revert` the merge.
+- Part 2 verified (local test app): the computed shadow of the dot on "Text to Speech" matches; enlarged screenshot: soft outline like the letters. · Not verified: the CI build.
+- Part 2 result after build: not yet tested
+
+
 ### Session 24 — projects with a monitor broke when double-clicked (2026-10-06)
 - Asked: the user's `Default project.pmp` was broken (sprite size / position changes not shown until switching sprites, invisible sprites, other problems); find the cause, then fix it.
 - Found: not our changes. Upstream VM bug: `runtime.addMonitorScript` runs a monitor that belongs to no sprite (timer, extension reporters, …) on the editing sprite. A project opened at start-up (double-clicked `.pmp`, i.e. `?project_url=`) has none yet, so a script with no sprite is started and `stepThreads` fails on it every frame: no redraw, sprite panel stale, scripts stopped, thousands of leftover runs. Loading from inside the app was fine (an old editing sprite exists). The project's Sprite1 also has an empty (0×0) costume, so it is invisible by design.
