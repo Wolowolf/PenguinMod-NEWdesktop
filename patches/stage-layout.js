@@ -31,6 +31,7 @@
  *      (section 16, files in patches/asset-libraries/).
  *  15. Projects with a monitor no longer break when opened at start-up (section 17, VM).
  *  16. File → New after opening a double-clicked .pmp no longer crashes (section 18).
+ *  17. No warning that a sound may be too large to upload to PenguinMod (section 19).
  *
  * Usage:  node patches/stage-layout.js <path-to-GUI-folder>
  *
@@ -1441,5 +1442,27 @@ replaceOnce(PF,
     '                    pageUrl.searchParams.delete("project_url");\n' +
     '                    history.replaceState(history.state, "", pageUrl.href);\n' +
     '                } catch (e) { /* keep the address as it is */ }\n');
+
+/* ------------------------------------------------------------------ */
+/* 19. No "too large to upload to PenguinMod" warning on sounds         */
+/* ------------------------------------------------------------------ */
+// The sound editor warned "This sound could be too large to upload to PenguinMod." for sounds over
+// PenguinMod's upload size limit. This build is for packaged projects, not for sharing, so the
+// warning (and its now unused import) is removed; sounds are unchanged. To reverse: delete this section.
+const SE = 'src/components/sound-editor/sound-editor.jsx';
+replaceOnce(SE,
+    "import {SOUND_BYTE_LIMIT} from '../../lib/audio/audio-util.js';\n",
+    '// ' + MARKER + ': no upload-size warning on sounds (section 19)\n');
+replaceOnce(SE,
+    '        {props.size >= SOUND_BYTE_LIMIT && (\n' +
+    '            <div className={classNames(styles.alert, styles.tooLarge)}>\n' +
+    '                <FormattedMessage\n' +
+    '                    defaultMessage="This sound could be too large to upload to PenguinMod."\n' +
+    '                    description="Message that appears when a sound exceeds the PenguinMod sound size limit."\n' +
+    '                    id="pm.tooLarge"\n' +
+    '                />\n' +
+    '            </div>\n' +
+    '        )}\n',
+    '');
 
 console.log('Stage layout patch applied successfully.');
