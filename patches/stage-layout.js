@@ -30,6 +30,7 @@
  *      generators offline; Iconify and Openverse online) and the automatic "credit" sprite
  *      (section 16, files in patches/asset-libraries/).
  *  15. Projects with a monitor no longer break when opened at start-up (section 17, VM).
+ *  16. File → New after opening a double-clicked .pmp no longer crashes (section 18).
  *
  * Usage:  node patches/stage-layout.js <path-to-GUI-folder>
  *
@@ -1385,5 +1386,23 @@ if (!read(RT).includes(MARKER)) {
         '        if (!optTarget) optTarget = this._editingTarget;\n' +
         '        if (!optTarget) return; // ' + MARKER + ': no sprite yet, try again next frame (section 17)\n');
 }
+
+/* ------------------------------------------------------------------ */
+/* 18. project_url is used once (double-clicked .pmp, then File → New)  */
+/* ------------------------------------------------------------------ */
+// The app opens a double-clicked .pmp as editor.html?project_url=<one-time address>. Upstream reads
+// project_url on EVERY project load, so File → New (and Reload) asked for that address again and
+// crashed with "Request returned status 404". Now the parameter is removed from the address as soon
+// as it is read: New makes an empty project, Reload opens the plain editor. To reverse: delete this section.
+const PF = 'src/lib/project-fetcher-hoc.jsx';
+replaceOnce(PF,
+    '            if (projectUrl) {\n',
+    '            if (projectUrl) {\n' +
+    '                // ' + MARKER + ': use project_url only once (section 18)\n' +
+    '                try {\n' +
+    '                    const pageUrl = new URL(location.href);\n' +
+    '                    pageUrl.searchParams.delete("project_url");\n' +
+    '                    history.replaceState(history.state, "", pageUrl.href);\n' +
+    '                } catch (e) { /* keep the address as it is */ }\n');
 
 console.log('Stage layout patch applied successfully.');
