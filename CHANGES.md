@@ -48,6 +48,10 @@ Kept short on purpose (read at the start of every session). Full history of Sess
 - Part 2 changed: section 21: the three headers are removed (Gameplay by its own find-and-replace, the other two from the new rows text); CSS hides the number boxes' spin buttons (typing and the arrow keys still work); `pm-settings-parts.jsx`: the FPS note is two messages with a line break between them. To reverse: `git revert` the merge.
 - Part 2 verified (local test app): only the window title is left as a header; FPS box clicked (real click, mouse on its right edge), no arrows; screenshot: warning on its own line under "Runs scripts 60 times per second." · Not verified: the CI build.
 - Part 2 result after build: not yet tested
+- Part 3 asked: without the arrows the boxes were too wide for their values.
+- Part 3 changed: section 21 CSS: the FPS and stage size boxes size to their value (`field-sizing: content`, min. 2.25rem, centred, less padding). To reverse: `git revert` the merge.
+- Part 3 verified (local test app): boxes 34 px ("60") and 37 px ("1920", "1080") instead of 80 px; screenshot looks right; typing "12345" widened the box, leaving it gave 250 and a narrower box. · Not verified: the CI build.
+- Part 3 result after build: not yet tested
 
 ### Session 27 — coloured waveform in the sound editor (2026-10-06)
 - Asked: the sound editor's waveform made with an algorithm like the sound libraries' coloured one, possibly more detailed (only one is shown, not a preview).
