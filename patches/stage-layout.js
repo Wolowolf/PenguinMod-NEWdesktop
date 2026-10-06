@@ -32,6 +32,8 @@
  *  15. Projects with a monitor no longer break when opened at start-up (section 17, VM).
  *  16. File → New after opening a double-clicked .pmp no longer crashes (section 18).
  *  17. No warning that a sound may be too large to upload to PenguinMod (section 19).
+ *  18. Settings: high quality pen, infinite clones, no fencing, no misc limits and dangerous
+ *      optimizations always on; FPS box (new projects 60 FPS, 1920×1080); no interpolation (section 21).
  *
  * Usage:  node patches/stage-layout.js <path-to-GUI-folder>
  *
@@ -1491,5 +1493,461 @@ replaceOnce('src/containers/sound-editor.jsx',
     '                sampleRate={this.props.sampleRate}\n',
     '                sampleRate={this.props.sampleRate}\n' +
     '                samples={this.props.samples} // ' + MARKER + ': for the coloured waveform (section 20)\n');
+
+/* ------------------------------------------------------------------ */
+/* 21. Settings: always-on options, FPS box, stage size, no interpolation */
+/* ------------------------------------------------------------------ */
+// a. Always on, not switchable (VM + renderer): high quality pen, infinite clones, remove fencing,
+//    remove miscellaneous limits, dangerous optimizations. Their switches are gone from the Settings
+//    window (the Runtime extension's blocks for them do nothing now).
+// b. On by default, still switchable: disable off-screen rendering, warp timer.
+// c. Interpolation removed: the setting, its engine (tw-interpolate.js, frame loop, compiler line),
+//    its URL parameter, the "Interpolation" label beside the green flag and its Runtime-extension
+//    option. vm.setInterpolation() stays as an empty function so extensions that call it don't fail.
+// d. Settings window: "FPS: [60]" with a note under it; stage size is width [chain link] height
+//    (link on = keep the ratio), no 4:3 / 16:9 / 1:1 presets, no large-size warning.
+// e. Defaults: a NEW project (app start, File → New) gets 60 FPS and a 1920×1080 stage. An opened
+//    project gets Scratch's 30 FPS and 480×360 unless it stored its own settings. Settings are now
+//    stored in the project (the Stage's "Configuration for https://penguinmod.com/" comment) on every
+//    save as well, compared with Scratch's defaults, so a project opens the same everywhere.
+// To reverse: delete this section, pm-settings-parts.jsx and tw-settings-modal.jsx (or `git revert` the merge).
+const sha256 = text => require('crypto').createHash('sha256').update(text).digest('hex');
+// Replace the text from `start` up to (not including) `stop`. The old text must be exactly upstream's
+// version (its SHA-256 is given), so an upstream change stops the patch instead of being lost.
+const replaceBlock = (rel, start, stop, hash, replacement) => {
+    const text = read(rel);
+    const s = text.indexOf(start);
+    if (s === -1 || text.indexOf(start, s + 1) !== -1) fail(rel + ': block start not found exactly once:\n' + start);
+    const e = text.indexOf(stop, s + start.length);
+    if (e === -1) fail(rel + ': could not find the end of the block that starts with:\n' + start);
+    if (sha256(text.slice(s, e)) !== hash) fail(rel + ': the block that starts with the text below changed upstream:\n' + start);
+    write(rel, text.slice(0, s) + replacement + text.slice(e));
+};
+
+// -- a + c: the VM (its own checkout, so it has its own "already done" check) --
+const VMJS = 'node_modules/scratch-vm/src/virtual-machine.js';
+if (!read(RT).includes('(section 21)')) {
+    replaceOnce(RT,
+        "const interpolate = require('./tw-interpolate');\n",
+        '// ' + MARKER + ': options that are always on (section 21)\n' +
+        'const PM_ALWAYS_ON = {maxClones: Infinity, miscLimits: false, fencing: false, dangerousOptimizations: true};\n');
+    replaceOnce(RT,
+        '        this._lastStepTime = Date.now();\n' +
+        '        this.interpolationEnabled = false;\n' +
+        '        this.interpolate = interpolate;\n' +
+        '\n' +
+        '        this._defaultStoredSettings = this._generateAllProjectOptions();\n',
+        '        this._defaultStoredSettings = this._generateAllProjectOptions();\n' +
+        '        // ' + MARKER + ' (section 21): saved settings are compared with Scratch\'s defaults, except that\n' +
+        '        // disabled off-screen rendering is the default here (so turning it off is what gets saved).\n' +
+        '        this._defaultStoredSettings.runtimeOptions = Object.assign({}, this._defaultStoredSettings.runtimeOptions, {disableOffscreenRendering: true});\n' +
+        '        this.runtimeOptions = Object.assign({}, this.runtimeOptions, {disableOffscreenRendering: true}, PM_ALWAYS_ON);\n' +
+        '        this.compilerOptions = Object.assign({}, this.compilerOptions, {warpTimer: true});\n');
+    replaceOnce(RT,
+        '    /**\n' +
+        '     * Event name for interpolation changing.\n' +
+        '     * @const {string}\n' +
+        '     */\n' +
+        '    static get INTERPOLATION_CHANGED () {\n' +
+        "        return 'INTERPOLATION_CHANGED';\n" +
+        '    }\n' +
+        '\n' +
+        '    /**\n' +
+        '     * Event called before interpolation data is set.\n' +
+        '     */\n' +
+        '    static get BEFORE_INTERPOLATE () {\n' +
+        "        return 'BEFORE_INTERPOLATE';\n" +
+        '    }\n' +
+        '\n' +
+        '    /**\n' +
+        '     * Event called after interpolation data is set.\n' +
+        '     */\n' +
+        '    static get AFTER_INTERPOLATE () {\n' +
+        "        return 'AFTER_INTERPOLATE';\n" +
+        '    }\n' +
+        '\n',
+        '');
+    replaceOnce(RT,
+        '    _renderInterpolatedPositions () {\n' +
+        '        const frameStarted = this._lastStepTime;\n' +
+        '        const now = Date.now();\n' +
+        '        const timeSinceStart = now - frameStarted;\n' +
+        '        const progressInFrame = Math.min(1, Math.max(0, timeSinceStart / this.currentStepTime));\n' +
+        '\n' +
+        '        interpolate.interpolate(this, progressInFrame);\n' +
+        '\n' +
+        '        if (this.renderer) {\n' +
+        '            this.renderer.draw();\n' +
+        '        }\n' +
+        '    }\n' +
+        '\n',
+        '');
+    replaceOnce(RT,
+        '        if (this.interpolationEnabled) {\n' +
+        '            interpolate.setupInitialState(this);\n' +
+        '        }\n' +
+        '\n',
+        '');
+    replaceOnce(RT,
+        '            // tw: do not draw if document is hidden or a rAF loop is running\n' +
+        '            // Checking for the animation frame loop is more reliable than using\n' +
+        '            // interpolationEnabled in some edge cases\n' +
+        '            if (!document.hidden && !this.frameLoop._interpolationAnimation) {\n',
+        '            // tw: do not draw if document is hidden\n' +
+        '            if (!document.hidden) {\n');
+    replaceOnce(RT,
+        '        if (this.interpolationEnabled) {\n' +
+        '            this._lastStepTime = Date.now();\n' +
+        '        }\n' +
+        '\n',
+        '');
+    replaceOnce(RT,
+        '    /**\n' +
+        '     * tw: Enable or disable interpolation.\n' +
+        '     * @param {boolean} interpolationEnabled True if interpolation should be enabled.\n' +
+        '     */\n' +
+        '    setInterpolation (interpolationEnabled) {\n' +
+        '        this.interpolationEnabled = interpolationEnabled;\n' +
+        '        this.frameLoop.setInterpolation(this.interpolationEnabled);\n' +
+        '        this.emit(Runtime.INTERPOLATION_CHANGED, interpolationEnabled);\n' +
+        '    }\n' +
+        '\n',
+        '');
+    replaceOnce(RT,
+        '        this.runtimeOptions = Object.assign({}, this.runtimeOptions, runtimeOptions);\n',
+        '        this.runtimeOptions = Object.assign({}, this.runtimeOptions, runtimeOptions, PM_ALWAYS_ON);\n');
+    replaceOnce(RT,
+        '        if (parsed.interpolation) {\n' +
+        '            this.setInterpolation(true);\n' +
+        '        }\n',
+        '');
+    replaceOnce(RT,
+        '            interpolation: this.interpolationEnabled,\n',
+        '');
+    // save the settings into the project on every save, only when they changed (see e.)
+    replaceOnce(RT,
+        '    storeProjectOptions () {\n',
+        '    storeProjectOptions (pmOnlyIfChanged) {\n');
+    replaceOnce(RT,
+        '        const existingComment = this.findProjectOptionsComment();\n' +
+        '        if (existingComment) {\n',
+        '        const existingComment = this.findProjectOptionsComment();\n' +
+        '        if (pmOnlyIfChanged && (existingComment ? existingComment.text === text : Object.keys(options).length === 0)) return;\n' +
+        '        if (existingComment) {\n');
+
+    replaceOnce(VMJS,
+        '        this.runtime.on(Runtime.INTERPOLATION_CHANGED, framerate => {\n' +
+        '            this.emit(Runtime.INTERPOLATION_CHANGED, framerate);\n' +
+        '        });\n' +
+        '        this.runtime.on(Runtime.BEFORE_INTERPOLATE, target => {\n' +
+        '            this.emit(Runtime.BEFORE_INTERPOLATE, target);\n' +
+        '        });\n' +
+        '        this.runtime.on(Runtime.AFTER_INTERPOLATE, target => {\n' +
+        '            this.emit(Runtime.AFTER_INTERPOLATE, target);\n' +
+        '        });\n',
+        '');
+    replaceOnce(VMJS,
+        '    setInterpolation (interpolationEnabled) {\n' +
+        '        this.runtime.setInterpolation(interpolationEnabled);\n' +
+        '    }\n',
+        '    // ' + MARKER + ': interpolation was removed (section 21); kept so extensions that call it don\'t fail\n' +
+        '    setInterpolation () {}\n');
+    replaceOnce(VMJS,
+        '        // Clear the current runtime\n' +
+        '        this.clear();\n',
+        '        // Clear the current runtime\n' +
+        '        this.clear();\n' +
+        '        // ' + MARKER + ' (section 21): a new project (pmNewProject, set by project-fetcher-hoc) starts at\n' +
+        '        // 60 FPS and 1920x1080; an opened one at Scratch\'s 30 FPS and 480x360 until its stored settings apply.\n' +
+        '        const pmNewProject = this.pmNewProject === true;\n' +
+        '        this.pmNewProject = false;\n' +
+        '        this.runtime.setFramerate(pmNewProject ? 60 : 30);\n' +
+        '        this.runtime.setStageSize(pmNewProject ? 1920 : 480, pmNewProject ? 1080 : 360);\n' +
+        '        this.runtime.setRuntimeOptions({disableOffscreenRendering: true, disableDirectionClamping: false});\n');
+    replaceOnce(VMJS,
+        '    toJSON (optTargetId, serializationOptions, beautiful) {\n' +
+        "        this.emit('SERIALIZE', optTargetId);\n",
+        '    toJSON (optTargetId, serializationOptions, beautiful) {\n' +
+        "        this.emit('SERIALIZE', optTargetId);\n" +
+        '        // ' + MARKER + ': store the settings in the project when it is saved (section 21)\n' +
+        '        if (!optTargetId && this.runtime.getTargetForStage()) this.runtime.storeProjectOptions(true);\n');
+
+    const FL = 'node_modules/scratch-vm/src/engine/tw-frame-loop.js';
+    replaceOnce(FL, '        this.setInterpolation(false);\n', '');
+    replaceOnce(FL, '        this.interpolationCallback = this.interpolationCallback.bind(this);\n', '');
+    replaceOnce(FL,
+        '        this._stepInterval = null;\n' +
+        '        this._interpolationAnimation = null;\n',
+        '        this._stepInterval = null; // ' + MARKER + ': no interpolation (section 21)\n');
+    replaceOnce(FL,
+        '    setInterpolation (interpolation) {\n' +
+        '        this.interpolation = interpolation;\n' +
+        '        this._restart();\n' +
+        '    }\n' +
+        '\n',
+        '');
+    replaceOnce(FL,
+        '    interpolationCallback () {\n' +
+        '        this.runtime._renderInterpolatedPositions();\n' +
+        '    }\n' +
+        '\n',
+        '');
+    replaceOnce(FL,
+        "            // Interpolation should never be enabled when framerate === 0 as that's just redundant\n" +
+        '            if (this.interpolation) {\n' +
+        '                this._interpolationAnimation = animationFrameWrapper(this.interpolationCallback);\n' +
+        '            }\n',
+        '');
+    replaceOnce(FL,
+        '        if (this._interpolationAnimation) {\n' +
+        '            this._interpolationAnimation.cancel();\n' +
+        '        }\n',
+        '');
+    replaceOnce(FL, '        this._interpolationAnimation = null;\n', '');
+
+    replaceOnce('node_modules/scratch-vm/src/compiler/jsgen.js',
+        '            if (this.descendedIntoModulo) {\n' +
+        '                this.source += `if (target.interpolationData) target.interpolationData = null;\\n`;\n' +
+        '            }\n',
+        '');
+    replaceOnce('node_modules/scratch-vm/src/sprites/rendered-target.js',
+        '        this.interpolationData = null;\n' +
+        '\n',
+        '');
+    const JGR = 'node_modules/scratch-vm/src/extensions/jg_runtime/index.js';
+    replaceOnce(JGR, '                        "interpolation",\n', '');
+    replaceOnce(JGR, '        case "interpolation": return vm.setInterpolation(enabled);\n', '');
+    replaceOnce(JGR, '        case "interpolation": return this.runtime.interpolationEnabled;\n', '');
+    const TWI = 'node_modules/scratch-vm/src/engine/tw-interpolate.js';
+    if (!fs.existsSync(file(TWI))) fail(TWI + ' not found');
+    fs.unlinkSync(file(TWI));
+}
+const RW = 'node_modules/scratch-render/src/RenderWebGL.js';
+if (!read(RW).includes('(section 21)')) {
+    replaceOnce(RW,
+        '    setUseHighQualityRender (enabled) {\n',
+        '    setUseHighQualityRender (enabled) {\n' +
+        '        enabled = true; // ' + MARKER + ': high quality pen is always on (section 21)\n');
+}
+
+// -- e: a new project is marked for the VM (replaces upstream's reset to 30 FPS and Scratch's limits) --
+replaceOnce(PF,
+    '                this.props.vm.setFramerate(30);\n' +
+    '                this.props.vm.setRuntimeOptions({\n' +
+    '                    disableDirectionClamping: false,\n' +
+    '                    dangerousOptimizations: false,\n' +
+    '                    disableOffscreenRendering: false,\n' +
+    '                    fencing: true,\n' +
+    '                    maxClones: 300,\n' +
+    '                    miscLimits: true,\n' +
+    '                });\n',
+    '                this.props.vm.pmNewProject = true; // ' + MARKER + ': 60 FPS, 1920x1080 (section 21)\n');
+replaceOnce('src/reducers/custom-stage-size.js',
+    'const defaultStageSize = {\n' +
+    '    width: 480,\n' +
+    '    height: 360\n' +
+    '};\n',
+    'const defaultStageSize = { // ' + MARKER + ': new projects are 1920x1080 (section 21)\n' +
+    '    width: 1920,\n' +
+    '    height: 1080\n' +
+    '};\n');
+
+// -- the editor's copy of the settings (reducers/tw.js), and interpolation removed from the GUI --
+const TWR = 'src/reducers/tw.js';
+replaceOnce(TWR, "const SET_INTERPOLATION = 'tw/SET_INTERPOLATION';\n", '');
+replaceOnce(TWR,
+    '    framerate: 30,\n' +
+    '    interpolation: false,\n',
+    '    framerate: 60, // ' + MARKER + ': defaults of section 21\n');
+replaceOnce(TWR,
+    '        enabled: true,\n' +
+    '        warpTimer: false\n',
+    '        enabled: true,\n' +
+    '        warpTimer: true\n');
+replaceOnce(TWR,
+    '        maxClones: 300,\n' +
+    '        miscLimits: true,\n' +
+    '        dangerousOptimizations: false,\n' +
+    '        disableOffscreenRendering: false,\n' +
+    '        disableDirectionClamping: false,\n' +
+    '        fencing: true\n',
+    '        maxClones: Infinity,\n' +
+    '        miscLimits: false,\n' +
+    '        dangerousOptimizations: true,\n' +
+    '        disableOffscreenRendering: true,\n' +
+    '        disableDirectionClamping: false,\n' +
+    '        fencing: false\n');
+replaceOnce(TWR,
+    '    case SET_INTERPOLATION:\n' +
+    '        return Object.assign({}, state, {\n' +
+    '            interpolation: action.interpolation\n' +
+    '        });\n',
+    '');
+replaceOnce(TWR,
+    'const setInterpolationState = function (interpolation) {\n' +
+    '    return {\n' +
+    '        type: SET_INTERPOLATION,\n' +
+    '        interpolation: interpolation\n' +
+    '    };\n' +
+    '};\n' +
+    '\n',
+    '');
+replaceOnce(TWR, '    setInterpolationState,\n', '');
+
+const VLH = 'src/lib/vm-listener-hoc.jsx';
+replaceOnce(VLH, '    setInterpolationState,\n', '');
+replaceOnce(VLH, "            this.props.vm.on('INTERPOLATION_CHANGED', this.props.onInterpolationChanged);\n", '');
+replaceOnce(VLH, '                onInterpolationChanged,\n', '');
+replaceOnce(VLH, '        onInterpolationChanged: PropTypes.func.isRequired,\n', '');
+replaceOnce(VLH, '        onInterpolationChanged: interpolation => dispatch(setInterpolationState(interpolation)),\n', '');
+
+const SMH = 'src/lib/tw-state-manager-hoc.jsx';
+replaceOnce(SMH,
+    "            if (urlParams.has('interpolate')) {\n" +
+    '                this.props.vm.setInterpolation(true);\n' +
+    '            }\n' +
+    '\n',
+    '');
+replaceOnce(SMH, '                this.props.interpolation !== prevProps.interpolation ||\n', '');
+replaceOnce(SMH,
+    '                if (this.props.interpolation) {\n' +
+    "                    searchParams.set('interpolate', '');\n" +
+    '                } else {\n' +
+    "                    searchParams.delete('interpolate');\n" +
+    '                }\n' +
+    '\n',
+    '');
+replaceOnce(SMH,
+    '                interpolation,\n' +
+    '                turbo,\n',
+    '                turbo,\n');
+replaceOnce(SMH, '        interpolation: PropTypes.bool,\n', '');
+replaceOnce(SMH, '        interpolation: state.scratchGui.tw.interpolation,\n', '');
+
+replaceOnce('src/containers/controls.jsx', '    interpolation: PropTypes.bool.isRequired,\n', '');
+replaceOnce('src/containers/controls.jsx', '    interpolation: state.scratchGui.tw.interpolation,\n', '');
+const CC = 'src/components/controls/controls.jsx';
+replaceOnce(CC,
+    '        interpolation,\n' +
+    '        isSmall,\n',
+    '        isSmall,\n');
+replaceOnce(CC, '                    interpolation={interpolation}\n', '');
+replaceOnce(CC, '    interpolation: PropTypes.bool,\n', '');
+const FI = 'src/components/tw-framerate-indicator/framerate-indicator.jsx';
+replaceOnce(FI, 'const FramerateIndicator = ({framerate, interpolation}) => (\n', 'const FramerateIndicator = ({framerate}) => (\n');
+replaceOnce(FI,
+    '        {interpolation && (\n' +
+    '            <div className={styles.framerateContainer}>\n' +
+    '                <div className={styles.framerateLabel}>\n' +
+    '                    <FormattedMessage\n' +
+    '                        defaultMessage="Interpolation"\n' +
+    '                        description="Label to indicate interpolation is enabled"\n' +
+    '                        id="tw.interpolationEnabled"\n' +
+    '                    />\n' +
+    '                </div>\n' +
+    '            </div>\n' +
+    '        )}\n',
+    '');
+replaceOnce(FI,
+    '    framerate: PropTypes.number,\n' +
+    '    interpolation: PropTypes.bool\n',
+    '    framerate: PropTypes.number\n');
+
+// -- d: the Settings window --
+const TSM = 'src/containers/tw-settings-modal.jsx';
+if (sha256(read(TSM)) !== 'c17952f41b5309d244b8466a794260a5514f007a9cb8379eaf987bda51cff30e') {
+    fail(TSM + ' changed upstream: compare it with patches/asset-libraries/tw-settings-modal.jsx');
+}
+copyIn('tw-settings-modal.jsx', TSM);
+copyIn('pm-settings-parts.jsx', 'src/components/tw-settings-modal/pm-settings-parts.jsx');
+const SMJ = 'src/components/tw-settings-modal/settings-modal.jsx';
+replaceOnce(SMJ,
+    "import styles from './settings-modal.css';\n",
+    "import styles from './settings-modal.css';\n" +
+    "import {FramerateSetting, StageSizeSetting} from './pm-settings-parts.jsx'; // " + MARKER + ' (section 21)\n');
+// HighQualityPen, CustomFPS, Interpolation, InfiniteClones, RemoveFencing, RemoveMiscLimits, EnableDangerousOptimizations
+replaceBlock(SMJ, 'const HighQualityPen = props => (', 'const DisableOffscreenRendering = props => (',
+    '6e896c00c7d3de5d6ec03792293c8d9e5e18d345207dc77b0e2f3db5bb6ba9cd', '');
+// CustomStageSize (presets, inputs, large-size warning)
+replaceBlock(SMJ, 'const CustomStageSize = ({', 'const StoreProjectOptions = ',
+    '74f9d0e9004570a03e899858f00e28ffe9796ad6840764da66f152774ca19806', '');
+// the rows of the window, from the FPS row to the end (Remove Limits header, Unsupported section)
+replaceBlock(SMJ, '            <CustomFPS\n', '        </Box>\n    </Modal>\n',
+    '936d02e7e76fd74405e0a34a281121b655b136589fc9de6eb024a2d48af24a12',
+    '            <FramerateSetting\n' +
+    '                framerate={props.framerate}\n' +
+    '                onChange={props.onFramerateChange}\n' +
+    '            />\n' +
+    '            <WarpTimer\n' +
+    '                value={props.warpTimer}\n' +
+    '                onChange={props.onWarpTimerChange}\n' +
+    '            />\n' +
+    '            <Header>\n' +
+    '                <FormattedMessage\n' +
+    '                    defaultMessage="Optimizations"\n' +
+    '                    description="Settings modal section"\n' +
+    '                    id="pm.settingsModal.optimizations"\n' +
+    '                />\n' +
+    '            </Header>\n' +
+    '            <DisableOffscreenRendering\n' +
+    '                value={props.disableOffscreenRendering}\n' +
+    '                onChange={props.onDisableOffscreenRenderingChange}\n' +
+    '            />\n' +
+    '            <DisableDirectionClamping\n' +
+    '                value={props.disableDirectionClamping}\n' +
+    '                onChange={props.onDisableDirectionClamping}\n' +
+    '            />\n' +
+    '            <Header>\n' +
+    '                <FormattedMessage\n' +
+    '                    defaultMessage="Screen Resolution"\n' +
+    '                    description="Settings modal section"\n' +
+    '                    id="pm.settingsModal.screenResolution"\n' +
+    '                />\n' +
+    '            </Header>\n' +
+    '            {!props.isEmbedded && (\n' +
+    '                <StageSizeSetting\n' +
+    '                    width={props.stageWidth}\n' +
+    '                    height={props.stageHeight}\n' +
+    '                    onChange={props.onStageSizeChange}\n' +
+    '                />\n' +
+    '            )}\n');
+replaceBlock(SMJ, '    onCustomizeFramerate: PropTypes.func,\n', '    disableOffscreenRendering: PropTypes.bool,\n',
+    '1f0253678092a2fbf1608ccf041aba1b7ad0a9bf8cc7f1889aa058f55a78a1ea',
+    '    warpTimer: PropTypes.bool,\n' +
+    '    onWarpTimerChange: PropTypes.func,\n' +
+    '    disableCompiler: PropTypes.bool,\n' +
+    '    onDisableCompilerChange: PropTypes.func,\n' +
+    '    stageWidth: PropTypes.number,\n' +
+    '    stageHeight: PropTypes.number,\n' +
+    '    onStageSizeChange: PropTypes.func,\n');
+fs.appendFileSync(file('src/components/tw-settings-modal/settings-modal.css'), `
+/* ${MARKER}: the note under FPS and the stage size chain link (section 21) */
+.pm-setting-note {
+    margin: 0 0 0.25rem;
+    font-size: 0.8rem;
+    opacity: 0.85;
+}
+.pm-ratio-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    opacity: 0.45;
+    cursor: pointer;
+}
+.pm-ratio-link:hover {
+    opacity: 0.8;
+}
+.pm-ratio-link-on,
+.pm-ratio-link-on:hover {
+    color: $motion-primary;
+    opacity: 1;
+}
+`);
 
 console.log('Stage layout patch applied successfully.');
