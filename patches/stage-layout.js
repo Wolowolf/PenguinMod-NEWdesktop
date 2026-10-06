@@ -883,7 +883,9 @@ write(BC, read(BC).replace(/\s*$/, '\n') + `
     width: 2px;
     height: 2px;
     background: #ffffff;
-    box-shadow: 0 0 0 0.7px #000000;
+    /* the same outline as the letters (see .scratchCategoryMenuItemLabel) */
+    box-shadow: -0.7px 0 0.6px #000000, 0.7px 0 0.6px #000000, 0 -0.7px 0.6px #000000,
+        0 0.7px 0.6px #000000, 0 0 1px #000000;
 }
 `);
 
