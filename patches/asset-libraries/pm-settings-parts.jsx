@@ -31,11 +31,16 @@ const FramerateSetting = ({framerate, onChange}) => (
         </div>
         <div className={styles.pmSettingNote}>
             <FormattedMessage
-                // eslint-disable-next-line max-len
-                defaultMessage="Runs scripts {framerate, plural, one {# time} other {# times}} per second. ⚠ It can break your project if you don’t use DELTA TIMING in your game calculations. ⚠"
+                defaultMessage="Runs scripts {framerate, plural, one {# time} other {# times}} per second."
                 description="Note under the frames per second setting"
                 id="pmdesktop.settingsModal.fpsNote"
                 values={{framerate}}
+            />
+            <br />
+            <FormattedMessage
+                defaultMessage="⚠ It can break your project if you don’t use DELTA TIMING in your game calculations. ⚠"
+                description="Warning under the frames per second setting"
+                id="pmdesktop.settingsModal.fpsWarning"
             />
         </div>
     </div>
