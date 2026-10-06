@@ -22,6 +22,7 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - 14: the "See Project Page" and "Upload" buttons are removed from the menu bar (sharing-site buttons; this build is for packaged projects). (Session 14)
   - 15: no Change Username / cloud variables, Remix, About, Discord links, Help Manual button or analytics script; no cloud server address. (Session 15)
   - 16: the original sprite, costume, backdrop and sound libraries are removed. The library windows are `patches/asset-libraries/pm-asset-browser.jsx`; sources in `pm-asset-sources.js` (only CC0 / public domain / CC BY / MIT-style licences; never NC, ND, SA, GPL; no brand-logo icon sets). "Surprise" adds a random Kenney item. Every added asset carries a `pmCredit` record, saved in the project by a patch to the VM's `sb3.js`. `pm-credits.js` keeps the "credit" sprite. (Session 17) Clicking a game-icons.net or Iconify icon opens the icon studio (`pm-icon-studio.jsx`, `pm-icon-svg.js`); game-icons tags and author names come from `game-icons-meta.json`. (Session 18) Each library opens on "All", which searches every unlocked source at once (Session 21). Sound waveforms are coloured like Freesound's and made in a background worker, only for tiles in view (Session 21). Openverse / Pixabay show a limit counter; sound tiles play on click and add with "+" (Session 22). Credit lines are as short as the licences allow, licence links listed once at the bottom; the hidden credit sprite holds them in its variable `credit` with a click-to-play credits screen script (also in the backpack), and "Package project" warns when nothing shows that sprite (Session 23).
+  - 17: the VM skips a monitor update while no sprite is selected yet (upstream bug: a project with a monitor, opened by double-click, failed every frame). (Session 24)
 - **Not verified yet:**
   - The updater end to end inside a packaged install (including the offline-library download, Session 17).
   - The installer itself (Claude has only tested the local build).
@@ -34,6 +35,13 @@ Kept short on purpose (read at the start of every session). Full history of Sess
   - Turn sprite fencing off by default (and keep it off) for every project (user idea, Session 23; changes how all games behave, so its own tweak).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 24 — projects with a monitor broke when double-clicked (2026-10-06)
+- Asked: the user's `Default project.pmp` was broken (sprite size / position changes not shown until switching sprites, invisible sprites, other problems); find the cause, then fix it.
+- Found: not our changes. Upstream VM bug: `runtime.addMonitorScript` runs a monitor that belongs to no sprite (timer, extension reporters, …) on the editing sprite. A project opened at start-up (double-clicked `.pmp`, i.e. `?project_url=`) has none yet, so a script with no sprite is started and `stepThreads` fails on it every frame: no redraw, sprite panel stale, scripts stopped, thousands of leftover runs. Loading from inside the app was fine (an old editing sprite exists). The project's Sprite1 also has an empty (0×0) costume, so it is invisible by design.
+- Changed: `patches/stage-layout.js` new section 17: `addMonitorScript` returns when there is no target (the monitor updates next frame). To reverse: delete section 17 (or `git revert` the merge).
+- Verified: same bug in the installed app (build `build-37389523012-…`) opened by file argument and by `?project_url=` (served from a local server); a copy with a timer monitor broke too, a copy without a monitor didn't. New local build, same `?project_url=` test: no engine error, no leftover runs, size / x boxes update at once, for the project and the timer copy; the timer monitor keeps counting. · Not verified: a real double-click with the new build (only the installed app takes a file argument), the user's other problems, the CI build.
+- Result after build: not yet tested
 
 ### Session 23 — shortest legal credit lines (2026-10-05)
 - Asked: make the credit sprite's lines as short as legally possible (example: `"Drink's Afterhouse" - Felixjd - CC BY 3.0 - modified` + source link + licence link), check it's legally sound, shorten more if possible.
@@ -76,44 +84,6 @@ Kept short on purpose (read at the start of every session). Full history of Sess
 - Follow-up changed: `pm-waveforms.js` takes 24 short samples (16 KB, ~1.4 s each, ~0.4 MB per song) spread over the song's 96 kbps MP3 and colours Openverse's shape with their spectral centroids (blended in between); `app/electron-main.js` `pm-fetch-bytes` / `preload.js` `fetchBytes(url, range)` can fetch one part of a file (at most 256 KB, must answer 206; Jamendo doesn't let pages read its files and ignores multi-part requests). Grey shape as before if no sample can be read.
 - Follow-up verified (local test app): 3 real Jamendo songs got their own colour patterns (copies identical), first 10 tiles in 1.5 s. Not verified: the CI build.
 - Follow-up result after build: not yet tested
-
-### Session 21 — "All" search in every library; Freesound-style waveforms (2026-10-05)
-- Asked: a general search per library (sprite/costume, backdrop, sound) as a new first sidebar entry "All", selected when a library opens, searching every default source plus the unlocked key sources at once, mixed round-robin; source in the tooltip; locked sources left out with a hint; respect rate limits; one failing source doesn't stop the others.
-- Changed (`patches/asset-libraries/`):
-  - `pm-asset-sources.js`: new `mixedSearch()`: one feed per library, next batch mixed round-robin; a library's next page loads only when its items run out (at most 3 pages per batch, 20 s timeout); libraries that run out or fail leave their share to the others; per-library counts and failures. Pixabay / Europeana results now report their total.
-  - `pm-asset-browser.jsx`: "All" first in the sidebar ("N libraries"):
-    - sprites/costumes: Kenney, Game Icons, Iconify (+ Pixabay, Europeana, Openverse with a key);
-    - backdrops: Kenney (+ the three keyed ones); sounds: Kenney (+ Openverse), not the generators.
-    - Each library's first choices (all packs/tags, Openverse illustrations / sound effects, Pixabay vectors). Batches of 120; Iconify drawings loaded per batch with `loadIconSvgs`.
-    - Tooltip "From <library>"; count tooltip per library; note naming the searched and the lockable libraries; "Left out for now: …" when one fails.
-    - Searches on Enter when an online library is included, as you type otherwise.
-    - The studio's ‹ › arrows only step through icons; a studio tag opens the icon's own library (Game Icons tag / Iconify category).
-  - To reverse: `git revert` the merge.
-- Verified (local test app, Pixabay / Europeana / Openverse answers simulated with made-up keys; Europeana data from its demo key):
-  - Sprites with all 6 libraries: 20 from each, in turn; scrolling twice gave 360 (60 each), one request per online library per batch.
-  - "fruit": Kenney's 161 matches, names first. Pixabay HTTP 500 + Openverse 429: both left out with a note, one request each; the rest shared fairly.
-  - Backdrops: 30 from each of 4. Sounds: Kenney 60 + Openverse 60; without Openverse: "1 library", search as you type.
-  - Added from All: Kenney sprite, Game Icons "+" (studio style, "modified" credit), Openverse image.
-  - Studio from All; tag "electronic" → Game Icons tab (73); Iconify category "File" → Iconify tab.
-  - Not verified: real keys, the CI build. A Europeana item from muis.ee hangs while adding (also via the app's fallback; curl gets it in 0.6 s): older issue, not caused by this change.
-- Result after build: not yet tested (build `build-37245917125-20261005-000240` succeeded)
-- Part 2 asked: sound waveforms as accurate as possible, colour-coded like Freesound, and no more stuttering.
-- Part 2 changed:
-  - New `patches/asset-libraries/pm-waveforms.js` (copied in by section 16):
-    - Kenney and short (≤ 60 s) Openverse sounds: decoded only when the tile comes into view (3 at a time). A background worker works out one column per screen pixel (lowest / highest sample) and colours it by spectral centroid on Freesound's palette (FFT 2048, 100 Hz–22 kHz log scale), then paints a PNG.
-    - Openverse Freesound sounds: Freesound's own picture (`displays/…_wave_M.png`); if it fails: decoded, or Openverse's waveform.
-    - Openverse songs (Jamendo, > 60 s): Openverse's waveform endpoint (loudness only, grey; tooltip says so), at most 30 a minute.
-    - Pictures are kept on the item for the session. Without a worker the same code runs on the page.
-  - `pm-asset-browser.jsx`: `SoundWave` tile part, updated on its own (no more grid re-render every 150 ms); its size comes from the IntersectionObserver (measuring each tile made the page lay out 120 times in a row).
-  - `pm-asset-sources.js`: `loadWaveform` removed; Freesound picture / Openverse waveform links on Openverse sounds; `openverseFetch`, `fetchFile` exported; "All" loads at most 3 pages per library per batch in total (it was up to 6 when the others ran out).
-  - To reverse: `git revert` the merge.
-- Part 2 verified (local test app; CPU slowed 4× via DevTools to imitate a slower PC; 5 s scripted scroll from a fresh start):
-  - Before: 10 long tasks (938 ms), worst frame 240 ms. After: 0 long tasks, worst frame 80 ms (27–40 ms on two other searches). A CPU profile shows no waveform work left on the page.
-  - Only visible tiles (+150 px) are decoded; colours look right (NES square waves yellow, low engines blue, sweeps orange); app-made waveforms of Freesound previews look close to Freesound's own pictures.
-  - Simulated Openverse answers: Freesound pictures load; with them blocked on purpose the short ones were decoded, the long one got Openverse's waveform; a real Jamendo waveform (fetched earlier) drawn in grey.
-  - Play / stop and adding a sound still work; "All" re-checked (sprites 20 × 6; sounds: 3 Openverse requests per batch).
-  - Not verified: real Openverse waveform limits for keyed users, the CI build.
-- Part 2 result after build: not yet tested
 
 ## Template (keep entries this short)
 

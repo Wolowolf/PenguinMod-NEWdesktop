@@ -75,6 +75,44 @@
 
 ## Change log (newest first)
 
+### Session 21 — "All" search in every library; Freesound-style waveforms (2026-10-05)
+- Asked: a general search per library (sprite/costume, backdrop, sound) as a new first sidebar entry "All", selected when a library opens, searching every default source plus the unlocked key sources at once, mixed round-robin; source in the tooltip; locked sources left out with a hint; respect rate limits; one failing source doesn't stop the others.
+- Changed (`patches/asset-libraries/`):
+  - `pm-asset-sources.js`: new `mixedSearch()`: one feed per library, next batch mixed round-robin; a library's next page loads only when its items run out (at most 3 pages per batch, 20 s timeout); libraries that run out or fail leave their share to the others; per-library counts and failures. Pixabay / Europeana results now report their total.
+  - `pm-asset-browser.jsx`: "All" first in the sidebar ("N libraries"):
+    - sprites/costumes: Kenney, Game Icons, Iconify (+ Pixabay, Europeana, Openverse with a key);
+    - backdrops: Kenney (+ the three keyed ones); sounds: Kenney (+ Openverse), not the generators.
+    - Each library's first choices (all packs/tags, Openverse illustrations / sound effects, Pixabay vectors). Batches of 120; Iconify drawings loaded per batch with `loadIconSvgs`.
+    - Tooltip "From <library>"; count tooltip per library; note naming the searched and the lockable libraries; "Left out for now: …" when one fails.
+    - Searches on Enter when an online library is included, as you type otherwise.
+    - The studio's ‹ › arrows only step through icons; a studio tag opens the icon's own library (Game Icons tag / Iconify category).
+  - To reverse: `git revert` the merge.
+- Verified (local test app, Pixabay / Europeana / Openverse answers simulated with made-up keys; Europeana data from its demo key):
+  - Sprites with all 6 libraries: 20 from each, in turn; scrolling twice gave 360 (60 each), one request per online library per batch.
+  - "fruit": Kenney's 161 matches, names first. Pixabay HTTP 500 + Openverse 429: both left out with a note, one request each; the rest shared fairly.
+  - Backdrops: 30 from each of 4. Sounds: Kenney 60 + Openverse 60; without Openverse: "1 library", search as you type.
+  - Added from All: Kenney sprite, Game Icons "+" (studio style, "modified" credit), Openverse image.
+  - Studio from All; tag "electronic" → Game Icons tab (73); Iconify category "File" → Iconify tab.
+  - Not verified: real keys, the CI build. A Europeana item from muis.ee hangs while adding (also via the app's fallback; curl gets it in 0.6 s): older issue, not caused by this change.
+- Result after build: not yet tested (build `build-37245917125-20261005-000240` succeeded)
+- Part 2 asked: sound waveforms as accurate as possible, colour-coded like Freesound, and no more stuttering.
+- Part 2 changed:
+  - New `patches/asset-libraries/pm-waveforms.js` (copied in by section 16):
+    - Kenney and short (≤ 60 s) Openverse sounds: decoded only when the tile comes into view (3 at a time). A background worker works out one column per screen pixel (lowest / highest sample) and colours it by spectral centroid on Freesound's palette (FFT 2048, 100 Hz–22 kHz log scale), then paints a PNG.
+    - Openverse Freesound sounds: Freesound's own picture (`displays/…_wave_M.png`); if it fails: decoded, or Openverse's waveform.
+    - Openverse songs (Jamendo, > 60 s): Openverse's waveform endpoint (loudness only, grey; tooltip says so), at most 30 a minute.
+    - Pictures are kept on the item for the session. Without a worker the same code runs on the page.
+  - `pm-asset-browser.jsx`: `SoundWave` tile part, updated on its own (no more grid re-render every 150 ms); its size comes from the IntersectionObserver (measuring each tile made the page lay out 120 times in a row).
+  - `pm-asset-sources.js`: `loadWaveform` removed; Freesound picture / Openverse waveform links on Openverse sounds; `openverseFetch`, `fetchFile` exported; "All" loads at most 3 pages per library per batch in total (it was up to 6 when the others ran out).
+  - To reverse: `git revert` the merge.
+- Part 2 verified (local test app; CPU slowed 4× via DevTools to imitate a slower PC; 5 s scripted scroll from a fresh start):
+  - Before: 10 long tasks (938 ms), worst frame 240 ms. After: 0 long tasks, worst frame 80 ms (27–40 ms on two other searches). A CPU profile shows no waveform work left on the page.
+  - Only visible tiles (+150 px) are decoded; colours look right (NES square waves yellow, low engines blue, sweeps orange); app-made waveforms of Freesound previews look close to Freesound's own pictures.
+  - Simulated Openverse answers: Freesound pictures load; with them blocked on purpose the short ones were decoded, the long one got Openverse's waveform; a real Jamendo waveform (fetched earlier) drawn in grey.
+  - Play / stop and adding a sound still work; "All" re-checked (sprites 20 × 6; sounds: 3 Openverse requests per batch).
+  - Not verified: real Openverse waveform limits for keyed users, the CI build.
+- Part 2 result after build: not yet tested
+
 ### Session 20 — libraries unlocked with the user's own API key: Pixabay, Europeana, Openverse (2026-10-05)
 - Asked: find more libraries that fit the rules but need an API key (preferably without request limits). They are locked by default and show an easy tutorial with links to get and enter your own key. Openverse goes behind the same lock if it's still relevant, and its preview bug gets looked at.
 - Research (limits with a free key):
