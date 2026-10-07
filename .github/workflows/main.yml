@@ -60,6 +60,25 @@ jobs:
         with:
           node-version: 26.10.0
 
+      # --- npm snapshot: every package the build installs (release made by npm-snapshot.yml) ---
+      # npm-snapshot.json says which release. It becomes Bun's cache, so the installs below take
+      # these packages from it instead of the npm registry; anything not in it still comes from npm
+      # (the check after the installs warns). Linux-only (made on this runner image).
+      - name: Restore npm snapshot
+        run: |
+          TAG=$(jq -r .tag npm-snapshot.json)
+          ASSET=$(jq -r .asset npm-snapshot.json)
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/npm-snapshot.tar.gz" "https://github.com/${GITHUB_REPOSITORY}/releases/download/$TAG/$ASSET"
+          echo "$(jq -r .sha256 npm-snapshot.json)  $RUNNER_TEMP/npm-snapshot.tar.gz" | sha256sum -c -
+          tar -C "$RUNNER_TEMP" -xzf "$RUNNER_TEMP/npm-snapshot.tar.gz"
+          rm "$RUNNER_TEMP/npm-snapshot.tar.gz"
+          if [ "$(jq -r .bun npm-snapshot.json)" != "$(bun --version)" ]; then
+            echo "::warning::npm snapshot $TAG was made with Bun $(jq -r .bun npm-snapshot.json), this build uses $(bun --version): make a new snapshot"
+          fi
+          echo "BUN_INSTALL_CACHE_DIR=$RUNNER_TEMP/bun-cache" >> "$GITHUB_ENV"
+          echo "SNAPSHOT_ENTRIES=$(ls "$RUNNER_TEMP/bun-cache" | wc -l)" >> "$GITHUB_ENV"
+          echo "Restored $TAG: $(ls "$RUNNER_TEMP/bun-cache" | wc -l) cache entries"
+
       # --- Clone Standalone Repos and Cache ---
       # Every upstream project is downloaded at the exact commit listed in upstream.json
       # (scripts/clone-pinned.js), so upstream changes only reach the app when that file is changed.
@@ -181,6 +200,17 @@ jobs:
           cp package.json bun.lock "$RUNNER_TEMP/electron-builder/"
           cd "$RUNNER_TEMP/electron-builder"
           ELECTRON_SKIP_BINARY_DOWNLOAD=1 bun i --frozen-lockfile
+
+      # A package that was not in the npm snapshot was downloaded into Bun's cache, which then has
+      # more entries than the snapshot had: time for a new snapshot (npm-snapshot.yml).
+      - name: Check the npm snapshot covered every package
+        run: |
+          NOW=$(ls "$BUN_INSTALL_CACHE_DIR" | wc -l)
+          if [ "$NOW" -gt "$SNAPSHOT_ENTRIES" ]; then
+            echo "::warning::$((NOW - SNAPSHOT_ENTRIES)) package(s) came from the internet, not the npm snapshot: make a new snapshot"
+          else
+            echo "All packages came from the npm snapshot ($NOW cache entries)."
+          fi
 
       # --- Build Electron App ---
       # Tells the app which release it was built as, so "Check for Updates" can tell if there is a newer one
