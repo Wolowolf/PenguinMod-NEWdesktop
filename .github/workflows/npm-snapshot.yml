@@ -1,0 +1,120 @@
+name: npm snapshot
+
+# Manual only (Actions tab → "npm snapshot" → Run workflow). Installs every npm package the build
+# installs (the script in the first step: exactly the committed bun.lock files) into an empty Bun
+# cache, checks that this cache alone is enough (the same installs again with Bun's internet switched
+# off), and publishes it as release npm-snapshot-<number> (not a build: the updater ignores it).
+# main.yml restores the snapshot named in npm-snapshot.json before installing, so builds don't need
+# the npm registry for these packages. Make a new one after dependencies change, and after a Bun
+# update (the cache format belongs to the Bun version).
+on:
+  workflow_dispatch:
+    inputs:
+      number:
+        description: 'Snapshot number (release npm-snapshot-<number>)'
+        required: true
+
+env:
+  NODE_ENV: 'production'
+  CHROMEDRIVER_SKIP_DOWNLOAD: 'true'
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.2
+
+      - name: Install Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 26.10.0
+
+      - name: Write the install script
+        run: |
+          cat > "$RUNNER_TEMP/install-all-packages.sh" <<'SCRIPT'
+          #!/bin/bash
+          # Installs every npm package the CI build installs (main.yml), exactly as in the committed bun.lock
+          # files, into Bun's cache, without building anything:  bash install-all-packages.sh <empty work folder>
+          # Bun's cache folder comes from BUN_INSTALL_CACHE_DIR. With BUN_OFFLINE=1, Bun runs with every
+          # internet connection sent to a dead proxy, so the installs only work if the cache already holds
+          # every package (the project downloads themselves, git from the forks, still use the internet).
+          set -euo pipefail
+          REPO="$GITHUB_WORKSPACE"
+          WORK="$1"
+          mkdir -p "$WORK"
+          cd "$WORK"
+
+          bun_install() {
+            if [ "${BUN_OFFLINE:-}" = "1" ]; then
+              HTTPS_PROXY=http://127.0.0.1:9 HTTP_PROXY=http://127.0.0.1:9 https_proxy=http://127.0.0.1:9 http_proxy=http://127.0.0.1:9 bun i --frozen-lockfile "$@"
+            else
+              bun i --frozen-lockfile "$@"
+            fi
+          }
+          clone() { node "$REPO/scripts/clone-pinned.js" "$@"; }
+
+          echo "== extension galleries"
+          clone PenguinMod-ExtensionsGallery
+          (cd PenguinMod-ExtensionsGallery && bun_install)
+          clone TurboWarp-ExtensionsGallery
+          (cd TurboWarp-ExtensionsGallery && bun_install)
+
+          echo "== GUI and its four libraries"
+          clone penguinmod.github.io
+          cd penguinmod.github.io
+          for lib in PenguinMod-Vm PenguinMod-Blocks PenguinMod-Render PenguinMod-Paint; do clone "$lib"; done
+          bun_install
+          for lib in PenguinMod-Vm PenguinMod-Blocks PenguinMod-Render PenguinMod-Paint; do (cd "$lib" && bun_install); done
+          cd "$WORK"
+
+          echo "== this app's packages and electron-builder"
+          mkdir -p app-packages electron-builder
+          cp "$REPO/package.json" "$REPO/bun.lock" app-packages/
+          (cd app-packages && bun_install --omit=dev)
+          cp "$REPO/package.json" "$REPO/bun.lock" electron-builder/
+          (cd electron-builder && ELECTRON_SKIP_BINARY_DOWNLOAD=1 bun_install)
+          echo "== all installs done"
+          SCRIPT
+
+      - name: Install every package into an empty cache
+        run: BUN_INSTALL_CACHE_DIR="$RUNNER_TEMP/bun-cache" bash "$RUNNER_TEMP/install-all-packages.sh" "$RUNNER_TEMP/work1"
+
+      - name: Pack the cache
+        run: |
+          ASSET="npm-snapshot-${{ inputs.number }}.tar.gz"
+          tar -C "$RUNNER_TEMP" -czf "$ASSET" bun-cache
+          SIZE=$(stat -c %s "$ASSET")
+          SHA=$(sha256sum "$ASSET" | cut -d' ' -f1)
+          COUNT=$(ls "$RUNNER_TEMP/bun-cache" | wc -l)
+          echo "{\"tag\":\"npm-snapshot-${{ inputs.number }}\",\"asset\":\"$ASSET\",\"size\":$SIZE,\"sha256\":\"$SHA\",\"bun\":\"$(bun --version)\"}" > npm-snapshot.json
+          cat npm-snapshot.json
+          echo "Cache entries: $COUNT, unpacked: $(du -sh "$RUNNER_TEMP/bun-cache" | cut -f1)"
+
+      - name: Check the snapshot alone is enough (Bun's internet off)
+        run: |
+          mkdir "$RUNNER_TEMP/check"
+          tar -C "$RUNNER_TEMP/check" -xzf "npm-snapshot-${{ inputs.number }}.tar.gz"
+          BUN_OFFLINE=1 BUN_INSTALL_CACHE_DIR="$RUNNER_TEMP/check/bun-cache" bash "$RUNNER_TEMP/install-all-packages.sh" "$RUNNER_TEMP/work2"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf 'Every npm package the build installs (Bun %s cache), made from commit %s.\nNot an app build. Copy npm-snapshot.json into the repo root to let builds use it.\n' "$(bun --version)" "$GITHUB_SHA" > notes.md
+          gh release create "npm-snapshot-${{ inputs.number }}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "npm snapshot ${{ inputs.number }}" \
+            --notes-file notes.md \
+            --prerelease \
+            "npm-snapshot-${{ inputs.number }}.tar.gz" npm-snapshot.json
