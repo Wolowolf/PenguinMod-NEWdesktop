@@ -75,6 +75,12 @@
 
 ## Change log (newest first)
 
+### Session 27 — coloured waveform in the sound editor (2026-10-06)
+- Asked: the sound editor's waveform made with an algorithm like the sound libraries' coloured one, possibly more detailed (only one is shown, not a preview).
+- Changed: `patches/stage-layout.js` new section 20 and new `patches/asset-libraries/pm-sound-wave.jsx`: the sound editor draws a canvas instead of the one-colour loudness outline: lowest to highest sample per column, coloured by spectral centroid (`analyseWave` / `paintWave`, now exported from `pm-waveforms.js`), one column per screen pixel (screen scale included), each column also reaching its neighbours' peaks (else high notes look striped), plus the loudness (RMS) as a darker core. Heights are true sample values (upstream exaggerated quiet sounds). The editor container passes `samples`. To reverse: delete section 20, `pm-sound-wave.jsx` and the export line in `pm-waveforms.js` (or `git revert` the merge).
+- Verified (local test app): Squawk and a 5-minute 96 kHz test sweep drawn coloured (sweep blue → orange each minute, quiet part small); the long one in one ~150 ms step; Softer (real click) redrew it smaller; playhead and selection still on top. · Not verified: the CI build, light theme, resizing the window.
+- Result after build: not yet tested
+
 ### Session 26 — no "too large to upload" sound warning (2026-10-06)
 - Asked: remove every message about posting projects on PenguinMod / TurboWarp / Scratch (example: a long imported sound warned it might be too long to import to PenguinMod).
 - Found: the message was "This sound could be too large to upload to PenguinMod." (sound editor, sounds of 10 MB or more): about uploading to the website, not importing. The only other posting messages (cloud variables over Scratch's limit / "won't work until uploaded", cloud badge) can't appear because section 15 removed cloud variables; the "incompatible with Scratch" extension prompt is unused upstream. Kept: the stage-size, OGG-on-Apple, stereo/format and unstable-extension warnings (not about posting).

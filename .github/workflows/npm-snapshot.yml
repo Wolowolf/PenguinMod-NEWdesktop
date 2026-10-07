@@ -77,6 +77,10 @@ jobs:
           for lib in PenguinMod-Vm PenguinMod-Blocks PenguinMod-Render PenguinMod-Paint; do (cd "$lib" && bun_install); done
           cd "$WORK"
 
+          echo "== packager"
+          clone PenguinMod-Packager
+          (cd PenguinMod-Packager && bun_install)
+
           echo "== this app's packages and electron-builder"
           mkdir -p app-packages electron-builder
           cp "$REPO/package.json" "$REPO/bun.lock" app-packages/

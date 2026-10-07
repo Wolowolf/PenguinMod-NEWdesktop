@@ -34,8 +34,13 @@ let updateInProgress = false;
 const LIBRARY_DIR = process.env.PMDESKTOP_LIBRARY_DIR || path.join(process.resourcesPath, "offline-library");
 const LIBRARY_PREFIX = "/__library__/";
 
+// The offline packager (CI builds it from the Wolowolf/PenguinMod-Packager fork with the editor's
+// own VM and Render), at the address the editor's "Package project" button opens.
+const PACKAGER_PATH = "/PenguinMod-Packager";
+
 const folders = {
   editor: path.join(__dirname, "build"),
+  packager: path.join(__dirname, "PenguinMod-Packager"),
   turbowarp: path.join(__dirname, "TurboWarp-ExtensionsGallery"),
   penguinmod: path.join(__dirname, "PenguinMod-ExtensionsGallery"),
   sharkpools: path.join(__dirname, "SharkPools-Extensions"),
@@ -377,12 +382,12 @@ function exposeLimitHeaders(res) {
   return new Response(noBody ? null : res.body, { status: res.status, statusText: res.statusText, headers });
 }
 
-// A file of the offline library, or 404 (never the internet). Paths can't leave LIBRARY_DIR.
-function serveLibraryFile(encodedPath) {
+// A file of the offline library or the packager, or 404 (never the internet). Paths can't leave `dir`.
+function serveFolderFile(dir, encodedPath) {
   try {
     const parts = encodedPath.split("/").map(decodeURIComponent);
     if (parts.some((p) => !p || p === "." || p === ".." || /[\\\0]/.test(p))) throw new Error("bad path");
-    const base = path.resolve(LIBRARY_DIR);
+    const base = path.resolve(dir);
     const filePath = path.resolve(base, ...parts);
     if (filePath.startsWith(base + path.sep) && fs.statSync(filePath).isFile()) {
       return net.fetch(pathToFileURL(filePath).href);
@@ -391,13 +396,24 @@ function serveLibraryFile(encodedPath) {
   return new Response("Not found", { status: 404 });
 }
 
+// The packager page uses relative links, so its address without the final "/" is sent to the one
+// with it; a folder address gets the folder's index.html.
+function servePackagerFile(url) {
+  if (url.pathname === PACKAGER_PATH) {
+    return Response.redirect(`https://${url.host}${PACKAGER_PATH}/${url.search}`, 301);
+  }
+  let rest = url.pathname.slice(PACKAGER_PATH.length + 1);
+  if (!rest || rest.endsWith("/")) rest += "index.html";
+  return serveFolderFile(folders.packager, rest);
+}
+
 // ---- upstream servers ----------------------------------------------------------------------------
 // The app never contacts the servers of the projects it is built from (PenguinMod, TurboWarp,
 // SharkPool) or Scratch's. The addresses it serves itself (the editor at studio.penguinmod.com, the
 // extension galleries) come from its own folders above; anything missing there is answered "blocked"
 // instead of being fetched online. Online sources of the asset libraries (Openverse, Pixabay, ...) and
-// other third parties are not affected. Exception until the offline packager exists: the online
-// packager page and the Electron / NW.js files it downloads (PACKAGER_URLS).
+// other third parties are not affected. Exception until the app has its own copy: the Electron
+// Windows zip the packager downloads from TurboWarp's packager servers (PACKAGER_URLS).
 // To reverse: delete this block, its check in setupProtocol() and setupUpstreamBlock().
 const UPSTREAM_DOMAINS = ["penguinmod.com", "turbowarp.org", "turbowarp.xyz", "scratch.mit.edu"];
 const UPSTREAM_HOSTS = [
@@ -408,7 +424,6 @@ const UPSTREAM_HOSTS = [
 // GitHub for SharkPool's newest commits); api.github.com/repos/Wolowolf/ (the updater) is not affected.
 const UPSTREAM_GITHUB_OWNERS = ["penguinmod", "turbowarp", "sharkpool-sp"];
 const PACKAGER_URLS = [
-  /^https:\/\/studio\.penguinmod\.com\/PenguinMod-Packager(\/|$|\?)/,
   /^https:\/\/packagerdata\.turbowarp\.org\//,
   /^https:\/\/blobs\.turbowarp\.xyz\//,
 ];
@@ -458,7 +473,11 @@ function setupProtocol() {
         return new Response("Not found", { status: 404 });
       }
       if (url.host === "studio.penguinmod.com" && url.pathname.startsWith(LIBRARY_PREFIX)) {
-        return serveLibraryFile(url.pathname.slice(LIBRARY_PREFIX.length));
+        return serveFolderFile(LIBRARY_DIR, url.pathname.slice(LIBRARY_PREFIX.length));
+      }
+      if (url.host === "studio.penguinmod.com" &&
+        (url.pathname === PACKAGER_PATH || url.pathname.startsWith(PACKAGER_PATH + "/"))) {
+        return servePackagerFile(url);
       }
       const hostMap = {
         "studio.penguinmod.com": { dir: folders.editor, def: "editor.html" },

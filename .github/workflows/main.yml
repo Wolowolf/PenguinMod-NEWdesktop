@@ -184,6 +184,22 @@ jobs:
           cp -R TurboWarp-ExtensionsGallery/build app/TurboWarp-ExtensionsGallery
           cp -R PenguinMod-ExtensionsGallery/public app/PenguinMod-ExtensionsGallery
 
+      # --- PenguinMod Packager (served offline at studio.penguinmod.com/PenguinMod-Packager/) ---
+      # Built with the editor's own VM and Render (the upstream.json commits installed above, copied
+      # over the ones in its bun.lock), so packaged projects run the same engine as the editor.
+      - name: Clone PenguinMod Packager
+        run: node scripts/clone-pinned.js PenguinMod-Packager
+
+      - name: Build PenguinMod Packager
+        run: |
+          cd PenguinMod-Packager
+          bun i --frozen-lockfile
+          rm -rf node_modules/scratch-vm node_modules/scratch-render
+          cp -R ../penguinmod.github.io/node_modules/scratch-vm node_modules/scratch-vm
+          cp -R ../penguinmod.github.io/node_modules/scratch-render node_modules/scratch-render
+          bun run build
+          cp -R dist ../app/PenguinMod-Packager
+
       # --- Install prod-only deps ---
       - name: Install production deps
         run: |
