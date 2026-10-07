@@ -249,6 +249,19 @@ jobs:
           rm offline-library.zip
           test "$(jq -r .version offline-library/version.json)" = "$(jq -r .version app/offline-library.json)"
 
+      # --- Electron for the packager's Windows target (release packager-electron-<n>) ---
+      # app/packager-electron.json says which. Like the offline library it goes into the installer
+      # (resources/packager-electron, the zip as it is + version.json) but not into win-unpacked.zip:
+      # the app downloads it only when its version changes or it is missing.
+      - name: Download packager Electron
+        run: |
+          TAG=$(jq -r .tag app/packager-electron.json)
+          ASSET=$(jq -r .asset app/packager-electron.json)
+          mkdir packager-electron
+          curl -fsSL --retry 3 -o "packager-electron/$ASSET" "https://github.com/${GITHUB_REPOSITORY}/releases/download/$TAG/$ASSET"
+          echo "$(jq -r .sha256 app/packager-electron.json)  packager-electron/$ASSET" | sha256sum -c -
+          echo "{\"version\":\"$(jq -r .version app/packager-electron.json)\"}" > packager-electron/version.json
+
       - name: Build Electron App
         # Windows only (was: --linux AppImage deb rpm --win nsis). See CHANGES.md to bring Linux back.
         run: '"$RUNNER_TEMP/electron-builder/node_modules/.bin/electron-builder" --win nsis --publish never'
@@ -256,11 +269,13 @@ jobs:
       # --- Zip artifacts ---
       - name: Zip win-unpacked
         run: |
-          zip -r builds/win-unpacked.zip builds/win-unpacked -x 'builds/win-unpacked/resources/offline-library/*'
-          # The installer has the offline library; the update zip must not (the updater downloads it separately).
+          zip -r builds/win-unpacked.zip builds/win-unpacked -x 'builds/win-unpacked/resources/offline-library/*' 'builds/win-unpacked/resources/packager-electron/*'
+          # The installer has the offline library and the packager's Electron; the update zip must not
+          # (the updater downloads them separately).
           test -f builds/win-unpacked/resources/offline-library/index.json
-          if unzip -Z1 builds/win-unpacked.zip | grep -q '^builds/win-unpacked/resources/offline-library/'; then
-            echo "The offline library ended up in win-unpacked.zip"; exit 1
+          test -f "builds/win-unpacked/resources/packager-electron/$(jq -r .asset app/packager-electron.json)"
+          if unzip -Z1 builds/win-unpacked.zip | grep -q '^builds/win-unpacked/resources/\(offline-library\|packager-electron\)/'; then
+            echo "The offline library or the packager's Electron ended up in win-unpacked.zip"; exit 1
           fi
 
       # --- Create GitHub Release (the old create-release / upload-release-asset actions are deprecated) ---

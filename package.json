@@ -31,6 +31,10 @@
       {
         "from": "offline-library",
         "to": "offline-library"
+      },
+      {
+        "from": "packager-electron",
+        "to": "packager-electron"
       }
     ],
     "compression": "maximum",

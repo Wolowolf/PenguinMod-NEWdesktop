@@ -14,7 +14,8 @@
 //   - same                  -> left alone
 //   - only on disk, inside resources/app (old editor chunks, the old home page, ...) -> removed
 //   - only on disk, anywhere else (for example the installer's "Uninstall ....exe") -> never touched
-//     (this includes resources/offline-library, which has its own download: see the end of this file)
+//     (this includes resources/offline-library and resources/packager-electron, which have their own
+//     downloads: see the end of this file)
 // Nothing in the install folder is changed until the whole zip has been checked and every
 // new file has been written next to its old one. If a step then fails, everything is rolled back.
 
@@ -340,6 +341,7 @@ function installedLibraryVersion(installDir) {
   }
 }
 
+// Reads a pin file (app/offline-library.json, app/packager-electron.json); null if it is unusable.
 function readLibraryPin(file) {
   try {
     const pin = JSON.parse(fs.readFileSync(file, "utf8"));
@@ -349,26 +351,43 @@ function readLibraryPin(file) {
   }
 }
 
-// The library an update needs: app/offline-library.json inside the update zip (null if it has none).
-async function libraryPinFromZip(zipPath) {
+// A pin an update needs: app/<pinFile> inside the update zip (null if it has none).
+async function pinFromZip(zipPath, pinFile) {
   const directory = await unzipper.Open.file(zipPath);
-  const entry = directory.files.find((f) => f.path === `${ZIP_PREFIX}resources/app/app/offline-library.json`);
+  const entry = directory.files.find((f) => f.path === `${ZIP_PREFIX}resources/app/app/${pinFile}`);
   if (!entry) return null;
   const pin = JSON.parse((await entry.buffer()).toString("utf8"));
   return pin && pin.version && pin.tag && pin.asset ? pin : null;
 }
 
+// The library an update needs: app/offline-library.json inside the update zip (null if it has none).
+const libraryPinFromZip = (zipPath) => pinFromZip(zipPath, "offline-library.json");
+
 const libraryNeeded = (installDir, pin) => !!pin && installedLibraryVersion(installDir) !== String(pin.version);
 
+// Where a pinned file is: its release of this repo.
 const libraryUrl = (repo, pin) =>
   `https://github.com/${repo}/releases/download/${encodeURIComponent(pin.tag)}/${encodeURIComponent(pin.asset)}`;
+
+// Puts a filled staging folder in place of `target`; the old one is put back if that fails.
+function replaceFolder(target, staging) {
+  const backup = target + OLD;
+  fs.rmSync(backup, { recursive: true, force: true });
+  if (fs.existsSync(target)) fs.renameSync(target, backup);
+  try {
+    fs.renameSync(staging, target);
+  } catch (err) {
+    if (fs.existsSync(backup) && !fs.existsSync(target)) fs.renameSync(backup, target);
+    throw err;
+  }
+  try { fs.rmSync(backup, { recursive: true, force: true }); } catch { }
+}
 
 // Unpacks a downloaded (and already checked) library zip next to the old library, then swaps them.
 // If the swap fails, the old library is put back.
 async function installLibraryFromZip(zipPath, installDir, pin, onProgress = noop) {
   const target = libraryDir(installDir);
   const staging = target + NEW;
-  const backup = target + OLD;
   fs.rmSync(staging, { recursive: true, force: true });
   try {
     const directory = await unzipper.Open.file(zipPath);
@@ -389,26 +408,65 @@ async function installLibraryFromZip(zipPath, installDir, pin, onProgress = noop
     fs.rmSync(staging, { recursive: true, force: true });
     throw err;
   }
-  fs.rmSync(backup, { recursive: true, force: true });
-  if (fs.existsSync(target)) fs.renameSync(target, backup);
-  try {
-    fs.renameSync(staging, target);
-  } catch (err) {
-    if (fs.existsSync(backup) && !fs.existsSync(target)) fs.renameSync(backup, target);
-    throw err;
-  }
-  try { fs.rmSync(backup, { recursive: true, force: true }); } catch { }
+  replaceFolder(target, staging);
 }
 
-// Removes half-finished or old library folders left by an interrupted install.
+// Removes half-finished or old library and packager-Electron folders left by an interrupted install.
 function cleanupLibraryLeftovers(installDir) {
-  for (const p of [libraryDir(installDir) + NEW, libraryDir(installDir) + OLD]) {
-    try { fs.rmSync(p, { recursive: true, force: true }); } catch { }
+  for (const dir of [libraryDir(installDir), electronDir(installDir)]) {
+    for (const p of [dir + NEW, dir + OLD]) {
+      try { fs.rmSync(p, { recursive: true, force: true }); } catch { }
+    }
   }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Electron for the packager (resources/packager-electron)
+// ---------------------------------------------------------------------------------------------
+// The Windows 64-bit Electron zip the offline packager makes Windows programs with. Like the
+// offline library it is not in win-unpacked.zip but in its own release of this repo, pinned in
+// app/packager-electron.json ({version, tag, asset, size, sha256}). It is kept as it is (the
+// packager reads the zip itself) next to a version.json, and downloaded only when that differs.
+
+const ELECTRON_DIR = "resources/packager-electron";
+
+const electronDir = (installDir) => path.join(installDir, ...ELECTRON_DIR.split("/"));
+
+function installedElectronVersion(installDir) {
+  try {
+    return String(JSON.parse(fs.readFileSync(path.join(electronDir(installDir), "version.json"), "utf8")).version);
+  } catch {
+    return null;
+  }
+}
+
+const electronPinFromZip = (zipPath) => pinFromZip(zipPath, "packager-electron.json");
+
+const electronNeeded = (installDir, pin) => !!pin && installedElectronVersion(installDir) !== String(pin.version);
+
+// Puts a downloaded (and already checked) Electron zip in place, with its version.json, in a new
+// folder that then replaces the old one (put back if that fails).
+function installElectronFile(filePath, installDir, pin) {
+  if (!/^[\w.-]+$/.test(pin.asset) || /^\.+$/.test(pin.asset)) {
+    throw new Error(`Unexpected file name for the packager's Electron: ${pin.asset}`);
+  }
+  const target = electronDir(installDir);
+  const staging = target + NEW;
+  fs.rmSync(staging, { recursive: true, force: true });
+  try {
+    fs.mkdirSync(staging, { recursive: true });
+    fs.copyFileSync(filePath, path.join(staging, pin.asset));
+    fs.writeFileSync(path.join(staging, "version.json"), JSON.stringify({ version: String(pin.version) }) + "\n");
+  } catch (err) {
+    fs.rmSync(staging, { recursive: true, force: true });
+    throw err;
+  }
+  replaceFolder(target, staging);
 }
 
 module.exports = {
   pickRelease, downloadFile, assertWritable, cleanupLeftovers, applyUpdateFromZip, ZIP_PREFIX,
   installedLibraryVersion, readLibraryPin, libraryPinFromZip, libraryNeeded, libraryUrl,
   installLibraryFromZip, cleanupLibraryLeftovers,
+  installedElectronVersion, electronPinFromZip, electronNeeded, installElectronFile,
 };
