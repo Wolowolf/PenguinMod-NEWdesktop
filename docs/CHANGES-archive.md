@@ -75,6 +75,12 @@
 
 ## Change log (newest first)
 
+### Session 32 — editor tabs: icon only, name on the selected one (2026-10-07)
+- Asked: the workspace tabs (Code, Costumes, Sounds, Variables, …) show only the icon when not open and the name when open; padding a quarter of the horizontal and half of the vertical. (There is no "Scenes" tab in this editor; "Files" exists but is switched off upstream.)
+- Changed: section 33 (list above): GUI fork `e1c0773` (`gui.jsx`: each tab name wrapped in a span; `gui.css`: `.tab-label` visually hidden unless the tab is selected, icon margin removed on unselected tabs, tab padding `0.125rem 1.25rem 0` → `0.0625rem 0.3125rem 0`), `upstream.json`. The hidden name stays in the page for screen readers. Reading taken: "quarter of the horizontal padding" = 1.25rem → 0.3125rem, "half the vertical" = 0.125rem top → 0.0625rem (bottom was already 0). To reverse: `git revert` the merge (and the fork commit).
+- Verified (local test app, real clicks): Code selected = "Code" + 3 icons (tab widths 64 / 33 / 33 / 33 px, padding 1px 5px 0); clicking Costumes, Sounds and Variables each shows only that tab's name (Variables tab 85 px wide) and the editor panel switches; after `upstream.json` pointed at the pushed commit the local test ran without a warning. · Not verified: the CI build; right-to-left languages; tooltips (none added, so an icon alone has no hover text).
+- Result after build: assumed working
+
 ### Session 31 — "Open Extension" in the TurboWarp gallery was blocked (2026-10-07)
 - Asked: clicking "Open Extension" in the TurboWarp extension gallery showed "Blocked: this app does not contact this server." (the extensions themselves are offline; the button linked to the online editor `turbowarp.org`, refused since Session 29). Fix it.
 - Changed: section 32 (list above): TurboWarp gallery fork `5fd4420` (`development/homepage-template.ejs`: a click script sends the extension to `window.opener`, shows "Adding..." then "Added!" / "Could not add"; without an editor window it explains Copy URL + Custom Extension), GUI fork `4368612` (`TRUSTED_LOADEXT_ORIGINS` in `extension-library.jsx`), `upstream.json` for both. Not changed: the gallery's "Sample Project" links (still `turbowarp.org`, blocked). To reverse: `git revert` the merge (and the two fork commits).
