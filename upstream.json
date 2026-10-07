@@ -43,7 +43,7 @@
   "PenguinMod-Packager": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Packager.git",
     "branch": "desktop",
-    "commit": "1bda441ed3d4d5a003d75a6bfc150db92034d2b7"
+    "commit": "f78d4f75a6a2f16b6bfeceb341ab3000f0e380af"
   },
   "game-icons": {
     "repo": "https://github.com/Wolowolf/game-icons.git",
