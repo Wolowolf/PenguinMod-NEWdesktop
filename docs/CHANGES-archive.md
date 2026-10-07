@@ -75,6 +75,20 @@
 
 ## Change log (newest first)
 
+### Session 28 — settings always on, FPS box, 1920×1080, no interpolation (2026-10-06)
+- Asked: always on and not switchable: custom FPS as "FPS: [60]" with a note, high quality pen, infinite clones, remove fencing, remove misc limits, dangerous optimizations; on by default: disable off-screen rendering, warp timer; remove interpolation and its code; stage size without presets or note, default 1920×1080, chain link to keep the ratio.
+- Changed: `patches/stage-layout.js` new section 21, new `patches/asset-libraries/pm-settings-parts.jsx` and `tw-settings-modal.jsx` (see section 21 above). Reading taken: "default 60 / 1920×1080" = for new projects; opened projects keep what they were made with. FPS box accepts 1–250; sizes 1–4096. Upstream blocks it replaces are checked by SHA-256. Note text grammar fixed ("Runs … times", "don’t use … in"). To reverse: `git revert` the merge.
+- Verified (local test app): new project and File → New (real clicks) = 60 FPS, 1920×1080, the 5 options on; window as described; ratio link on (1920→1280 gave 720), off by real click (remembered), relinked; FPS 30 → note "30 times"; 0 ignored, 999 → 250; switching the always-on options or HQ pen off from code has no effect; save → config comment stored, reopened with the same FPS/size; project without stored settings → 30 FPS, 480×360; runs ~60 steps/s, sprite at x 5000 not fenced, 5000 clones allowed. · Not verified: the CI build, the replace-project confirmation (native dialog, not clickable here), light theme, the Runtime extension blocks.
+- Result after build: assumed working
+- Part 2 asked: no up/down arrows in the FPS and stage size boxes; no Gameplay, Optimizations and Screen Resolution separators; a line break after "60 times per second."
+- Part 2 changed: section 21: the three headers are removed (Gameplay by its own find-and-replace, the other two from the new rows text); CSS hides the number boxes' spin buttons (typing and the arrow keys still work); `pm-settings-parts.jsx`: the FPS note is two messages with a line break between them. To reverse: `git revert` the merge.
+- Part 2 verified (local test app): only the window title is left as a header; FPS box clicked (real click, mouse on its right edge), no arrows; screenshot: warning on its own line under "Runs scripts 60 times per second." · Not verified: the CI build.
+- Part 2 result after build: assumed working
+- Part 3 asked: without the arrows the boxes were too wide for their values.
+- Part 3 changed: section 21 CSS: the FPS and stage size boxes size to their value (`field-sizing: content`, min. 2.25rem, centred, less padding). To reverse: `git revert` the merge.
+- Part 3 verified (local test app): boxes 34 px ("60") and 37 px ("1920", "1080") instead of 80 px; screenshot looks right; typing "12345" widened the box, leaving it gave 250 and a narrower box. · Not verified: the CI build.
+- Part 3 result after build: assumed working
+
 ### Session 27 — coloured waveform in the sound editor (2026-10-06)
 - Asked: the sound editor's waveform made with an algorithm like the sound libraries' coloured one, possibly more detailed (only one is shown, not a preview).
 - Changed: `patches/stage-layout.js` new section 20 and new `patches/asset-libraries/pm-sound-wave.jsx`: the sound editor draws a canvas instead of the one-colour loudness outline: lowest to highest sample per column, coloured by spectral centroid (`analyseWave` / `paintWave`, now exported from `pm-waveforms.js`), one column per screen pixel (screen scale included), each column also reaching its neighbours' peaks (else high notes look striped), plus the loudness (RMS) as a darker core. Heights are true sample values (upstream exaggerated quiet sounds). The editor container passes `samples`. To reverse: delete section 20, `pm-sound-wave.jsx` and the export line in `pm-waveforms.js` (or `git revert` the merge).
