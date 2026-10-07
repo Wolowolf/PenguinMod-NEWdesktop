@@ -13,14 +13,16 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Fixed versions (Session 29): the runner image, Bun and Node are exact, and each action is pinned
+    # to the commit of the version named in its comment, so the toolchain only changes when we edit it.
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
 
     steps:
       # --- Checkout ---
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # --- Generate Dynamic Cache Key Components ---
       - name: Get current week
@@ -43,13 +45,15 @@ jobs:
 
       # --- Install Bun ---
       - name: Install Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.2
 
       # --- Install Node.js ---
       - name: Install Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 26
+          node-version: 26.10.0
 
       # --- Clone Standalone Repos and Cache ---
       # Every upstream project is downloaded at the exact commit listed in upstream.json
@@ -70,7 +74,7 @@ jobs:
         run: node scripts/clone-pinned.js TurboWarp-ExtensionsGallery
 
       - name: Cache TurboWarp node_modules
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: TurboWarp-ExtensionsGallery/node_modules
           key: node-modules-turbowarp-${{ env.WEEK_STAMP }}
@@ -94,7 +98,7 @@ jobs:
       # --- CONSOLIDATED GUI & SUBMODULES CACHE ---
       - name: Cache GUI and Submodule node_modules
         id: gui-cache
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             penguinmod.github.io/node_modules
