@@ -391,6 +391,51 @@ function serveLibraryFile(encodedPath) {
   return new Response("Not found", { status: 404 });
 }
 
+// ---- upstream servers ----------------------------------------------------------------------------
+// The app never contacts the servers of the projects it is built from (PenguinMod, TurboWarp,
+// SharkPool) or Scratch's. The addresses it serves itself (the editor at studio.penguinmod.com, the
+// extension galleries) come from its own folders above; anything missing there is answered "blocked"
+// instead of being fetched online. Online sources of the asset libraries (Openverse, Pixabay, ...) and
+// other third parties are not affected. Exception until the offline packager exists: the online
+// packager page and the Electron / NW.js files it downloads (PACKAGER_URLS).
+// To reverse: delete this block, its check in setupProtocol() and setupUpstreamBlock().
+const UPSTREAM_DOMAINS = ["penguinmod.com", "turbowarp.org", "turbowarp.xyz", "scratch.mit.edu"];
+const UPSTREAM_HOSTS = [
+  "sharkpool-sp.github.io", "sharkpools-extensions.vercel.app",
+  "penguinmod-extensions-gallery.vercel.app", "pm-bapi.vercel.app",
+];
+const UPSTREAM_GITHUB_OWNERS = ["penguinmod", "turbowarp", "sharkpool-sp"]; // raw.githubusercontent.com/<owner>/
+const PACKAGER_URLS = [
+  /^https:\/\/studio\.penguinmod\.com\/PenguinMod-Packager(\/|$|\?)/,
+  /^https:\/\/packagerdata\.turbowarp\.org\//,
+  /^https:\/\/blobs\.turbowarp\.xyz\//,
+];
+function isUpstreamUrl(url) {
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch (_) {
+    return false;
+  }
+  if (PACKAGER_URLS.some((pattern) => pattern.test(url))) return false;
+  const host = parsed.hostname.toLowerCase();
+  if (UPSTREAM_HOSTS.includes(host)) return true;
+  if (UPSTREAM_DOMAINS.some((domain) => host === domain || host.endsWith("." + domain))) return true;
+  if (host === "raw.githubusercontent.com") {
+    const owner = parsed.pathname.split("/")[1] || "";
+    return UPSTREAM_GITHUB_OWNERS.includes(owner.toLowerCase());
+  }
+  return false;
+}
+
+// https is handled by setupProtocol(); this covers the other kinds of connection.
+function setupUpstreamBlock() {
+  session.defaultSession.webRequest.onBeforeRequest(
+    { urls: ["http://*/*", "ws://*/*", "wss://*/*"] },
+    (details, callback) => callback({ cancel: isUpstreamUrl(details.url) })
+  );
+}
+
 function setupProtocol() {
   protocol.handle("https", (request) => {
     try {
@@ -455,6 +500,9 @@ function setupProtocol() {
         fileUrl.hash = url.hash;
         return net.fetch(fileUrl.href);
       }
+      if (isUpstreamUrl(request.url)) {
+        return new Response("Blocked: this app does not contact this server.", { status: 403 });
+      }
       if (LIMIT_HOSTS.includes(url.host)) {
         return net.fetch(request, { bypassCustomProtocolHandlers: true }).then(exposeLimitHeaders);
       }
@@ -493,6 +541,7 @@ if (process.env.NOPROXY === "true") {
 app.whenReady().then(() => {
   cleanupOldUpdateFiles();
   setupProtocol();
+  setupUpstreamBlock();
   setupHeaderSpoofing();
   const fileToOpen = process.argv.length >= 2 ? process.argv[1] : null;
   createWindow(fileToOpen);
