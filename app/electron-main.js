@@ -634,6 +634,8 @@ function setupHeaderSpoofing() {
 if (process.env.NOPROXY === "true") {
   app.commandLine.appendSwitch('no-proxy-server');
 }
+// Laptops with two graphics chips: draw the stage with the strong one.
+app.commandLine.appendSwitch('force_high_performance_gpu');
 
 app.whenReady().then(() => {
   cleanupOldUpdateFiles();
