@@ -695,6 +695,8 @@ function createWindow(fileToOpen) {
       nativeWindowOpen: true,
       preload: PRELOAD_PATH,
       webSecurity: !getNodeJSSetting(),
+      // Projects keep running at full speed when the window is covered or minimised.
+      backgroundThrottling: false,
     },
   });
 
