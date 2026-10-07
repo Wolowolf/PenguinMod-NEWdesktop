@@ -404,7 +404,9 @@ const UPSTREAM_HOSTS = [
   "sharkpool-sp.github.io", "sharkpools-extensions.vercel.app",
   "penguinmod-extensions-gallery.vercel.app", "pm-bapi.vercel.app",
 ];
-const UPSTREAM_GITHUB_OWNERS = ["penguinmod", "turbowarp", "sharkpool-sp"]; // raw.githubusercontent.com/<owner>/
+// raw.githubusercontent.com/<owner>/ and api.github.com/repos/<owner>/ (the SharkPool gallery asked
+// GitHub for SharkPool's newest commits); api.github.com/repos/Wolowolf/ (the updater) is not affected.
+const UPSTREAM_GITHUB_OWNERS = ["penguinmod", "turbowarp", "sharkpool-sp"];
 const PACKAGER_URLS = [
   /^https:\/\/studio\.penguinmod\.com\/PenguinMod-Packager(\/|$|\?)/,
   /^https:\/\/packagerdata\.turbowarp\.org\//,
@@ -421,9 +423,12 @@ function isUpstreamUrl(url) {
   const host = parsed.hostname.toLowerCase();
   if (UPSTREAM_HOSTS.includes(host)) return true;
   if (UPSTREAM_DOMAINS.some((domain) => host === domain || host.endsWith("." + domain))) return true;
+  const pathParts = parsed.pathname.split("/");
   if (host === "raw.githubusercontent.com") {
-    const owner = parsed.pathname.split("/")[1] || "";
-    return UPSTREAM_GITHUB_OWNERS.includes(owner.toLowerCase());
+    return UPSTREAM_GITHUB_OWNERS.includes((pathParts[1] || "").toLowerCase());
+  }
+  if (host === "api.github.com" && (pathParts[1] === "repos" || pathParts[1] === "users")) {
+    return UPSTREAM_GITHUB_OWNERS.includes((pathParts[2] || "").toLowerCase());
   }
   return false;
 }

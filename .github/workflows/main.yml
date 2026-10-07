@@ -7,9 +7,14 @@ on:
       - main
     paths-ignore:
       - '**.md'
+      - '.github/workflows/npm-snapshot.yml'   # its own manual workflow; changing it doesn't change the app
 
 env:
   NODE_ENV: 'production'
+  # Test tools in the GUI (chromedriver) and Render (playwright-chromium) would download browsers
+  # from Google / Microsoft during a fresh install; the build doesn't use them.
+  CHROMEDRIVER_SKIP_DOWNLOAD: 'true'
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
 jobs:
   build:
