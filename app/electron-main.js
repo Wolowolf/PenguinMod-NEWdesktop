@@ -34,6 +34,13 @@ let updateInProgress = false;
 const LIBRARY_DIR = process.env.PMDESKTOP_LIBRARY_DIR || path.join(process.resourcesPath, "offline-library");
 const LIBRARY_PREFIX = "/__library__/";
 
+// The Electron zip the packager makes Windows programs with, served at
+// https://studio.penguinmod.com/__packager-electron__/. Like the offline library it sits in
+// resources/packager-electron, has its own release (app/packager-electron.json) and is downloaded once.
+// PMDESKTOP_PACKAGER_ELECTRON_DIR points elsewhere (the local test uses it).
+const ELECTRON_DIR = process.env.PMDESKTOP_PACKAGER_ELECTRON_DIR || path.join(process.resourcesPath, "packager-electron");
+const ELECTRON_PREFIX = "/__packager-electron__/";
+
 // The offline packager (CI builds it from the Wolowolf/PenguinMod-Packager fork with the editor's
 // own VM and Render), at the address the editor's "Package project" button opens.
 const PACKAGER_PATH = "/PenguinMod-Packager";
@@ -140,7 +147,9 @@ async function runUpdateCheck(win) {
     const { release, asset } = found;
     const current = readBuildInfo();
     if (current && current.tag === release.tag_name) {
-      if (await offerLibrary(win, installDir)) return;
+      const offeredLibrary = await offerLibrary(win, installDir);
+      const offeredElectron = await offerElectron(win, installDir);
+      if (offeredLibrary || offeredElectron) return;
       say("info", "You're up to date.", `Installed build: ${release.tag_name}`);
       return;
     }
@@ -157,7 +166,8 @@ async function runUpdateCheck(win) {
         `New build: ${release.tag_name}\n` +
         `Installed: ${current ? current.tag : "unknown"}\n` +
         `Download size: about ${mb} MB\n` +
-        "(plus the offline library, about 180 MB, if this update needs a newer one)\n\n" +
+        "(plus, only if this update needs a newer one: the offline library, about 180 MB, " +
+        "and the packager's Electron, about 92 MB)\n\n" +
         "The app will restart when it is done. Save your project first; unsaved changes are lost. " +
         "Your settings and saved files are not touched.",
     });
@@ -173,6 +183,8 @@ async function runUpdateCheck(win) {
     // safely. If this fails, nothing of the app is changed.
     const libraryPin = await updater.libraryPinFromZip(tmpZip);
     if (updater.libraryNeeded(installDir, libraryPin)) await installLibrary(installDir, libraryPin);
+    const electronPin = await updater.electronPinFromZip(tmpZip);
+    if (updater.electronNeeded(installDir, electronPin)) await installElectron(installDir, electronPin);
     updater.cleanupLeftovers(LEFTOVERS_FILE, installDir);
     const result = await updater.applyUpdateFromZip(tmpZip, installDir, {
       exeName: path.basename(process.execPath),
@@ -240,6 +252,67 @@ async function offerLibrary(win, installDir) {
   sendUpdateProgress("done");
   dialog.showMessageBoxSync(win, { type: "info", buttons: ["OK"], noLink: true, message: "The offline library is installed." });
   return true;
+}
+
+// Downloads the packager's Electron zip this app needs from the fork's release and puts it in place.
+async function installElectron(installDir, pin) {
+  const tmpFile = path.join(os.tmpdir(), `penguinmod-electron-${process.pid}.zip`);
+  try {
+    await updater.downloadFile(net.fetch.bind(net), updater.libraryUrl(UPDATE_REPO, pin), tmpFile, {
+      expectedSize: pin.size || 0,
+      expectedDigest: pin.sha256 ? `sha256:${pin.sha256}` : "",
+      onProgress: sendUpdateProgress,
+    });
+    updater.installElectronFile(tmpFile, installDir, pin);
+  } finally {
+    try { fs.unlinkSync(tmpFile); } catch { }
+  }
+}
+
+// If the packager's Electron is missing or out of date (an app updated by an updater from before
+// Session 30 has none), offers to download it. Returns false only when nothing was needed.
+async function offerElectron(win, installDir) {
+  const pin = updater.readLibraryPin(path.join(__dirname, "packager-electron.json"));
+  if (!updater.electronNeeded(installDir, pin)) return false;
+  const choice = dialog.showMessageBoxSync(win, {
+    type: "question",
+    buttons: ["Download", "Not now"],
+    defaultId: 0,
+    cancelId: 1,
+    noLink: true,
+    message: "The packager's Electron is missing or out of date.",
+    detail:
+      "The packager needs it to make Windows programs (\"Electron Windows application\"); HTML and zip " +
+      `don't.\nDownload size: about ${Math.round((pin.size || 0) / 1048576)} MB, only once.`,
+  });
+  if (choice !== 0) return true;
+  updater.assertWritable(installDir);
+  await installElectron(installDir, pin);
+  sendUpdateProgress("done");
+  dialog.showMessageBoxSync(win, { type: "info", buttons: ["OK"], noLink: true,
+    message: "The packager's Electron is installed.", detail: "Click \"Package\" in the packager again." });
+  return true;
+}
+
+// The packager asked for an Electron zip the app doesn't have: offer the download (after the
+// request has been answered, so the packager isn't left waiting).
+function offerElectronOnRequest() {
+  const installDir = getInstallDir();
+  if (!installDir || updateInProgress) return;
+  updateInProgress = true;
+  setTimeout(async () => {
+    const win = BrowserWindow.getFocusedWindow() || mainWindow;
+    try {
+      await offerElectron(win, installDir);
+    } catch (err) {
+      console.error("[packager-electron] failed", err);
+      sendUpdateProgress("done");
+      dialog.showMessageBoxSync(win, { type: "error", buttons: ["OK"], noLink: true,
+        message: "The packager's Electron could not be installed.", detail: String((err && err.message) || err) });
+    } finally {
+      updateInProgress = false;
+    }
+  }, 0);
 }
 
 async function offerLibraryAtStart(win) {
@@ -382,7 +455,8 @@ function exposeLimitHeaders(res) {
   return new Response(noBody ? null : res.body, { status: res.status, statusText: res.statusText, headers });
 }
 
-// A file of the offline library or the packager, or 404 (never the internet). Paths can't leave `dir`.
+// A file of the offline library, the packager or its Electron, or 404 (never the internet). Paths
+// can't leave `dir`.
 function serveFolderFile(dir, encodedPath) {
   try {
     const parts = encodedPath.split("/").map(decodeURIComponent);
@@ -412,8 +486,7 @@ function servePackagerFile(url) {
 // SharkPool) or Scratch's. The addresses it serves itself (the editor at studio.penguinmod.com, the
 // extension galleries) come from its own folders above; anything missing there is answered "blocked"
 // instead of being fetched online. Online sources of the asset libraries (Openverse, Pixabay, ...) and
-// other third parties are not affected. Exception until the app has its own copy: the Electron
-// Windows zip the packager downloads from TurboWarp's packager servers (PACKAGER_URLS).
+// other third parties are not affected. (The packager and its Electron zip are served by the app too.)
 // To reverse: delete this block, its check in setupProtocol() and setupUpstreamBlock().
 const UPSTREAM_DOMAINS = ["penguinmod.com", "turbowarp.org", "turbowarp.xyz", "scratch.mit.edu"];
 const UPSTREAM_HOSTS = [
@@ -423,10 +496,6 @@ const UPSTREAM_HOSTS = [
 // raw.githubusercontent.com/<owner>/ and api.github.com/repos/<owner>/ (the SharkPool gallery asked
 // GitHub for SharkPool's newest commits); api.github.com/repos/Wolowolf/ (the updater) is not affected.
 const UPSTREAM_GITHUB_OWNERS = ["penguinmod", "turbowarp", "sharkpool-sp"];
-const PACKAGER_URLS = [
-  /^https:\/\/packagerdata\.turbowarp\.org\//,
-  /^https:\/\/blobs\.turbowarp\.xyz\//,
-];
 function isUpstreamUrl(url) {
   let parsed;
   try {
@@ -434,7 +503,6 @@ function isUpstreamUrl(url) {
   } catch (_) {
     return false;
   }
-  if (PACKAGER_URLS.some((pattern) => pattern.test(url))) return false;
   const host = parsed.hostname.toLowerCase();
   if (UPSTREAM_HOSTS.includes(host)) return true;
   if (UPSTREAM_DOMAINS.some((domain) => host === domain || host.endsWith("." + domain))) return true;
@@ -478,6 +546,11 @@ function setupProtocol() {
       if (url.host === "studio.penguinmod.com" &&
         (url.pathname === PACKAGER_PATH || url.pathname.startsWith(PACKAGER_PATH + "/"))) {
         return servePackagerFile(url);
+      }
+      if (url.host === "studio.penguinmod.com" && url.pathname.startsWith(ELECTRON_PREFIX)) {
+        const res = serveFolderFile(ELECTRON_DIR, url.pathname.slice(ELECTRON_PREFIX.length));
+        if (res instanceof Response && res.status === 404) offerElectronOnRequest();
+        return res;
       }
       const hostMap = {
         "studio.penguinmod.com": { dir: folders.editor, def: "editor.html" },
