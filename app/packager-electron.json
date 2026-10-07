@@ -1,0 +1,8 @@
+{
+  "_about": "The Electron zip the offline packager makes Windows programs with (TurboWarp's electron-v22.3.27-win32-x64.zip: Electron's official one with a new icon and version text in electron.exe). CI and the app download it from the release below and check its size and SHA-256; the packager checks the SHA-256 again.",
+  "version": "1",
+  "tag": "packager-electron-1",
+  "asset": "electron-v22.3.27-win32-x64.zip",
+  "size": 96605208,
+  "sha256": "1a02c0f7af9664696f790dcce05948f0458a2f4f2d48c685f911d2eb99a4c9da"
+}
