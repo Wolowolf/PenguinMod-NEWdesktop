@@ -1,6 +1,6 @@
 # CLAUDE.md — PenguinMod Desktop (my fork)
 
-This file is loaded automatically: don't read it again. Start of every session: read `CHANGES.md` (current state + recent sessions). If the code differs from what it says, tell me what differs. Details live in `docs/`, not read by default (Grep, then read only the part you need): `SECTIONS.md` (what each editor change does, its commit, its files), `PROCEDURES.md` (rare jobs: newer upstream, offline library, packager Electron, npm snapshot, version bumps, comparing builds, network log, testing a release copy), `CHANGES-archive.md` (older sessions).
+This file is loaded automatically: don't read it again. Start of every session: read `CHANGES.md` (current state + recent sessions). If the code differs from what it says, tell me what differs. Details live in `docs/`, not read by default (Grep, then read only the part you need): `SECTIONS.md` (what each editor change does, its commit, its files), `PROCEDURES.md` (rare jobs: newer upstream, offline library, packager Electron, npm snapshot, version bumps, comparing builds, network log, testing a release copy), `CHANGES-archive.md` (older sessions), `EXTENSION-RISKS.md` (which extensions reach into which engine part).
 
 - Fork: https://github.com/Wolowolf/PenguinMod-NEWdesktop · Upstream: https://github.com/FreshPenguin112/PenguinMod-Desktop
 - Goal: a modified PenguinMod Desktop, changed one small tweak per conversation. **Windows only**: deliverables are `PenguinMod.Desktop.Setup.1.0.0.exe` (x64 installer) and `win-unpacked.zip`. Never bring back Linux or macOS builds. Language: English.
@@ -10,7 +10,7 @@ This file is loaded automatically: don't read it again. Start of every session: 
 - Always separate what you verified (ran, saw, measured) from what you did not (reasoned, could not run). Never write "this works" for something you could not run. The real tests are a build in this repo's Actions tab and the app on my PC.
 - Assume every build works until I say otherwise (since 2026-10-07): don't mark builds as untested or unverified, and don't watch, download or check them after a merge.
 - Small changes, only what I asked. If a request is ambiguous, pick the most likely reading and say which one.
-- Extensions: for every change, ask yourself whether it could stop extension blocks from working because it changes calculations or how things are optimised (e.g. the compiler, frame loop, timing, rendering, number handling); whether extensions load is not part of this check. Say your answer in one sentence. Test an affected extension block in the test app only when you are almost sure it could break.
+- Extensions: for every change, ask yourself whether it could stop extension blocks from working because it changes calculations or how things are optimised (e.g. the compiler, frame loop, timing, rendering, number handling); whether extensions load is not part of this check. Grep `docs/EXTENSION-RISKS.md` for the area changed to see which extensions reach into it. Say your answer in one sentence. Test an affected extension block in the test app only when you are almost sure it could break.
 - Ask before anything hard to undo: deleting releases or branches, force-pushing, rewriting history, changing repository or Actions settings.
 - Never ask me to paste passwords, tokens or keys; use the existing GitHub sign-in.
 
