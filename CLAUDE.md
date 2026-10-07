@@ -10,6 +10,7 @@ This file is loaded automatically: don't read it again. Start of every session: 
 - Always separate what you verified (ran, saw, measured) from what you did not (reasoned, could not run). Never write "this works" for something you could not run. The real tests are a build in this repo's Actions tab and the app on my PC.
 - Assume every build works until I say otherwise (since 2026-10-07): don't mark builds as untested or unverified, and don't watch, download or check them after a merge.
 - Small changes, only what I asked. If a request is ambiguous, pick the most likely reading and say which one.
+- Extensions: for every change (app, editor, VM, packager, CI), think about whether extensions still work: the built-in ones, the three offline galleries, extensions loaded from a file or URL, and extensions inside packaged games. Before making the change, say which ones it could affect; afterwards, test one of each affected kind in the test app (or a release copy for the galleries, which the test app does not have) and report what you tested and what you could not.
 - Ask before anything hard to undo: deleting releases or branches, force-pushing, rewriting history, changing repository or Actions settings.
 - Never ask me to paste passwords, tokens or keys; use the existing GitHub sign-in.
 
