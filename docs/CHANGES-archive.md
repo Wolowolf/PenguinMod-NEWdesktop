@@ -75,6 +75,12 @@
 
 ## Change log (newest first)
 
+### Session 33 — editor tabs overlapped, vertical padding again (2026-10-07)
+- Asked: the icon-only tabs almost overlap and one side seems to have no padding; half the vertical padding again.
+- Changed: section 34 (list above): GUI fork `41c5771` (`gui.css`: tabs no longer overlap (`margin-left`/`-right` -0.5rem → 0); tab height follows the content (`height: auto`, was 80% / 90% of the bar) with padding `0.125rem 0.3125rem` (selected `0.2rem` top and bottom), `upstream.json`. Cause: the old overlap hid 8 px of each tab's left side while the horizontal padding was 5 px; the percentage heights meant the section-33 vertical padding change was barely visible. Gap between icon and tab edge, measured: top/bottom 6.5 px unselected, 9 px selected before → 3 px / 4 px now (about half); left/right 6 px on both sides. To reverse: `git revert` the merge (and the fork commit).
+- Verified (local test app, real click): Code selected = tabs 64 / 33 / 33 / 33 px wide side by side (no overlap, screenshot), after clicking Costumes the Costumes tab shows its name and the others stay icons; the local test ran without a warning after `upstream.json` pointed at the pushed commit. · Not verified: the CI build; right-to-left languages.
+- Result after build: assumed working
+
 ### Session 32 — editor tabs: icon only, name on the selected one (2026-10-07)
 - Asked: the workspace tabs (Code, Costumes, Sounds, Variables, …) show only the icon when not open and the name when open; padding a quarter of the horizontal and half of the vertical. (There is no "Scenes" tab in this editor; "Files" exists but is switched off upstream.)
 - Changed: section 33 (list above): GUI fork `e1c0773` (`gui.jsx`: each tab name wrapped in a span; `gui.css`: `.tab-label` visually hidden unless the tab is selected, icon margin removed on unselected tabs, tab padding `0.125rem 1.25rem 0` → `0.0625rem 0.3125rem 0`), `upstream.json`. The hidden name stays in the page for screen readers. Reading taken: "quarter of the horizontal padding" = 1.25rem → 0.3125rem, "half the vertical" = 0.125rem top → 0.0625rem (bottom was already 0). To reverse: `git revert` the merge (and the fork commit).
