@@ -25,6 +25,7 @@ Skip redraw · batched drawing · shaders and lights · WebGPU renderer · logic
 ## Collision and sensing
 Per-frame sensing cache · faster collision / hitboxes.
 - Replace touching checks: tw `cameracontrols`, `Camera` · sp `Camera`, `Looks-Expanded`, `GIF-Manager`.
+- Done (sections 39–40): the sensing cache switches itself off when an extension replaces Drawable methods (sp/tw `Camera`, sp `Looks-Expanded` do) and re-checks skins swapped directly (sp `Camera-Sensing-Plus`). Tested in Session 40 with Camera (precision mode) and Looks-Expanded (warps): answers identical to the uncached build.
 - Read collision internals: vm `pm_motionExpansion`, `gsa_canvas`, `xeltalliv_clippingblending`, `scratch3_video_sensing` · pm `sensingV3Archival`, `Box2D`, `iris-text` · tw `box2d`, `SensingPlus`, `ClonesPlus`, `moremotion`, `images`, `Skins`, `text`, `video-sprites` · sp `Hyper-Sense(-V2)`, `Lazy-Collisions`, `Rigidbodies`, `Sprite-Panel`, `Particle-Engine`, `Turbo-Skins`, `Pen-Papers`, `Scenes`.
 
 ## Compiler
