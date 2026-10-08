@@ -455,6 +455,14 @@ function exposeLimitHeaders(res) {
   return new Response(noBody ? null : res.body, { status: res.status, statusText: res.statusText, headers });
 }
 
+// The editor's Extensions tab reads the offline galleries' extension lists (section 46), which come
+// from other addresses than the editor's: their files say every page may read them.
+function allowAnyReader(res) {
+  const headers = new Headers(res.headers);
+  headers.set("access-control-allow-origin", "*");
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
+
 // A file of the offline library, the packager or its Electron, or 404 (never the internet). Paths
 // can't leave `dir`.
 function serveFolderFile(dir, encodedPath) {
@@ -568,7 +576,8 @@ function setupProtocol() {
           const fileUrl = new URL('file://' + filePath);
           fileUrl.search = url.search;
           fileUrl.hash = url.hash;
-          return net.fetch(fileUrl.href);
+          if (url.host === "studio.penguinmod.com") return net.fetch(fileUrl.href);
+          return net.fetch(fileUrl.href).then(allowAnyReader);
         }
       }
 
@@ -586,7 +595,7 @@ function setupProtocol() {
           const fileUrl = new URL('file://' + filePath);
           fileUrl.search = url.search;
           fileUrl.hash = url.hash;
-          return net.fetch(fileUrl.href);
+          return net.fetch(fileUrl.href).then(allowAnyReader);
         }
       }
 
