@@ -75,6 +75,12 @@
 
 ## Change log (newest first)
 
+### Session 43 — Looks Expanded removed (2026-10-08)
+- Asked: remove the Looks Expanded extension completely.
+- Changed: section 43: GUI `desktop` (list entry + icon `looksExpanded.svg`), SharkPool gallery `1f08b11` (`Looks-Expanded.js`, its thumbnail, its `Extension-Keys.json` entry); `upstream.json`, `docs/SECTIONS.md`. Projects that use it no longer open ("Unknown extension"/not found). Extension check: nothing in the engine changed; Events Plus only has comments naming it. To reverse: `git revert` the merge and the fork commits.
+- Verified: editor built in the test app, starts, no Looks Expanded left in the built editor except a comment in the renderer. · Not verified: the gallery page (test app has no galleries).
+- Result after build: assumed working
+
 ### Session 42 — touching cache with SharkPool Camera (2026-10-08)
 - Asked: make Camera's normal mode work with the cache (clear a drawable's entry when its matrix is recalculated, loosen the safety check for the functions Camera replaces) and rewrite precision mode to keep each sprite's un-cameraed box on the side instead of moving sprites back and forth; use a better way if there is one.
 - Changed: section 42: Render `d3c5487` (clear in `_calculateTransform`, `_touchingVersion`, check list without the 4 update functions); Camera in the TurboWarp gallery `5cff6df` and the SharkPool gallery `8fb2a82` (new `desktop` branch; until now the untouched upstream `e168e25`): precision mode asks the renderer about hidden shadow drawables kept at the un-cameraed state (a box alone isn't enough: the pixel test needs the un-cameraed matrix too), updated only when their drawable changed. `upstream.json`, `docs/SECTIONS.md`, `docs/EXTENSION-RISKS.md`. Memory: one hidden drawable per sprite/clone that takes part in a precise check. To reverse: `git revert` the merge.
