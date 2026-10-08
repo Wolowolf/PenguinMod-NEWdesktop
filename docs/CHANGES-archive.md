@@ -75,6 +75,12 @@
 
 ## Change log (newest first)
 
+### Session 41 — project with SharkPool Camera loaded forever (2026-10-08)
+- Asked: `C:PenguinmodDefault project.pmp` loads forever; fix it.
+- Changed: section 41 (VM `ebb6780`; `upstream.json`, `docs/SECTIONS.md`): an empty `runtime.setInterpolation`. The project uses 26 extensions, among them SharkPool Camera, which calls it while loading; section 21 had removed it ("runtime.setInterpolation is not a function", the known bug from Session 40), so loading never finished. To reverse: `git revert` the merge (fork commit stays).
+- Verified (test app, the project's 17 gallery extensions copied in from the forks at the pinned commits, since the test app has no galleries): before, `vm.loadProject` of the file never finished (stopped after 40 s, with that error); after, it loads in 0.3–0.4 s with all 26 extensions, the stage and its one sprite, no errors. · Not verified: opening it by double-click / from the command line (not possible in the test app; same VM load path); other gallery extensions (only the project's 17 were checked: no other calls to removed functions).
+- Result after build: assumed working
+
 ### Session 40 — sensing cache vs extensions (2026-10-08)
 - Asked: read the new `docs/EXTENSION-RISKS.md` and test whether section 39 broke something.
 - Changed: section 40 (Render `ca43451`; `upstream.json`, `docs/SECTIONS.md`, a "Done" line in `docs/EXTENSION-RISKS.md`): the touching cache is not used while any Drawable method it relies on, or the renderer's touching helpers, has been replaced (`_touchingCacheUsable`, fixed property names so it costs nothing measurable per query); the touching table re-checks skins swapped without the setter. To reverse: `git revert` the merge.

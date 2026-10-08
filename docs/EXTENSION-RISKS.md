@@ -31,6 +31,7 @@ Per-frame sensing cache · faster collision / hitboxes.
 ## Compiler
 Remembered results · work before the game runs · type tracking · inlining custom blocks · strict mode · pre-compiled scripts · compiling to Wasm.
 - Hook the compiler: vm `jwArray`, `jwLambda`, `jwScope`, `gsa_tempVars`, `gsa_canvas`, `jg_dev`, `pm_controlsExpansion`, `pm_operatorsExpansion` · pm `More-Types`, `ScopeVars`, `divIterators`, `divVecQuat`, `divAlgEffects`, `agBuffer`, `dogeiscutObject`, `iris-text` · tw `simple3D` · sp `Events-Plus`, `Extra-Controls`, `JSON-Array`, `My-Blocks-Plus`, `Temporary-Variables`, `Captchas` (replaces block functions).
+- Done (section 44): calculations on fixed values only (`+ - * / mod`, rounding, maths functions, comparisons, and/or/not, join, length, letter of, contains) are worked out at compile time with the scripts' own helpers; same answers and types (500,000 random calculations and 4 generated projects tested), anything touching variables, lists, timer, random, sprites or extensions is untouched. Hooks above get an equal-valued input for folded child calculations; a hook for kind `op.*` itself switches folding off.
 - Inlining custom blocks also: thread/stack users below.
 
 ## Threads and scripts
