@@ -75,6 +75,13 @@
 
 ## Change log (newest first)
 
+### Session 59 — column slider for the extension list (2026-10-09)
+- Asked: under the Load Custom Extension button a segmented slider for the number of columns, 2 to 12, the tiles taking the full width.
+- Changed: section 59 (GUI `a8956af`; `upstream.json`, docs). The choice is remembered in the editor's local storage (default 3). To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only the Extensions window layout, no engine, compiler, timing or rendering change; cannot affect how extension blocks calculate.
+- Verified (test app): clicking 6 gave a 6-column grid with the picture and text filling each tile, value saved; headings span all columns; clicking another segment changed the columns. · Not verified: 12 columns readability at small window sizes, dragging across segments, the light theme.
+- Result after build: assumed working
+
 ### Session 58 — 14 more extensions removed (2026-10-09)
 - Asked: remove completely Renderer Control, Couplers, Algebraic Effects, MotionSprite, Control Controls, RGB Channels, Sound Systems, Pang API, Google Spreadsheets, Browser Fullscreen, Seeds, Sty-Lists, Project Interfaces, Libxmp.
 - Changed: section 58 (GUI `c143e2c`, VM `18b30a8`, three galleries; `upstream.json`, docs). Sound Systems was built into the VM, the others came from the galleries. Projects using them no longer open. To reverse: `git revert` the merge (fork commits stay).
