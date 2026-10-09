@@ -75,6 +75,13 @@
 
 ## Change log (newest first)
 
+### Session 50 — Tweening picture (2026-10-09)
+- Asked: Tweening had no picture.
+- Changed: section 50 (GUI `6c5adfb`: `src/lib/libraries/extensions/index.jsx`, new `penguinmod/extensions/tween.svg`; `upstream.json`): the tile used the TurboWarp gallery's Tween picture, removed in section 49; it is now a file of the editor. Checked all other remote pictures in the list: none missing. To reverse: `git revert` the merge.
+- Extension check: picture only, no engine change.
+- Verified (test app): the Tweening tile shows its picture; no broken pictures among the tiles. · Not verified: the CI build.
+- Result after build: assumed working
+
 ### Session 49 — about 60 extensions removed, three groups fused (2026-10-09)
 - Asked: remove a long list of extensions completely (old projects don't matter), fuse Motion Expansion + More Motion, the two Geolocation extensions, Events Expansion + More Events + Events+ (keep blocks the others lack, drop near-duplicates).
 - Changed: section 49 (GUI `d748f0f`, VM `875bbfa`, PenguinMod gallery `ef39b55`, TurboWarp gallery `545f0d6`, SharkPool gallery `4817b08`; `upstream.json`, docs): 14 built-in extensions (menu + icons, VM registry, folders, compiler cases), 11 PenguinMod-gallery ones, 20 TurboWarp-gallery ones, 14 SharkPool-gallery ones gone (lists: `docs/SECTIONS.md` 49). Extensions tab: 294 → 235 tiles. Motion Expansion got 3 blocks (direction to, distance from, sprite width/height) and a fixed rectangle swap; Events Expansion got 21 blocks (listed in `docs/SECTIONS.md` 49); SharkPool Geolocation got the watch/timeout/accuracy blocks. Matching decisions where names were ambiguous: "Mathematics" = the Extra Mathematics tile; "More comparison" and "More comparisons" = the one More Comparisons; "Messages+" = the TurboWarp one (SharkPool "Messages Plus" kept); "Tile grids" = the SharkPool gallery one (PenguinMod copy kept); "JSON" = the built-in one (TurboWarp "JSON" kept). To reverse: `git revert` the merge (fork commits stay).
