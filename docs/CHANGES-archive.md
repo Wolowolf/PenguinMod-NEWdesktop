@@ -75,6 +75,13 @@
 
 ## Change log (newest first)
 
+### Session 60 — column slider 2 to 8, search back (2026-10-10)
+- Asked: slider range 2 to 8; restore the search.
+- Changed: section 60 (GUI `2f93e0b`; `upstream.json`, docs). Search box at the top of the side bar again; it searches name, description and authors (not tags). To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only the Extensions window layout and search, no engine, compiler, timing or rendering change; cannot affect how extension blocks calculate.
+- Verified (test app): slider shows 2 to 8; typing 'pen' leaves 2 tiles and 2 categories, counts follow. · Not verified: the search box makes the side bar wider than the longest category name (about 315 px), not changed; the light theme.
+- Result after build: assumed working
+
 ### Session 59 — column slider for the extension list (2026-10-09)
 - Asked: under the Load Custom Extension button a segmented slider for the number of columns, 2 to 12, the tiles taking the full width.
 - Changed: section 59 (GUI `a8956af`; `upstream.json`, docs). The choice is remembered in the editor's local storage (default 3). To reverse: `git revert` the merge (fork commit stays).
