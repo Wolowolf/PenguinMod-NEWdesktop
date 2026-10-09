@@ -4,6 +4,8 @@ Used by the CLAUDE.md "Extensions" rule: Grep the idea's heading, then decide wh
 
 **How this was made (2026-10-08):** a text-pattern scan of every `.js` file (not read line by line) of the built-in extensions (VM `src/extensions`, 92) and the three galleries at the `upstream.json` commits: PenguinMod (`static/extensions`, 110), TurboWarp (`extensions`, 135), SharkPool (`extension-code`, 83). Names are file/folder names. Minified or unusual code can be missed. A few names under Input, data types and shared memory were added for what the extension is for, not from a code match. Galleries: `pm`, `tw`, `sp`; built-in: `vm`. Redo the scan after moving to newer upstream.
 
+**Session 49 (2026-10-09):** about 60 of the extensions named below were removed (Camera V1/V2/Camera, Pen+, Pen Plus V5, Gamepad, Skins, Messages+, Tween, tempVars, More Events, Events+, More Motion, GamepadExtension, hardware ones, and others; see `docs/SECTIONS.md` 49). The scan was not redone: names of removed ones are history. Events Expansion now also hooks hat events, `vm.startDrag/stopDrag/saveProjectSb3` and `RenderedTarget.setCostume` (only while loaded).
+
 **Most exposed overall** (hook several engine parts): tw `box2d`, `text`, `simple3D`, `cameracontrols`, `Camera`, `video-sprites`, `penPlus`, `clippingblending`, `SensingPlus` · sp `Camera`, `Particle-Engine`, `Events-Plus`, `Extra-Controls`, `Pause-Utilities`, `Hyper-Sense(-V2)`, `Looks-Expanded`, `Script-Control` · pm `Pause-Utilities`, `iris-text`, `PenPlus`, `lighting`, `qoan-renderer` · vm `gsa_canvas`, `dt_cameracontrols`, `jg_runtime`, `xeltalliv_clippingblending`, `pm_sensingExpansion`.
 
 ## No extension at risk
