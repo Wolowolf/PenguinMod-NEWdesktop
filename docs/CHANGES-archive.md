@@ -75,6 +75,13 @@
 
 ## Change log (newest first)
 
+### Session 55 — extension library as one long list (2026-10-09)
+- Asked: remove the library search and the source filters (PenguinMod, TurboWarp, Scratch, the three galleries); one long list with minimal category headings; clicking a category scrolls to it instead of being a check box.
+- Changed: section 55 (GUI `7a69c5d`; `upstream.json`, docs). Favorites come first, then categories in order, empty categories skipped, extensions without a category under "Other". To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only the list layout in the Extensions window, no engine, compiler, timing or rendering change; cannot affect how extension blocks calculate.
+- Verified (test app): 19 headings in the list, 19 shortcuts with counts, no search box, no check boxes; clicking "Programming & Developer Tools" scrolled so its heading sat at the top. · Not verified: the favorites group with a starred extension, items of the three galleries (the test app has none), dark/light look. Session 54 has no entry here (it was merged without one).
+- Result after build: assumed working
+
 ### Session 53 — 24 more extensions removed (2026-10-09)
 - Asked: delete these 24 (chosen from the checklist): AuthPenguin, Git Penguin, Newgrounds, Game Jolt, Free Servers, Text to Speech V2, DECtalk Text to Speech, Vibration, Screen Resolution, NFCWarp, Comment Blocks, How many lines?, ExtForge, Scratchblocks, Paint Utils, Doodle Recognition, TurboSynth, Beepbox Player, Chess, Blobs, Data Analysis, Timezones, Regular Expressions, RixxyX.
 - Changed: section 53 (GUI `82853ce`, PenguinMod gallery `f753678`, TurboWarp gallery `f1b1515`, SharkPool gallery `db1af05`; `upstream.json`, docs). PenguinMod gallery (12): list entries, code, banners, 4 docs pages (AuthPenguin, FreeServers, PaintUtils, TurboSynth). TurboWarp gallery (9): list line, code, image, docs (Game Jolt), 133 + 1,486 translation keys, 8 image credits, the CommentBlocks old-address alias, DECtalk's downloaded dependency. SharkPool gallery (2): list entries, code, one thumbnail. GUI: the ExtForge menu entry (an external link) and its picture. Kept on purpose: Newgrounds Audio, Resolution (PenguinMod), RegExp, Text To Speech: Redone. To reverse: `git revert` the merge (fork commits stay).
