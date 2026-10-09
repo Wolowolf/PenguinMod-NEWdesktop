@@ -75,6 +75,13 @@
 
 ## Change log (newest first)
 
+### Session 58 — 14 more extensions removed (2026-10-09)
+- Asked: remove completely Renderer Control, Couplers, Algebraic Effects, MotionSprite, Control Controls, RGB Channels, Sound Systems, Pang API, Google Spreadsheets, Browser Fullscreen, Seeds, Sty-Lists, Project Interfaces, Libxmp.
+- Changed: section 58 (GUI `c143e2c`, VM `18b30a8`, three galleries; `upstream.json`, docs). Sound Systems was built into the VM, the others came from the galleries. Projects using them no longer open. To reverse: `git revert` the merge (fork commits stay).
+- Extension check: removes extensions only (no engine, compiler, timing or rendering change); other extensions do not call these (searched the galleries and the GUI for their file names).
+- Verified (test app): editor builds and opens; `isBuiltinExtension('jgExtendedAudio')` is false, the built files contain none of the removed files. · Not verified: the extension library window itself, the three galleries' own builds (the test app has none).
+- Result after build: assumed working
+
 ### Session 57 — extension list polish (2026-10-09)
 - Asked: credits like the author names (no word "Credits"); heading text pure white; favorites doubled instead of moved; delete the "Extensions" text and arrow, the "Filters" and "Actions" headings, the "Other" entry and the "Custom Extension" tile; "/" instead of "," and "&" in category names; "number | name" side bar entries with aligned bars; side bar as wide as the longest name; no TurboWarp square; a quarter of the title / description padding.
 - Changed: section 57 (GUI `5a5dece`; `upstream.json`, docs). To reverse: `git revert` the merge (fork commit stays).
