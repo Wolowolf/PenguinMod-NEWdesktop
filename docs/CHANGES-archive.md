@@ -75,6 +75,13 @@
 
 ## Change log (newest first)
 
+### Session 51 — one of each: Custom Styles, Color Picker, All Menus, XML, Canvas Effects, LZ Compress (2026-10-09)
+- Asked: for these six, keep only one: delete the oldest version, or if they are the same delete the gallery (extension) copy and keep the built-in one.
+- Changed: section 51 (GUI `0be1822`, VM `0da9157`, PenguinMod gallery `ba927b2`, TurboWarp gallery `579e6ce`; `upstream.json`, docs). Deleted: built-in Custom Styles, Color Picker, Canvas Effects (the TurboWarp ones are newer: updated until 2026, more options; the built-in Canvas Effects had one extra block, "set canvas image", that is gone now); PenguinMod copy of All Menus (2023 simple version; TurboWarp one kept); TurboWarp XML by mybearworld (Feb 2024; the built-in XML is a different extension, newest file Oct 2025, kept); TurboWarp LZ Compress (same blocks as the built-in one, which is kept). Age judged from commit dates on GitHub and from the code. To reverse: `git revert` the merge (fork commits stay).
+- Extension check: no engine change; only extensions and their menu entries removed.
+- Verified (test app, galleries built locally): each of the six names appears exactly once (229 tiles, no broken pictures); the kept ones load (built-in LZ Compress and XML, the four TurboWarp ones) and LZ compress gives a result. · Not verified: the CI build.
+- Result after build: assumed working
+
 ### Session 50 — Tweening picture (2026-10-09)
 - Asked: Tweening had no picture.
 - Changed: section 50 (GUI `6c5adfb`: `src/lib/libraries/extensions/index.jsx`, new `penguinmod/extensions/tween.svg`; `upstream.json`): the tile used the TurboWarp gallery's Tween picture, removed in section 49; it is now a file of the editor. Checked all other remote pictures in the list: none missing. To reverse: `git revert` the merge.
