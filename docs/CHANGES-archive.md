@@ -75,6 +75,13 @@
 
 ## Change log (newest first)
 
+### Session 57 — extension list polish (2026-10-09)
+- Asked: credits like the author names (no word "Credits"); heading text pure white; favorites doubled instead of moved; delete the "Extensions" text and arrow, the "Filters" and "Actions" headings, the "Other" entry and the "Custom Extension" tile; "/" instead of "," and "&" in category names; "number | name" side bar entries with aligned bars; side bar as wide as the longest name; no TurboWarp square; a quarter of the title / description padding.
+- Changed: section 57 (GUI `5a5dece`; `upstream.json`, docs). To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only the Extensions window layout, no engine, compiler, timing or rendering change; cannot affect how extension blocks calculate.
+- Verified (test app): starred Motion Expansion appears under Favorites and again in its category; headings white at opacity 1; no Custom tile, no Other; side bar 241 px wide with aligned bars; credits shown on the picture; no header, no h3, no inset icons. · Not verified: light theme (white headings are only for the dark theme), the Other heading (no extension is uncategorized now), long credits texts.
+- Result after build: assumed working
+
 ### Session 56 — author names on the extension picture (2026-10-09)
 - Asked: author names in the bottom right corner of the extension picture, without "created by" or commas, one per line, right-aligned, pure white at 50% opacity (to make each tile much smaller).
 - Changed: section 56 (GUI `3a3e321`; `upstream.json`, docs). The author blocks under the picture are removed (credits, "Requires" and extra labels stay). To reverse: `git revert` the merge (fork commit stays).
