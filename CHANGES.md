@@ -28,7 +28,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ### Session 56 — author names on the extension picture (2026-10-09)
 - Asked: author names in the bottom right corner of the extension picture, without "created by" or commas, one per line, right-aligned, pure white at 50% opacity (to make each tile much smaller).
-- Changed: section 56 (GUI ; , docs). The author blocks under the picture are removed (credits, "Requires" and extra labels stay). To reverse:  the merge (fork commit stays).
+- Changed: section 56 (GUI `3a3e321`; `upstream.json`, docs). The author blocks under the picture are removed (credits, "Requires" and extra labels stay). To reverse: `git revert` the merge (fork commit stays).
 - Extension check: only the tile layout in the Extensions window, no engine, compiler, timing or rendering change; cannot affect how extension blocks calculate.
 - Verified (test app): 27 tiles show names; computed style white at opacity 0.5; two names on two lines, right-aligned (screenshot). · Not verified: very long names or many authors on a bright picture, light theme. The tiles are only as much smaller as the removed block (descriptions still set the height).
 - Result after build: assumed working
