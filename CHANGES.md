@@ -33,18 +33,18 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Verified (test app): editor builds and opens; `isBuiltinExtension('jgExtendedAudio')` is false, the built files contain none of the removed files. · Not verified: the extension library window itself, the three galleries' own builds (the test app has none).
 - Result after build: assumed working
 
+### Session 58 — column slider for the extension list (2026-10-09)
+- Asked: under the Load Custom Extension button a segmented slider for the number of columns, 2 to 12, the tiles taking the full width.
+- Changed: section 58 (GUI `a8956af`; `upstream.json`, docs). The choice is remembered in the editor's local storage (default 3). To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only the Extensions window layout, no engine, compiler, timing or rendering change; cannot affect how extension blocks calculate.
+- Verified (test app): clicking 6 gave a 6-column grid with the picture and text filling each tile, value saved; headings span all columns; clicking another segment changed the columns. · Not verified: 12 columns readability at small window sizes, dragging across segments, the light theme.
+- Result after build: assumed working
+
 ### Session 57 — extension list polish (2026-10-09)
 - Asked: credits like the author names (no word "Credits"); heading text pure white; favorites doubled instead of moved; delete the "Extensions" text and arrow, the "Filters" and "Actions" headings, the "Other" entry and the "Custom Extension" tile; "/" instead of "," and "&" in category names; "number | name" side bar entries with aligned bars; side bar as wide as the longest name; no TurboWarp square; a quarter of the title / description padding.
 - Changed: section 57 (GUI `5a5dece`; `upstream.json`, docs). To reverse: `git revert` the merge (fork commit stays).
 - Extension check: only the Extensions window layout, no engine, compiler, timing or rendering change; cannot affect how extension blocks calculate.
 - Verified (test app): starred Motion Expansion appears under Favorites and again in its category; headings white at opacity 1; no Custom tile, no Other; side bar 241 px wide with aligned bars; credits shown on the picture; no header, no h3, no inset icons. · Not verified: light theme (white headings are only for the dark theme), the Other heading (no extension is uncategorized now), long credits texts.
-- Result after build: assumed working
-
-### Session 56 — author names on the extension picture (2026-10-09)
-- Asked: author names in the bottom right corner of the extension picture, without "created by" or commas, one per line, right-aligned, pure white at 50% opacity (to make each tile much smaller).
-- Changed: section 56 (GUI `3a3e321`; `upstream.json`, docs). The author blocks under the picture are removed (credits, "Requires" and extra labels stay). To reverse: `git revert` the merge (fork commit stays).
-- Extension check: only the tile layout in the Extensions window, no engine, compiler, timing or rendering change; cannot affect how extension blocks calculate.
-- Verified (test app): 27 tiles show names; computed style white at opacity 0.5; two names on two lines, right-aligned (screenshot). · Not verified: very long names or many authors on a bright picture, light theme. The tiles are only as much smaller as the removed block (descriptions still set the height).
 - Result after build: assumed working
 
 ## Template (keep entries this short)
