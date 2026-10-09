@@ -6,6 +6,8 @@ Used by the CLAUDE.md "Extensions" rule: Grep the idea's heading, then decide wh
 
 **Session 49 (2026-10-09):** about 60 of the extensions named below were removed (Camera V1/V2/Camera, Pen+, Pen Plus V5, Gamepad, Skins, Messages+, Tween, tempVars, More Events, Events+, More Motion, GamepadExtension, hardware ones, and others; see `docs/SECTIONS.md` 49). The scan was not redone: names of removed ones are history. Events Expansion now also hooks hat events, `vm.startDrag/stopDrag/saveProjectSb3` and `RenderedTarget.setCostume` (only while loaded).
 
+**Session 52 (2026-10-09):** the hidden built-in ones (`tw`, `jg3d`/`jg3dVr`/`jgVr`/`fr3d`, canvas/newCanvas = `gsa_canvas`, `jg_files`, `pm_inlineblocks` and others, list in `docs/SECTIONS.md` 52) and the unlisted gallery files were deleted; names of those below are history. The scan was not redone.
+
 **Most exposed overall** (hook several engine parts): tw `box2d`, `text`, `simple3D`, `cameracontrols`, `Camera`, `video-sprites`, `penPlus`, `clippingblending`, `SensingPlus` · sp `Camera`, `Particle-Engine`, `Events-Plus`, `Extra-Controls`, `Pause-Utilities`, `Hyper-Sense(-V2)`, `Looks-Expanded`, `Script-Control` · pm `Pause-Utilities`, `iris-text`, `PenPlus`, `lighting`, `qoan-renderer` · vm `gsa_canvas`, `dt_cameracontrols`, `jg_runtime`, `xeltalliv_clippingblending`, `pm_sensingExpansion`.
 
 ## No extension at risk
