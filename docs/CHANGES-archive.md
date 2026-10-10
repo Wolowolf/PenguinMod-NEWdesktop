@@ -75,6 +75,13 @@
 
 ## Change log (newest first)
 
+### Session 61 — favorite star top left, scales with columns (2026-10-10)
+- Asked: the star that adds to favorites at the top left of the extension picture, scaling with the column change.
+- Changed: section 61 (GUI `88e7af0`; `upstream.json`, docs). Size 16 to 40 px, 11% of the tile width. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only the Extensions window layout, no engine, compiler, timing or rendering change; cannot affect how extension blocks calculate.
+- Verified (test app): star 16 px at 8 columns (tile 86 px), 28 px at 3 columns (tile 255 px), 5 px from the picture's top left corner; screenshot at 3 columns. · Not verified: the delete button of custom extensions (unchanged position, below the picture), the light theme.
+- Result after build: assumed working
+
 ### Session 60 — column slider 2 to 8, search back (2026-10-10)
 - Asked: slider range 2 to 8; restore the search.
 - Changed: section 60 (GUI `2f93e0b`; `upstream.json`, docs). Search box at the top of the side bar again; it searches name, description and authors (not tags). To reverse: `git revert` the merge (fork commit stays).
