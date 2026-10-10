@@ -75,6 +75,13 @@
 
 ## Change log (newest first)
 
+### Session 62 — extension risk doc refreshed (2026-10-10)
+- Asked: update `docs/EXTENSION-RISKS.md` to the extensions still present, knowing how each works.
+- Changed: `docs/EXTENSION-RISKS.md` rewritten for the 205 extensions still present (vm 41, pm 48, tw 70, sp 46); removed ones dropped; each named with how it reaches in. New parts: what this app already overrides (section 21 forced options, no interpolation), the sensing cache and compiler folding per extension, editor (blocks library) patches, a self-contained list. Scanner kept outside the repo: `PenguinMod-test\scan-extensions.mjs`. To reverse: `git revert` the merge.
+- Extension check: documentation only, no code change; cannot affect extension blocks.
+- Verified: scanner run on the pinned checkouts (205 found, from the same lists the Extensions tab uses); every one of the 205 is named in the doc; forced options, empty `setInterpolation`, the cache safety list and `ar`'s own `frameLoop.start` read in the code. · Not verified: libraries bundled inside extensions were not read; the "hats checked every frame" list is a pattern scan; no extension was run.
+- Result after build: no build (`.md` only)
+
 ### Session 61 — favorite star top left, scales with columns (2026-10-10)
 - Asked: the star that adds to favorites at the top left of the extension picture, scaling with the column change.
 - Changed: section 61 (GUI `88e7af0`; `upstream.json`, docs). Size 16 to 40 px, 11% of the tile width. To reverse: `git revert` the merge (fork commit stays).
