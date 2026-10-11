@@ -75,6 +75,13 @@
 
 ## Change log (newest first)
 
+### Session 63 — list lookup tables for "item # of" and "contains" (2026-10-10)
+- Asked: fast "item # of" / "list contains" on long lists via a lookup table, always up to date (also when extensions edit lists), little memory, no slowdown for short or often-changed lists, same matching; before/after measurement, results identical.
+- Changed: section 62 (VM `73de222`; `upstream.json`, docs). New `src/engine/list-lookup.js`; lists keep items in `_value`, reading or setting `value` (extensions, editor) turns that list's table off; the engine's list code uses `_value`. Table for lists of 32+ items once searches compared 3× the length since the last change (up to 48× for lists whose tables were wasted). To reverse: `git revert` the merge (fork commit stays).
+- Extension check: extensions that touch a list through `value` (ListTools, json, JSON-Array, compiler-patching ones, ...) turn its table off and get the old search; tested with simulated outside edits (Node test and "uncached" app runs), no real extension run.
+- Verified: Node, `bench\list-lookup-eq.js`: 1.1 million answers equal to the old searches on tricky values, after engine changes and outside edits. Test app, `bench\listcheck.mjs` (20,000 mixed items; 3,000 searches with replace/insert/delete/add, then 8,000 searches): old engine compiled + interpreted and new engine compiled, interpreted, uncached, uncached interpreted give identical results and final list; search phase ~1.06 s → under 1 ms, changing phase ~1.1 s in both. Benchmark 3-list-search (100,000 items, 16 searches per frame): 34.8 → 16.0 ms per frame (60 FPS limit), engine work 34.25 → 0.10 ms. Node: 10-item lists not slower; change-then-search patterns at most 1.06× slower; table memory 6.8 MB per 100,000 different words (3.7 MB numbers). Table stays on with the list monitor shown and after saving; clones copy local lists. · Not verified: Scratch 2 projects (`sb2.js` changed the same way, not run); a real extension's list block in the app.
+- Result after build: assumed working
+
 ### Session 62 — extension risk doc refreshed (2026-10-10)
 - Asked: update `docs/EXTENSION-RISKS.md` to the extensions still present, knowing how each works.
 - Changed: `docs/EXTENSION-RISKS.md` rewritten for the 205 extensions still present (vm 41, pm 48, tw 70, sp 46); removed ones dropped; each named with how it reaches in. New parts: what this app already overrides (section 21 forced options, no interpolation), the sensing cache and compiler folding per extension, editor (blocks library) patches, a self-contained list. Scanner kept outside the repo: `PenguinMod-test\scan-extensions.mjs`. To reverse: `git revert` the merge.
