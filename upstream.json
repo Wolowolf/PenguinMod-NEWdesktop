@@ -8,7 +8,7 @@
   "PenguinMod-Vm": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Vm.git",
     "branch": "desktop",
-    "commit": "5a73a9594c9af100c2f207250684894339f92933"
+    "commit": "67379f6ca55779e7d17df7bf078eb5777b2d513f"
   },
   "PenguinMod-Blocks": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Blocks.git",
@@ -38,7 +38,7 @@
   "SharkPools-Extensions": {
     "repo": "https://github.com/Wolowolf/SharkPools-Extensions.git",
     "branch": "desktop",
-    "commit": "ca6cecb14f0269d8e941b00ab9af4a9349616642"
+    "commit": "3773f238713aaf7f68a2ca9ff989fbc4a047dff2"
   },
   "PenguinMod-Packager": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Packager.git",
