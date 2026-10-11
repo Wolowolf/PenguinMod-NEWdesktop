@@ -75,6 +75,13 @@
 
 ## Change log (newest first)
 
+### Session 65 — extension categories reorganised (2026-10-10)
+- Asked: re-do the extension library categories as logically as possible (beginner game makers first, other developers not left out), every extension in one, and order each category from most used to most niche with extensions that work together side by side (e.g. Pen, Pen Plus V7, Layer Control, Pen Papers).
+- Changed: section 64 (GUI `50b573f`; `upstream.json`, docs). 21 → 25 categories: new Animation / Particles, Pen / Drawing / Colors, Camera / Screen, Video / Webcam (webcam split from the game camera), Web Services / Accounts (split from network), Debugging / Editor Tools; renamed or merged the others. Tiles inside a category now follow the table's order instead of load order. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only the Extensions window's grouping and order, no engine, compiler, timing or rendering change; cannot affect how extension blocks calculate.
+- Verified: script check: all 192 library extensions (built-in list + the three gallery lists at the pinned commits) in exactly one category, no unknown entries. Test app with the earlier-built galleries linked in: 25 headings with the expected counts (10, 6, 11, 3, 7, 3, 5, 4, 8, 10, 7, 7, 7, 7, 15, 11, 5, 5, 6, 12, 11, 11, 8, 9, 4); Pen, Physics, Sound and Block Expansions in table order; side bar shows all 25 without "Other". Those gallery copies were built before section 58 and still had its 9 removed extensions (shown under "Other"); the pinned lists don't have them. · Not verified: the light theme.
+- Result after build: assumed working
+
 ### Session 64 — hats checked only when their answer can change (2026-10-10)
 - Asked: make "when <condition>", "when timer >" and the other edge-activated hats event-driven (checked only when what they depend on can have changed); keep extension hats and hats on unannounced values (timer, loudness, mouse, keys, sensing, touching) firing on the same frame; no slowdown for few hats; before/after measurement.
 - Changed: section 63 (VM `4963ae6`; `upstream.json`, docs). Instead of adding change notices to every variable (measured in Node: variable writes ~1.3× slower in every project, or 20–30× for converted variables), each eligible hat remembers the values it read and is re-checked when one differs; "when timer > value" compares the timer directly. Everything else is checked every frame as before. To reverse: `git revert` the merge (fork commit stays).
