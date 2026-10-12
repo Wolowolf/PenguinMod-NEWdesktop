@@ -74,6 +74,13 @@
 ---
 
 ## Change log (newest first)
+### Session 74 — difficulty badge on extension pictures (2026-10-12)
+- Asked: rate every extension 1 to 4 on how easy it is to use/understand, shown as a small number on a black circle in the bottom left corner of each extension picture: 1 green, 2 yellow, 3 orange, 4 red.
+- Changed: section 74 (GUI `646c0f9`; `upstream.json`, docs). Ratings for all 144 library extensions in `src/lib/libraries/extension-difficulty.js` (1: a few plain blocks that work at once, 2: more blocks or one new idea, 3: needs some understanding, 4: advanced like 3D, shaders, networking, JavaScript, encryption); 30 / 71 / 31 / 12. The badge scales with the tile like the star and is round although section 10 squares everything else. To change a rating: edit that file. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only the Extensions window's tiles; no engine, compiler, timing or rendering change; cannot affect how extension blocks calculate.
+- Verified (test app, galleries linked in temporarily): 144 tiles, 144 badges; colours 30 green, 71 yellow, 31 orange, 12 red; black, round, 4 px from the picture's bottom left; screenshot of 3D / AR and Input. · Not verified: the light theme; the ratings are judgement, not tested with beginners.
+- Result after build: assumed working
+
 ### Session 73 — gallery extensions behave like built-ins (2026-10-12)
 - Asked: every extension currently in the app should behave and be stored like the built-in ones (chosen: keep the files in the galleries, treat them as built-ins in the editor).
 - Changed: section 72 (VM `f525785`), section 73 (Packager `29f4452`), `app/electron-main.js`, `upstream.json`, docs. The app serves `https://studio.penguinmod.com/__extension-ids__.json` (extension ID => gallery address, read once from the gallery folders: first `id:` after `getInfo` in every file with `Scratch.extensions.register`; ~135 of ~139 files). The VM loads it at start, waits for it before loading a project, and saves a gallery extension by ID only (no `extensionURLs` entry), like a built-in; old projects with addresses load as before. The packager puts the addresses back before baking. Also fixes section 71: packaged projects load their baked `data:` copies, which section 71 would have refused (flag `unrestrictedExtensionURLs`, set by the generated package). Not changed: extension code stays in the gallery folders, the library list, the `<ID>` of blocks. To reverse: revert the PR (and the two fork commits in `upstream.json`).
