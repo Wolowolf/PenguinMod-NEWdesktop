@@ -74,6 +74,13 @@
 ---
 
 ## Change log (newest first)
+### Session 76 — only author names on extension pictures (2026-10-13)
+- Asked: in the semi-transparent author names on the pictures, delete everything that is not a name or pseudonym ("new thread" by, "Some blocks from", ...).
+- Changed: section 76 (GUI `0a58102`; `upstream.json`, docs). Six credits in the built-in list reduced to the names ("easings.net", a website, dropped); names are also split at "&" and notes in brackets such as "(contributor)" (two SharkPool gallery entries) are left out. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only text on the Extensions window's pictures; no engine, compiler, timing or rendering change; cannot affect how extension blocks calculate.
+- Verified (test app, galleries linked in temporarily): 144 tiles, 68 distinct names shown, none containing by / from / some / blocks / inspired / contributor / thread / brackets / & / quotes / ".net". · Not verified: "gaimerI" and "StackOverflow" are kept as written in the galleries.
+- Result after build: assumed working
+
 ### Session 75 — custom extension button gone; difficulty filter (2026-10-13)
 - Asked: delete the "Load Custom Extension" button and all its code; under the column bar a bar to hide each difficulty, and under it a "hide difficulty level" button that hides the circles; move the circle up so its left and bottom gaps are equal.
 - Changed: section 75 (GUI `5ff24fe`; `upstream.json`, docs). Removed: the side bar button, the Custom Extension entry, the custom extension window and its modal state, the block context menu's "Replace Extension" (it opened that window), and the saved custom-extension tiles among favorites with their delete button (only that window made them). New: switches 1–4 and a Hide/Show difficulty level button, both remembered. The picture is now a block, so the circle is 4 px from its left and bottom edges. To reverse: `git revert` the merge (fork commit stays).
