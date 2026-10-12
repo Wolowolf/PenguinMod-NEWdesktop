@@ -74,6 +74,13 @@
 ---
 
 ## Change log (newest first)
+### Session 72 — only built-in gallery extensions can load (2026-10-12)
+- Asked: make it so no extension can ever be added except by changing the repo (updates).
+- Changed: section 71 (VM `f88cb70`; `upstream.json`, docs): `_isValidExtensionURL` in `extension-manager.js` accepts only https addresses of the three offline galleries; web addresses, `data:`, `blob:`, `file:` are refused, so the custom extension window (URL / file / text), dropped .js files, `?extension=` links and project files cannot add outside code. The window itself is still in the GUI but its "Load" now fails with "Invalid extension URL". To reverse: revert the fork commit and `upstream.json`.
+- Extension check: only decides which addresses may load; gallery extensions load as before; no engine, compiler, timing or rendering change.
+- Verified (test app): web, data:, file: and blob: addresses are refused; the allow-list answers correctly for 10 sample addresses (gallery hosts yes; look-alike hosts, http and other GitHub owners no). · Not verified: a gallery extension actually loading (the test app has no galleries), a project with outside extensions being opened.
+- Result after build: assumed working
+
 ### Session 71 — "test" category removed again (2026-10-12)
 - Asked: remove the five Lemon gallery extensions and the "test" category, revert the change.
 - Changed: section 70 (GUI `0bebb86`; `upstream.json`, docs) = revert of section 69, so the editor code equals section 66/68 state. Before that, bundling the five files into the app was not done: the permission check refused it, and the Lemon gallery repository has no licence.
