@@ -74,6 +74,13 @@
 ---
 
 ## Change log (newest first)
+### Session 71 — "test" category removed again (2026-10-12)
+- Asked: remove the five Lemon gallery extensions and the "test" category, revert the change.
+- Changed: section 70 (GUI `0bebb86`; `upstream.json`, docs) = revert of section 69, so the editor code equals section 66/68 state. Before that, bundling the five files into the app was not done: the permission check refused it, and the Lemon gallery repository has no licence.
+- Extension check: only the library list; no engine, compiler, timing or rendering change.
+- Verified: the diff of the revert is exactly the reverse of section 69 (2 files). · Not verified: not built or run locally.
+- Result after build: assumed working
+
 ### Session 70 — "test" category with 5 Lemon gallery extensions (2026-10-12)
 - Asked: add five extensions from bludisanlemon.github.io/lemons-gallery (screenshot, autoclick_detect, bluetooth, LiveKeyboard, IndexedDB) in a category named test.
 - Changed: section 69 (GUI `9aa34e9`; `upstream.json`, docs): `extension-categories.js` gets a last category "test" with the five; `extensions/index.jsx` gets five entries (generic icon) that load from their web addresses (single slash; the double slash in the given addresses was dropped). Reverse: revert the commit. The addresses are not blocked, so the app fetches them online when added (not bundled offline).
