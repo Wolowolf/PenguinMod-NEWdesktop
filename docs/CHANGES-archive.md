@@ -74,6 +74,12 @@
 ---
 
 ## Change log (newest first)
+### Session 67 — 11 extensions removed, 3 pairs merged (2026-10-11)
+- Asked: remove Cast, Fetch+, Fetch, Webhooks, Storage +, Server Storage, Update File (direct access) and rxFS completely (code, gallery, `EXTENSION-RISKS.md`); merge Format Numbers into Number Utilities, Numerical Encoding V2 into Encoding, HTTP into Network (only blocks with a different function); report hidden or unused extensions.
+- Changed: section 66 (GUI `334836b`, PenguinMod gallery `4dc1cf1`, TurboWarp gallery `7fb6add`, SharkPool gallery `ca6cecb`; `upstream.json`, docs). Read as: "Fetch" = TurboWarp Fetch, "Fetch+" = SharkPool Fetch+ (`Fetch-Progress.js`), "Storage +" = Storage Plus (Gen1x). Merges: Number Utilities gets only the short notation (K, M, B…) block; Encoding gets a "Numbers (cloud variables)" menu choice instead of two new blocks; Network gets request/response headers, multipart forms and a data: URL choice, not HTTP's send/status blocks or hats. `EXTENSION-RISKS.md`: counts 165 → 154. To reverse: `git revert` the merge (fork commits stay).
+- Extension check: only extension lists and the code of three network/text/number extensions, no engine, compiler, timing or rendering change; Network's old request blocks behave as before (checked in Node for a text POST).
+- Verified: Node with a fake `Scratch` (17 checks): short notation identical to Format Numbers for 44 number/decimal pairs; Encoding "Numbers" gives the same digits as Numerical Encoding V2 and decodes back (emoji, 1001 characters, bad input → empty); Network sends set headers, reads response headers, data: URL, multipart body without Content-Type, invalid header JSON ignored. TurboWarp and PenguinMod gallery builds OK, eslint/prettier clean on the changed TurboWarp files. Test app with these gallery builds linked in: none of the 11 removed tiles listed (144 tiles), the three kept ones listed; the three extensions load, new blocks registered, `1234567` → `1.23M`, Numbers round trip in the app. · Not verified: a real request to a server with the new Network blocks; the blocks' look in the palette.
+- Result after build: assumed working
 
 ### Session 66 — Better Comments built in, 40 extensions removed (2026-10-11)
 - Asked: make Better Comments part of the editor, always on for every comment; delete 36 named extensions completely (and the "Debugging / Editor Tools" category) and every mention of them in `docs/EXTENSION-RISKS.md`.
