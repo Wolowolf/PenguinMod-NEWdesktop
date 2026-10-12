@@ -74,6 +74,12 @@
 ---
 
 ## Change log (newest first)
+### Session 68 — hidden extensions removed (2026-10-11)
+- Asked: remove all the hidden extensions (reported in Session 67).
+- Changed: section 67 (VM `67379f6`, SharkPool gallery `3773f23`; `upstream.json`, docs). Read as: the 11 VM built-ins without a library tile + the 3 SharkPool extension files no list points to; unused pictures left (not extensions). `EXTENSION-RISKS.md`: counts 154 → 144. To reverse: `git revert` the merge (fork commits stay).
+- Extension check: only removes extensions and their registry lines, no engine, compiler, timing or rendering change; nothing else in the VM or GUI referred to them; projects with Lily's Utilities or Clipping & Blending load them from their saved gallery URL (VM tries the URL first, read in the code).
+- Verified (test app): the editor starts, the 11 ids are no longer built-ins, `pen`, `jgTween` and `SPjavascriptV2` still are and `jgTween` loads, the Extensions window opens (36 built-in tiles, no galleries in the test app). · Not verified: opening an old project that used Lily's Utilities or Clipping & Blending.
+- Result after build: assumed working
 ### Session 67 — 11 extensions removed, 3 pairs merged (2026-10-11)
 - Asked: remove Cast, Fetch+, Fetch, Webhooks, Storage +, Server Storage, Update File (direct access) and rxFS completely (code, gallery, `EXTENSION-RISKS.md`); merge Format Numbers into Number Utilities, Numerical Encoding V2 into Encoding, HTTP into Network (only blocks with a different function); report hidden or unused extensions.
 - Changed: section 66 (GUI `334836b`, PenguinMod gallery `4dc1cf1`, TurboWarp gallery `7fb6add`, SharkPool gallery `ca6cecb`; `upstream.json`, docs). Read as: "Fetch" = TurboWarp Fetch, "Fetch+" = SharkPool Fetch+ (`Fetch-Progress.js`), "Storage +" = Storage Plus (Gen1x). Merges: Number Utilities gets only the short notation (K, M, B…) block; Encoding gets a "Numbers (cloud variables)" menu choice instead of two new blocks; Network gets request/response headers, multipart forms and a data: URL choice, not HTTP's send/status blocks or hats. `EXTENSION-RISKS.md`: counts 165 → 154. To reverse: `git revert` the merge (fork commits stay).
