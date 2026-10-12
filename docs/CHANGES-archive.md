@@ -74,6 +74,13 @@
 ---
 
 ## Change log (newest first)
+### Session 69 — packager: always the editor's project, fewer runtime options (2026-10-12)
+- Asked: in the packager, remove the "Select project" section (the project is always the one the packager was opened from) and everything in Runtime Options except Turbo Mode and Close window when project stops, including the note.
+- Changed: section 68 (Packager `57e0fa5`; `upstream.json`, docs). Read as: also remove the code behind them (loading by ID/URL, its error, unused strings) and the Stage size / resize mode part of that section. Turbo starts as the project has it and the checkbox wins; the stage size is copied from the project (window size). `pmp-protobuf` left in `package.json` (removing it means a new `bun.lock` and npm snapshot). To reverse: `git revert` the merge (fork commit stays).
+- Extension check: packager page only, plus one turbo-mode call after loading; no engine, compiler, timing or rendering change.
+- Verified (test app): project set to 640×360 + turbo in the editor, packager opened with `import_from`: no Select Project section, Runtime Options shows only the two options, turbo ticked; unticked → preview runs with turbo off, 640×360, 60 FPS (project's), infinite clones; packager opened without a project shows the "Open the packager from the editor" message. · Not verified: a real File → Package project click (opened by script), an exported HTML / Windows app, other languages.
+- Result after build: assumed working
+
 ### Session 68 — hidden extensions removed (2026-10-11)
 - Asked: remove all the hidden extensions (reported in Session 67).
 - Changed: section 67 (VM `67379f6`, SharkPool gallery `3773f23`; `upstream.json`, docs). Read as: the 11 VM built-ins without a library tile + the 3 SharkPool extension files no list points to; unused pictures left (not extensions). `EXTENSION-RISKS.md`: counts 154 → 144. To reverse: `git revert` the merge (fork commits stay).
