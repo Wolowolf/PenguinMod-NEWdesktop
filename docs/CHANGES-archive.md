@@ -74,6 +74,13 @@
 ---
 
 ## Change log (newest first)
+### Session 70 — "test" category with 5 Lemon gallery extensions (2026-10-12)
+- Asked: add five extensions from bludisanlemon.github.io/lemons-gallery (screenshot, autoclick_detect, bluetooth, LiveKeyboard, IndexedDB) in a category named test.
+- Changed: section 69 (GUI `9aa34e9`; `upstream.json`, docs): `extension-categories.js` gets a last category "test" with the five; `extensions/index.jsx` gets five entries (generic icon) that load from their web addresses (single slash; the double slash in the given addresses was dropped). Reverse: revert the commit. The addresses are not blocked, so the app fetches them online when added (not bundled offline).
+- Extension check: only the library list; no engine, compiler, timing or rendering change.
+- Verified (test app): library shows a "TEST" heading last with the five tiles. · Not verified: that the five extensions load and work (not added to a project).
+- Result after build: assumed working
+
 ### Session 69 — packager: always the editor's project, fewer runtime options (2026-10-12)
 - Asked: in the packager, remove the "Select project" section (the project is always the one the packager was opened from) and everything in Runtime Options except Turbo Mode and Close window when project stops, including the note.
 - Changed: section 68 (Packager `57e0fa5`; `upstream.json`, docs). Read as: also remove the code behind them (loading by ID/URL, its error, unused strings) and the Stage size / resize mode part of that section. Turbo starts as the project has it and the checkbox wins; the stage size is copied from the project (window size). `pmp-protobuf` left in `package.json` (removing it means a new `bun.lock` and npm snapshot). To reverse: `git revert` the merge (fork commit stays).
