@@ -74,6 +74,13 @@
 ---
 
 ## Change log (newest first)
+### Session 75 — custom extension button gone; difficulty filter (2026-10-13)
+- Asked: delete the "Load Custom Extension" button and all its code; under the column bar a bar to hide each difficulty, and under it a "hide difficulty level" button that hides the circles; move the circle up so its left and bottom gaps are equal.
+- Changed: section 75 (GUI `5ff24fe`; `upstream.json`, docs). Removed: the side bar button, the Custom Extension entry, the custom extension window and its modal state, the block context menu's "Replace Extension" (it opened that window), and the saved custom-extension tiles among favorites with their delete button (only that window made them). New: switches 1–4 and a Hide/Show difficulty level button, both remembered. The picture is now a block, so the circle is 4 px from its left and bottom edges. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only the Extensions window and one context menu entry; no engine, compiler, timing or rendering change; cannot affect how extension blocks calculate.
+- Verified (test app, galleries linked in temporarily): 144 tiles, no "Custom Extension" anywhere; circle 4.0 px from the picture's left and bottom (was 4.0 / -0.3), authors unchanged (2 px above the bottom); hiding 1 and 4 leaves 102 tiles (144 − 30 − 12), shown dimmed and crossed out and saved; the button removes all circles, its label becomes "Show difficulty level", saved; screenshot. · Not verified: the light theme; in the small test window (751 px high) the side bar needs a short scroll to reach the new button.
+- Result after build: assumed working
+
 ### Session 74 — difficulty badge on extension pictures (2026-10-12)
 - Asked: rate every extension 1 to 4 on how easy it is to use/understand, shown as a small number on a black circle in the bottom left corner of each extension picture: 1 green, 2 yellow, 3 orange, 4 red.
 - Changed: section 74 (GUI `646c0f9`; `upstream.json`, docs). Ratings for all 144 library extensions in `src/lib/libraries/extension-difficulty.js` (1: a few plain blocks that work at once, 2: more blocks or one new idea, 3: needs some understanding, 4: advanced like 3D, shaders, networking, JavaScript, encryption); 30 / 71 / 31 / 12. The badge scales with the tile like the star and is round although section 10 squares everything else. To change a rating: edit that file. To reverse: `git revert` the merge (fork commit stays).
