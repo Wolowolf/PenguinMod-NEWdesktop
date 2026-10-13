@@ -1,8 +1,76 @@
 # Editor sections — what each change does
 
-Not read by default: Grep for the section you need (e.g. `- 21:`). The short list is in `/CHANGES.md`. Until Session 29 these were `patches/stage-layout.js`; now each is one commit on branch `desktop` of the forks: `git revert <commit>` reverses one, `git -C <checkout> show --stat <commit>` lists its files.
+Not read by default: Grep for the section you need (e.g. `- 21:`). The one-line index is below; details after it. Until Session 29 these were `patches/stage-layout.js`; now each is one commit on branch `desktop` of the forks: `git revert <commit>` reverses one, `git -C <checkout> show --stat <commit>` lists its files.
 
 Commits: GUI 1 `f74b561`, 2 `f122c22`, 3 `3c4c322`, 4 `2b25f8c`, 5 `06a077e`, 6 `aab9480`, 7 `f3d2152`, 8 `5c9e2d8`, 9 `3e9bd6c`, 10 `5f38e46`, 11 `d9d8d7d`, 12 `1707111`, 13 `2e42a96`, 14 `3d033f0`, 15 `c84e3dd`, 16 `f1eed45`, 18 `3b3c630`, 19 `93be7bf`, 20 `688d8eb`, 21 `2dee070`, 22 `dd03a35`, 23 `01df3d9`, 24 `f881a08`, 25 `d06351f`, 32 `4368612`, 33 `e1c0773`, 34 `41c5771`, 36 `345f118`; TurboWarp gallery 32 `5fd4420`, 42 `5cff6df`; SharkPool gallery 42 `8fb2a82`; VM 16 `4fdefe5`, 17 `c2ef04e`, 21 `148ab98`, 25 `f2d6e8e`, 38 `e803d5f`, 39 `0d04d76`, 41 `ebb6780`; Render 21 `b887af4`, 39 `d45d558`, 40 `ca43451`, 42 `d3c5487`; GUI 46 `d5cddb1`, 49 `d748f0f`; VM 49 `875bbfa`; PenguinMod gallery 49 `ef39b55`; TurboWarp gallery 49 `545f0d6`; SharkPool gallery 49 `4817b08`; GUI 51 `0be1822`, VM 51 `0da9157`; PenguinMod gallery 51 `ba927b2`; TurboWarp gallery 51 `579e6ce`; GUI 50 `6c5adfb`; PenguinMod gallery 46 `bb349f8` + `d0a7112`; VM 62 `73de222`, 63 `4963ae6`; Packager 26 `5162113`, 27 `14f6958`, 28 `04b7970`, 29 `3ecaaf3` + `1bda441`, 30 `11162a4`, 31 `f1d0025`, 35 `f78d4f7`, 37 `debaa54`, 38 `1df90ca`.
+
+## Index (one line per section)
+- 1–7 stage fits a 480 px 4:3 box with a resize handle
+- 8 one-row sprite panel
+- 9 restore points off
+- 10 square corners (CSS)
+- 11 category menu colour boxes
+- 12 no Back to Home
+- 13 category drag re-order
+- 14 no Project Page / Upload
+- 15 no username, cloud, Remix, About, Discord, analytics
+- 16 new asset libraries, icon studio, credits (VM `sb3.js`)
+- 17 VM monitor fix
+- 18 `project_url` used once
+- 19 no upload-size warning
+- 20 sound editor waveform
+- 21 settings (always-on options, FPS box, stage size; VM + Render)
+- 22 no login iframe
+- 23 no projects from servers
+- 24 local extension icon
+- 25 TTS, Translate, Storage, Scratch Auth removed
+- 26–31, 35 packager (build ID, Windows-only targets, offline downloads, no Discord/GitHub links, no cloud, no HQ pen switch, Electron 44.6.0)
+- 32 TurboWarp gallery "Open Extension"
+- 33–34 icon-only editor tabs
+- 36 frame-time meter and profiler window
+- 37–38 strong graphics chip and full speed in the background (editor: same settings in `electron-main.js`)
+- 39 sensing cache when many clones ask (VM + Render)
+- 40 the cache steps aside for extensions that patch drawables
+- 41 empty `runtime.setInterpolation` (SharkPool Camera loads again)
+- 42 the cache works with SharkPool Camera (Render + Camera's precision mode rewritten in both galleries)
+- 43 Looks Expanded removed
+- 44 calculations on fixed values worked out when the script is compiled (VM)
+- 45 the same for the expandable blocks and the Operators Expansion extension (VM)
+- 46 the three extension galleries listed inside the Extensions tab, check mark on extensions in the project (GUI + PenguinMod gallery; app lets the editor read gallery files)
+- 47 credits screen without extensions: credits drawn into stage-sized costumes (GUI)
+- 48 shorter credits scripts, same result (GUI)
+- 49 about 60 extensions removed completely; Motion Expansion, Events Expansion and the SharkPool Geolocation took over the blocks of More Motion, More Events + Events+ and the TurboWarp Geolocation (GUI, VM and the three galleries)
+- 50 Tweening picture (GUI)
+- 51 one of each for six duplicate extensions (GUI, VM, PenguinMod and TurboWarp galleries)
+- 52 hidden extensions deleted, Spritesheeter and Text Case listed (GUI, VM and the three galleries)
+- 53 24 more extensions removed (GUI and the three galleries)
+- 54 21 topic categories in the extension library, old topic tags removed (GUI)
+- 55 extension library as one long list with category headings, no search or source filters, categories scroll to their heading (GUI)
+- 56 author names on the extension picture instead of below it (GUI)
+- 57 extension list polish: credits on the picture, favorites doubled, narrower side bar, no header / watermark / Other / Custom tile, smaller text padding (GUI)
+- 58 14 more extensions removed: Renderer Control, Couplers, Algebraic Effects, MotionSprite, Control Controls, RGB Channels, Sound Systems, Pang API, Google Spreadsheets, Browser Fullscreen, Seeds, Sty-Lists, Project Interfaces, Libxmp (GUI, VM and the three galleries)
+- 59 column slider for the extension list (GUI)
+- 60 slider 2 to 8, search back (GUI)
+- 61 favorite star at the top left of the picture, scales with the columns (GUI)
+- 62 lookup tables for "item # of" and "list contains" on long lists (VM)
+- 63 "when <>" / "when timer >" hats checked only when what they read changed (VM)
+- 64 extension categories reorganised (25, for beginner game makers first) and ordered inside each category (GUI)
+- 65 Better Comments built into the editor for every comment (style saved on the comment; old Better Comments projects keep their styles); 40 extensions removed (Arrays and the other jw types, Runtime Modifications, Scripts, Pause, Script Control, debugging tools, string/time/JSON/data extensions, AR, ODE, Images, Image Editor, Asset Manager; full list in `docs/SECTIONS.md`) and the Debugging / Editor Tools category (GUI, VM and the three galleries)
+- 66 11 more extensions removed (Cast, Fetch, Fetch+, Webhooks, Storage Plus, Server Storage, Update File, rxFS) and three merged: Format Numbers into Number Utilities, Numerical Encoding V2 into Encoding, HTTP into Network (GUI and the three galleries)
+- 67 the 11 hidden VM built-ins (no library tile) and 3 unlisted SharkPool files removed (VM, SharkPool gallery)
+- 68 packager: no Select Project (always the editor's project), Runtime Options only Turbo Mode and Close window when project stops (Packager)
+- 71 only the three offline galleries' extensions can load; no custom extension by URL, file or text (VM)
+- 72 gallery extensions saved by ID only, listed by the app (VM)
+- 73 packager restores their addresses and packages may load baked copies (Packager)
+- 74 difficulty badge 1-4 on every extension picture (GUI)
+- 75 no custom extension button, window or Replace Extension; difficulty switches and a Hide difficulty level button (GUI)
+- 76 only author names on the extension pictures (GUI)
+- 77 rewritten extension titles and descriptions with a switch back to the originals (GUI)
+- 78 descriptions as a white summary plus grey details (GUI)
+- 79 McUtils removed, 23 categories renamed and regrouped, side bar as wide as the longest category name (GUI + TurboWarp gallery)
+- 80 unused hardware connection window, 33 PenguinMod gallery and 4 SharkPool gallery files removed (GUI + two galleries)
+
+## Details
 
 - 1–7: the editor stage always fits a 480 px wide 4:3 box. The small/large buttons are removed. A drag handle sits on the stage column's left edge (240–1200 px, double-click resets, saved in `localStorage` `pmdesktop:stageBoxWidth`). The column hugs the stage, with a minimum width of 242 px. (Sessions 2–3)
 - 8: the sprite panel is one wrapping row: eye toggle, name, x, y, ⇪ size, ⟳ direction. (Session 4)
@@ -78,3 +146,4 @@ Commits: GUI 1 `f74b561`, 2 `f122c22`, 3 `3c4c322`, 4 `2b25f8c`, 5 `06a077e`, 6 
 - 77 (GUI): rewritten title and description for each of the 144 extensions of the library, written from their blocks (plain names such as "More Motion", "Touch & Device Sensing", "Web Page Frame"; descriptions list what the blocks can do). New `src/lib/libraries/extension-texts.js` (`newTextOf`, same keys as `extension-categories.js`; an extension without an entry keeps its original texts); `extension-library.jsx` adds `newText` to each item; `library.jsx` swaps name and description in `createFilteredData` (so search uses the texts shown) unless `showOriginalTexts`; a "Show original titles" / "Show new titles" button under "Hide difficulty level" (`extension-tags.js` type `originalTexts`), remembered in `pm:extension_original_texts`. Commit: GUI `f406b37` (its message says "Section 76" by mistake). (Session 77)
 - 78 (GUI): the rewritten descriptions in two parts. Each `extension-texts.js` entry is [title, summary (2–6 words), details]; `newTextOf` also returns `descriptionSummary` and `descriptionDetails` (`description` stays both parts joined, for search). `library.jsx` and `containers/library-item.jsx` pass the two parts on; `components/library-item.jsx` shows the summary, then the details on their own line (`.featured-description-summary`: white in the dark theme; `.featured-description-details`: #b8b8b8 dark, #6e6e6e light). Original texts are shown as before. Commit: GUI `fe18637`. (Session 78)
 - 79 (GUI + TurboWarp gallery): McUtils removed completely; categories renamed and regrouped; narrower side bar. TurboWarp gallery: `Lily/McUtils` list line, code, picture and its credit, translations, old-address alias. GUI `extension-categories.js`: 23 categories, names matching their content: Block Expansions, Sprites / Clones, Animation (tweening, costume animations, spritesheets, GIFs), Visual Effects (filters, particles, stretch, skins, lighting, stage effects, clipping), Pen / Colors, Camera / Screen (with Runtime Options), Physics / Collisions, Input / Controls, Sound / Music, Text / Fonts (string tools and on-stage text), Popups / Notifications, Saving / Scenes / Files, Variables / Lists, Math / Random, Time / Timers, 3D, Video / Webcam, Utility Collections, Online / Multiplayer, Web Services, Browser / Device, Encoding / Security, Custom Blocks / Code; McUtils also out of `extension-texts.js` and `extension-difficulty.js`. `library.jsx` / `library.css`: the Extensions side bar (`.extension-filter-bar`) is as wide as its longest category entry: other side bar items get `width: 0; min-width: 100%` and the search field fills the space instead of its 11.5 / 18.75 rem; category entries without matches while searching stay as invisible lines of no height (`.category-jump-empty`), so the width does not change. Projects that use McUtils no longer open. Commits: GUI `69d7c70`, TurboWarp gallery `c9c2400`. (Session 79)
+- 80 (GUI + PenguinMod and SharkPool galleries): unused leftovers removed. GUI: the hardware connection window (`src/components/connection-modal/`, `containers/connection-modal.jsx`, `scanning-step.jsx`, `auto-scanning-step.jsx`, `reducers/connection-modal.js`), its modal state in `modals.js` / `gui.js`, the status-button callback and peripheral check in `containers/blocks.jsx`, the Reconnect button of extension alerts (`containers/alert.jsx`, `components/alerts/alert.jsx`, `reducers/alerts.js`); no remaining extension uses a hardware connection (section 49). PenguinMod gallery: 33 files under `static/` nothing refers to (old extension pictures, loading/warning icons, `0znzwImageBlocks/`, a test project, `test.txt`); `images/SharkPool/Tile-Grids.svg` stays (the GUI list uses it). SharkPool gallery: `Legacy Extensions/` (4 pictures). Commits: GUI `6954d9b`, PenguinMod gallery `71ee8cc`, SharkPool gallery `e48945f`. (Session 80)

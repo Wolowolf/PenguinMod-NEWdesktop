@@ -1,7 +1,7 @@
 {
   "name": "penguinmod-desktop",
   "author": "FreshPenguin112 <freshpenguin112@gmail.com>",
-  "description": "A desktop version of the PenguinMod home page and editor",
+  "description": "A Windows desktop app for the PenguinMod editor",
   "version": "1.0.0",
   "main": "app/electron-main.js",
   "scripts": {
@@ -43,47 +43,6 @@
     "asar": false,
     "npmRebuild": false,
     "nodeGypRebuild": false,
-    "linux": {
-      "compression": "normal",
-      "category": "Development",
-      "maintainer": "FreshPenguin112 <freshpenguin112@gmail.com>",
-      "target": [
-        {
-          "target": "AppImage",
-          "arch": [
-            "x64",
-            "arm64",
-            "armv7l"
-          ]
-        },
-        {
-          "target": "deb",
-          "arch": [
-            "x64",
-            "arm64",
-            "armv7l"
-          ]
-        },
-        {
-          "target": "rpm",
-          "arch": [
-            "x64",
-            "arm64",
-            "armv7l"
-          ]
-        }
-      ]
-    },
-    "deb": {
-      "compression": "xz",
-      "afterInstall": "app/postinstall.sh"
-
-    },
-    "rpm": {
-      "compression": "xz",
-      "afterInstall": "app/postinstall.sh"
-
-    },
     "win": {
       "target": [
         {

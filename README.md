@@ -1,23 +1,20 @@
-# WARNING:
-### This app is currently a work and progress, stabilty is not guaranteed, bugs might occur, and breaking changes might happen!
-### Use at your own risk!
+# PenguinMod Desktop (Wolowolf fork)
 
-# PenguinMod Desktop
-A native [PenguinMod](https://penguinmod.com) desktop app for Linux and Windows that has good offline usage support.
+A Windows desktop app (x64) for the [PenguinMod](https://penguinmod.com) editor that works fully offline. It is a modified copy of [PenguinMod Desktop](https://github.com/FreshPenguin112/PenguinMod-Desktop) and is changed one small tweak at a time.
 
-# How do i get it?
-Download the latest release, use the correct file for your platform, MacOS is NOT supported right now! There is an updater built into the app(in the settings menu)
+## Download
+Get `PenguinMod.Desktop.Setup.1.0.0.exe` (installer) or `win-unpacked.zip` (portable) from the newest release. The installer is not signed, so Windows SmartScreen shows a warning ("More info" → "Run anyway"). Updates: System → Check for Updates (installs this fork's newest release; install into a folder you can write to, not Program Files).
 
-### This app contains the following offline:
-  - [PenguinMod Editor](https://github.com/PenguinMod/penguinmod.github.io)
-  - [PenguinMod Home Page](https://github.com/PenguinMod/PenguinMod-Home) (even though most of it won't work without wifi)
-  - [PenguinMod Extra Extensions Gallery](https://github.com/PenguinMod/PenguinMod-ExtensionsGallery)
-  - [TurboWarp Extensions Gallery](https://github.com/TurboWarp/extensions)
-  - [SharkPool's Extensions Gallery](https://github.com/SharkPool-SP/SharkPools-Extensions)
+## What is inside, offline
+- The PenguinMod editor (no home page), built from forks of [penguinmod.github.io](https://github.com/PenguinMod/penguinmod.github.io) and its libraries, with this fork's editor changes.
+- The [PenguinMod](https://github.com/PenguinMod/PenguinMod-ExtensionsGallery), [TurboWarp](https://github.com/TurboWarp/extensions) and [SharkPool](https://github.com/SharkPool-SP/SharkPools-Extensions) extension galleries, listed inside the Extensions tab.
+- An offline asset library (Kenney, game-icons.net, sound generators) and the TurboWarp packager (File → Package project).
 
-Yes, this app contains the three common extension galleries offline, as long as you use extensions from these three galleries that don't rely on stuff like network requests for functionality, it will load.
+The app never contacts the PenguinMod, TurboWarp or Scratch servers.
+
+How it is built and changed: `CLAUDE.md`, `CHANGES.md` and `docs/`.
 
 Based on [Desk Penguin](https://github.com/TheShovel/Desk-Penguin/) by [TheShovel](https://github.com/TheShovel) and [NodeJs Desk Penguin](https://github.com/FreshPenguin112/NodeJs-Desk-Penguin) by [FreshPenguin112](https://github.com/FreshPenguin112).
 
-## Disclaimer:
+## Disclaimer
 Generative AI was used in the creation of this program.
