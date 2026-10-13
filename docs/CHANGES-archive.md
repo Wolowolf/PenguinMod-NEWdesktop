@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 78 — white summary, grey details in extension descriptions (2026-10-13)
+- Asked: in the new descriptions, the short general part in white and the detailed part in light grey; every extension gets a quick few-word summary; the original texts untouched.
+- Changed: section 78 (GUI `fe18637`; `upstream.json`, docs). Each of the 144 entries in `extension-texts.js` is now title, summary (2–6 words) and details (some details reworded so they don't repeat the summary). The tile shows the summary in white (dark theme; the normal text color in the light theme) and the details on the next line in light grey (#b8b8b8 dark, #6e6e6e light). To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only the Extensions window's descriptions; no engine, compiler, timing or rendering change; cannot affect how extension blocks calculate.
+- Verified (test app, galleries linked in temporarily): 144 tiles, 144 summaries in rgb(255, 255, 255) and 144 details in rgb(184, 184, 184); "Show original titles" shows the original one-color texts (no summary/detail parts), and back; screenshot. · Not verified: the light theme.
+- Result after build: assumed working
+
 ### Session 77 — rewritten extension titles and descriptions (2026-10-13)
 - Asked: rewrite every extension's title and description (coherent titles, shortest description that still names every capability); a button under "Hide difficulty level" to switch between new and old texts.
 - Changed: section 77 (GUI `f406b37`, commit message says "Section 76" by mistake, not changed because that would need a force-push; `upstream.json`, docs). 144 new texts in `src/lib/libraries/extension-texts.js`, written from each extension's block list; new texts shown by default, "Show original titles" / "Show new titles" button remembered. To change a text: edit that file. To reverse: `git revert` the merge (fork commit stays).
