@@ -263,7 +263,7 @@ jobs:
           echo "{\"version\":\"$(jq -r .version app/packager-electron.json)\"}" > packager-electron/version.json
 
       - name: Build Electron App
-        # Windows only (was: --linux AppImage deb rpm --win nsis). See CHANGES.md to bring Linux back.
+        # Windows only: the NSIS installer (x64).
         run: '"$RUNNER_TEMP/electron-builder/node_modules/.bin/electron-builder" --win nsis --publish never'
 
       # --- Zip artifacts ---

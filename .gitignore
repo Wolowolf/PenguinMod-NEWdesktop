@@ -1,12 +1,6 @@
+# Downloaded and built by CI or the local test, never committed
 penguinmod.github.io/
 app/build/
-linux-base
-windows-base
-windows.zip
-linux.zip
-penguinmod-linux.zip
-penguinmod-windows.zip
-packager-app
 node_modules
 cache
 builds
