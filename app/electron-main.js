@@ -757,7 +757,8 @@ function createWindow(fileToOpen) {
   });
 
   let startUrl = "";
-  if (fileToOpen) {
+  // Only an existing file is opened as a project (an unpackaged app started as "electron ." gets the folder ".").
+  if (fileToOpen && fs.statSync(fileToOpen, { throwIfNoEntry: false })?.isFile()) {
     try {
       const projectUrl = storeLocalFile(fileToOpen);
       startUrl = `https://studio.penguinmod.com/editor.html?project_url=${encodeURIComponent(projectUrl)}`;
@@ -771,7 +772,8 @@ function createWindow(fileToOpen) {
 
   mainWindow.webContents.on("console-message", ({ level, message, lineNumber, sourceId, frame }) => {
     const prefix = `[renderer:${sourceId}:${lineNumber}]`;
-    if (level >= 2) console.error(prefix, message);
+    // Electron 44 gives the level as a word ("info", "warning", "error", "debug"), older versions as 0-3.
+    if (level === "warning" || level === "error" || level >= 2) console.error(prefix, message);
     else console.log(prefix, message);
   });
 
