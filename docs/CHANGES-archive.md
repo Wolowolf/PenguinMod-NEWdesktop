@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 82 — addon settings list in a logical order (2026-10-13)
+- Asked: reorder the addon settings list in the most logical order.
+- Changed: section 82 (GUI `2387cfd`; `upstream.json`): the settings page sorts addons by editor area (code area: find/navigate, edit, comments; block palette; block look; editor layout; stage and running; sprite pane and lists; costume editor; sound editor; removing features). New / Others / Dangerous groups kept (New keeps its 5, sorted the same way). Only the page order changes, not the order addons load. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only the settings page list order; no engine, compiler, timing or rendering change, cannot affect how extension blocks calculate.
+- Verified: script check: all 81 addons listed exactly once. Test app, addon settings window: New (5), Others (73), Dangerous (2) in the new order; searching "onion" finds Onion skinning. · Not verified: the light theme (layout untouched).
+- Result after build: assumed working
+
 ### Session 81 — console "errors" fixed (2026-10-13)
 - Asked: fix the console errors seen in Session 80 and say what they caused.
 - Found: none were errors. "true false false false false" was a `console.debug` in the cloud manager's `shouldConnect` (GUI `cloud-manager-hoc.jsx`, every check), "project asset: [object Object]" a `console.log` in `project-fetcher-hoc.jsx`; the trailing "Error" is the call-location object PenguinMod's log capture (`pm-log-capture.js`, used by "download logs") adds to every console call. They caused nothing but log noise. Real bug found on the way: Electron 44 gives the console level as a word, so `electron-main.js` sent renderer errors and warnings to the normal log, never to the error log. Also the test app (started as `electron .`) tried to open the folder "." as a project (EISDIR at every start).
