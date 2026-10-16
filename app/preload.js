@@ -23,6 +23,13 @@ contextBridge.exposeInMainWorld("PMDesktop", {
   fetchBytes: (url, range) => ipcRenderer.invoke("pm-fetch-bytes", String(url), range === undefined ? undefined : String(range)),
 });
 
+// For the Google Auth / Discord Auth extensions: log in through the user's own browser
+// (see "pm-login-loopback" in electron-main.js; packaged desktop games have the same).
+contextBridge.exposeInMainWorld("PMLogin", {
+  loopback: url => ipcRenderer.invoke("pm-login-loopback", String(url)),
+  cancel: () => ipcRenderer.invoke("pm-login-cancel"),
+});
+
 window.addEventListener("DOMContentLoaded", async () => {
   webFrame.executeJavaScript(`
   (() => {

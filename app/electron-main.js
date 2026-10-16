@@ -398,6 +398,77 @@ function storeLocalFile(filePath) {
   return `https://studio.penguinmod.com/__localfile__/${id}`;
 }
 
+// ---- game login (Google Auth / Discord Auth extensions) ----------------------------------------
+// Opens a Google or Discord login page in the user's own browser and waits on this PC
+// (http://127.0.0.1) for the page the login sends the user back to (OAuth "loopback" redirect).
+// A redirect_uri without a port gets a free one. Answers {redirectUri, params} or {error}.
+// The same helper is in the packager's template for packaged desktop games.
+const LOGIN_PAGES = [
+  { host: "accounts.google.com", path: "/o/oauth2/" },
+  { host: "discord.com", path: "/oauth2/authorize" },
+  { host: "discord.com", path: "/api/oauth2/authorize" },
+];
+let stopLogin = null;
+ipcMain.handle("pm-login-loopback", (event, authUrl) => new Promise((resolve) => {
+  if (stopLogin) stopLogin({ error: "another login started" });
+  let auth, redirect;
+  try {
+    auth = new URL(String(authUrl));
+    redirect = new URL(auth.searchParams.get("redirect_uri") || "");
+  } catch (_) {
+    resolve({ error: "bad login address" });
+    return;
+  }
+  if (auth.protocol !== "https:" || !LOGIN_PAGES.some((p) => auth.host === p.host && auth.pathname.startsWith(p.path))) {
+    resolve({ error: "not a Google or Discord login page" });
+    return;
+  }
+  if (redirect.protocol !== "http:" || !["127.0.0.1", "localhost", "[::1]"].includes(redirect.hostname)) {
+    resolve({ error: "the return address must start with http://127.0.0.1" });
+    return;
+  }
+  const http = require("http");
+  let timer = null;
+  const server = http.createServer((req, res) => {
+    const url = new URL(req.url, redirect.origin);
+    if (url.pathname !== redirect.pathname) {
+      res.writeHead(404);
+      res.end();
+      return;
+    }
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+    res.end('<!doctype html><meta charset="utf-8"><title>Login</title>' +
+      '<p style="font:16px sans-serif;margin:40px">Done. You can close this tab and go back to the game.</p>');
+    finish({ redirectUri: redirect.href, params: Object.fromEntries(url.searchParams) });
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win && !win.isDestroyed()) {
+      if (win.isMinimized()) win.restore();
+      win.focus();
+    }
+  });
+  const finish = (answer) => {
+    if (stopLogin !== finish) return;
+    stopLogin = null;
+    clearTimeout(timer);
+    server.close();
+    resolve(answer);
+  };
+  stopLogin = finish;
+  server.on("error", (err) => finish({ error: err.code === "EADDRINUSE" ? `port ${redirect.port} is already in use` : String(err.message || err) }));
+  timer = setTimeout(() => finish({ error: "timed out" }), 5 * 60 * 1000);
+  const host = redirect.hostname === "[::1]" ? "::1" : "127.0.0.1";
+  server.listen(Number(redirect.port) || 0, host, () => {
+    if (!redirect.port) {
+      redirect.port = String(server.address().port);
+      auth.searchParams.set("redirect_uri", redirect.href);
+    }
+    shell.openExternal(auth.href).catch((err) => finish({ error: String(err.message || err) }));
+  });
+}));
+ipcMain.handle("pm-login-cancel", () => {
+  if (stopLogin) stopLogin({ error: "cancelled" });
+});
+
 // ---- asset libraries: key sign-up pages and downloads ----------------------------------------
 
 // Only these pages (where the library keys are made) can be opened in the user's own browser.
