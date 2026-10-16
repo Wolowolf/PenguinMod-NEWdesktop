@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 87 — hidden, unreachable blocks removed (2026-10-15)
+- Asked: delete all hidden, inaccessible blocks in the built-ins and extensions (old projects don't matter).
+- Changed: section 87 (GUI `9362692`, VM `0a328d3`, Blocks `adc4770` (first `desktop` commit), PenguinMod gallery `af7b2d1`, TurboWarp gallery `fa0b597`, SharkPool gallery `cd47d71`; `upstream.json`, docs): 21 core blocks, Live Tests, "new script", the JavaScript and test/demo shapes, ~120 hidden blocks in 31 extensions, with their compiler, Scratch 2 import, block-switching and translation entries. Blocks a button or condition can reveal stay. To reverse: `git revert` the merge (fork commits stay).
+- Extension check: removed blocks only; the code they shared with visible blocks (pen colour, stretch, letters "Fixed", Perlin V2, Zip open, ...) was kept, so the remaining blocks calculate as before.
+- Verified (test app, galleries linked in): all 135 extensions load; with every palette collected, the only hidden extension blocks left are the button-revealed ones and the only core ones are editor internals, join3 and the two credits blocks; palettes draw without errors (only "camera not found" from video extensions); a pen/motion/operators/looks script gives x 10, direction 105, "10105", costume 2, pen size 5. · Not verified: old projects (not wanted); each remaining block of the 31 edited extensions one by one (load and palette only).
+- Result after build: assumed working
+
 ### Session 86 — hidden core JavaScript blocks removed (2026-10-15)
 - Asked: delete the hidden core blocks that run JavaScript if they serve no purpose.
 - Changed: section 86 (VM `973a875`; `upstream.json`, docs). Removed: "javascript" command, "when javascript" hat, JavaScript reporter and boolean (in no palette) and the JavaScript runner; their shapes stay in the blocks library so old projects still open. To reverse: `git revert` the merge (fork commit stays).
