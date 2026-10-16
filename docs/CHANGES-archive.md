@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 90 — extensions using services without permission removed (2026-10-16)
+- Asked: remove completely the extensions whose online services forbid or don't allow use in a sold game (Spotify, SoundCloud API, File Upload, TurboWeather, CORS Proxy, Longman Dictionary) plus Newgrounds Audio, YeetYourFiles, Cockatiel Location; drop Random Utilities' true random; blank CloudLink's default server; keep Text To Speech: Redone if an engine like Piper / Supertonic fits (Supertonic does: MIT code, OpenRAIL-M weights, runs in the browser) and give prompts for it and for Google / Discord Auth.
+- Changed: section 90 (GUI `95166d7`, PenguinMod gallery `9b2e489`, TurboWarp gallery `9f408d2`, SharkPool gallery `34605f9`; `upstream.json`, docs): 9 extensions removed (list entries, code, pictures, 2 docs pages, 37 translation keys, the editor's 4 list files); Random Utilities' block is "seeded random number between"; CloudLink's MikeDEV server entry is blank and connects to nothing. To reverse: `git revert` the merge (fork commits stay).
+- Extension check: removals and two extensions' own blocks only; nothing in the engine changed, so other extensions' blocks calculate as before.
+- Verified (test app, galleries linked in): the Extensions window lists none of the 9 and still has Random Tools, CloudLink, Text To Speech; the 9 files answer 403 (not there); Random Utilities blocks: no `truerndnumber`, seed 42 gave 26 twice; CloudLink `connect to server [1]` returned without error or connection, server list = Localhost + blank. Seen once in `app-err.log`: an addon error `addon-default-entry … reading 'style'` (no addon code changed; not checked whether older). · Not verified: the other 124 extensions loading (their code is unchanged).
+- Result after build: assumed working
+
 ### Session 89 — SharkPool Spotify stop fixed (2026-10-16)
 - Asked: fix SharkPool's Spotify extension (its stop handler threw when a project was replaced, seen in Session 88).
 - Changed: section 89 (SharkPool gallery `f124050`; `upstream.json`, docs): stop / shutdown handlers bound (arrow functions); "stop all songs" stops, disconnects and clears every playing song. To reverse: `git revert` the merge (fork commit stays).
