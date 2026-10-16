@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 88 — legacy blocks, old joins and the credits' hidden blocks removed (2026-10-15)
+- Asked: delete all legacy blocks with their buttons, the "Show Old Join Blocks" blocks and button; make the credits use only visible blocks and delete the two hidden ones they used.
+- Changed: section 88 (GUI `15c4b19`, VM `ae2a215`, Blocks `d9e4c5d`, TurboWarp gallery `31eb635`, SharkPool gallery `466fa87`; `upstream.json`, docs): Lily's Toolbox (30), CloudLink (11 + "extension version") and Camera Sensing Plus (13) legacy blocks and their buttons; join3–join9 and the button; `looks_previouscostume` and `looks_changeVisibilityOfSprite`; credits use "switch costume to [previous costume]". Three descriptions and Lily's Toolbox wi-fi symbol updated. To reverse: `git revert` the merge (fork commits stay).
+- Extension check: removals only; code shared with remaining blocks (`showOrHideSprite`, CloudLink's version string) kept, so the remaining blocks calculate as before.
+- Verified (test app, galleries linked in): all 135 extensions load; no legacy / old buttons; only Rigidbodies and Files Expanded visuals stay hidden (revealed by use / their button); credits of a 60-credit project: only visible blocks, 10 pages in order, each clone kept its page, ended and cleaned up (91 s). Seen: SharkPool Spotify's stop handler threw when a project was replaced (fixed in Session 89). · Not verified: old projects / old credits sprites (not wanted).
+- Result after build: assumed working
+
 ### Session 87 — hidden, unreachable blocks removed (2026-10-15)
 - Asked: delete all hidden, inaccessible blocks in the built-ins and extensions (old projects don't matter).
 - Changed: section 87 (GUI `9362692`, VM `0a328d3`, Blocks `adc4770` (first `desktop` commit), PenguinMod gallery `af7b2d1`, TurboWarp gallery `fa0b597`, SharkPool gallery `cd47d71`; `upstream.json`, docs): 21 core blocks, Live Tests, "new script", the JavaScript and test/demo shapes, ~120 hidden blocks in 31 extensions, with their compiler, Scratch 2 import, block-switching and translation entries. Blocks a button or condition can reveal stay. To reverse: `git revert` the merge (fork commits stay).
