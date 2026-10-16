@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 89 — SharkPool Spotify stop fixed (2026-10-16)
+- Asked: fix SharkPool's Spotify extension (its stop handler threw when a project was replaced, seen in Session 88).
+- Changed: section 89 (SharkPool gallery `f124050`; `upstream.json`, docs): stop / shutdown handlers bound (arrow functions); "stop all songs" stops, disconnects and clears every playing song. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only Spotify's own stop code; nothing in the engine changed, so other extensions' blocks are not affected.
+- Verified (test app, SharkPool gallery linked in): with two sounds in Spotify's list, the stop sign and the "stop all songs" block emptied it; engine shutdown and loading a project raised no error (before: the Session 88 error). · Not verified: real Spotify playback (needs its online service).
+- Result after build: assumed working
+
 ### Session 88 — legacy blocks, old joins and the credits' hidden blocks removed (2026-10-15)
 - Asked: delete all legacy blocks with their buttons, the "Show Old Join Blocks" blocks and button; make the credits use only visible blocks and delete the two hidden ones they used.
 - Changed: section 88 (GUI `15c4b19`, VM `ae2a215`, Blocks `d9e4c5d`, TurboWarp gallery `31eb635`, SharkPool gallery `466fa87`; `upstream.json`, docs): Lily's Toolbox (30), CloudLink (11 + "extension version") and Camera Sensing Plus (13) legacy blocks and their buttons; join3–join9 and the button; `looks_previouscostume` and `looks_changeVisibilityOfSprite`; credits use "switch costume to [previous costume]". Three descriptions and Lily's Toolbox wi-fi symbol updated. To reverse: `git revert` the merge (fork commits stay).
