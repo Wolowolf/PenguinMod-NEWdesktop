@@ -38,7 +38,7 @@
   "SharkPools-Extensions": {
     "repo": "https://github.com/Wolowolf/SharkPools-Extensions.git",
     "branch": "desktop",
-    "commit": "466fa87dbeec4c0fc3850a95a0c813b67c47e404"
+    "commit": "f124050f1d6cd2f7d6ad472de5a1fb0ba71be876"
   },
   "PenguinMod-Packager": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Packager.git",

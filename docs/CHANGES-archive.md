@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 86 — hidden core JavaScript blocks removed (2026-10-15)
+- Asked: delete the hidden core blocks that run JavaScript if they serve no purpose.
+- Changed: section 86 (VM `973a875`; `upstream.json`, docs). Removed: "javascript" command, "when javascript" hat, JavaScript reporter and boolean (in no palette) and the JavaScript runner; their shapes stay in the blocks library so old projects still open. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only removals plus one skip-list condition in Events Expansion for the removed hat; no calculation, compiler optimisation, timing or rendering change for other blocks.
+- Verified (test app): an old project with all four blocks loads, the blocks show, green flag runs the script past them (backdrop switched), the hat never fired, a variable set from the removed reporter is saved as "" and the project saves and reopens. · Not verified: nothing else; the console logs "cannot compile script … Unknown stacked block" for such scripts (they run uncompiled).
+- Result after build: assumed working
+
 ### Session 85 — web-page-only extensions and blocks removed (2026-10-15)
 - Asked: delete the extensions that can't exist in a native engine without JavaScript (JavaScript, HTML iframe Elements, DOM Selector, Iframe, Search Params, WindowHasher) plus YouTube Operations and Twitch, and the lost blocks of jgPrism (eval), ShovelUtils (load extension) and Lily's Toolbox (project URL).
 - Changed: section 85 (GUI `53d498b`, VM `01d9040`, PenguinMod gallery `b08569c`, TurboWarp gallery `ad12232`, SharkPool gallery `1c5d446`; `upstream.json`, docs). 135 library extensions left. Projects using a removed extension no longer open. To reverse: `git revert` the merge (fork commits stay).
