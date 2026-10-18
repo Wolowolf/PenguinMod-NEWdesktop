@@ -2,7 +2,7 @@
 // app/speech-models.json. Run on a PC (node 20+; bun for --loudkit-engine), no npm packages needed:
 //
 //   node scripts/make-speech-models.mjs --tag speech-models-<n> --out <dir> [--ort <dir> --pocket <dir> --voices <dir>] [--supertonic <dir>]
-//        [--loudkit-engine <dir> --loudkit <dir>]
+//        [--loudkit-engine <dir>] [--loudkit <dir>] [--loudkit-natural <dir>] [--loudkit-cloning <dir>]
 //
 // Only the packs whose sources are given are made, in release --tag; the others stay as
 // app/speech-models.json has them (each pack names its release), so a new release holds only new files.
@@ -21,6 +21,9 @@
 //   --loudkit  huggingface.co/loudreader/loudr-1-turbo without the cloning files (loudr-1-enrollment.safetensors,
 //             ve.safetensors, onnx/s3_tokenizer, camp, voice_encoder), samples/, coreml/, logo.png, README.md;
 //             COMMIT.txt = the commit downloaded. Becomes pack loudkit-turbo.
+//   --loudkit-natural  the same from huggingface.co/loudreader/loudr-1 (slower, more natural). Becomes pack loudkit-natural.
+//   --loudkit-cloning  LICENSE, NOTICE, COMMIT.txt and onnx/s3_tokenizer.onnx, camp.onnx, voice_encoder.onnx from
+//             loudr-1-turbo (the same files in loudr-1). Becomes pack loudkit-cloning (Enroller, both models).
 //
 // Output: <out>/assets/ (flat files to upload to the release, names "<pack>--<path>") and
 // <out>/installed/<pack>/ (the layout the app keeps in resources/speech-models, for the local test).
@@ -175,20 +178,19 @@ if (args.supertonic) {
 }
 
 // Loudkit (Apache-2.0): only for "Make a speech sound", run by the app with onnxruntime-node
-if (args["loudkit-engine"] || args.loudkit) {
-  if (!args["loudkit-engine"] || !args.loudkit) throw new Error("--loudkit-engine and --loudkit go together");
+const walk = (dir, keep) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+  e.isDirectory() ? walk(path.join(dir, e.name), keep) : keep(path.join(dir, e.name)) ? [path.join(dir, e.name)] : []);
+if (args["loudkit-engine"]) {
   const npmDir = path.resolve(args["loudkit-engine"]);
   const modules = path.join(npmDir, "node_modules");
   const bundle = path.join(out, "loudkit-bundle", "loudkit.mjs");
   fs.mkdirSync(path.dirname(bundle), { recursive: true });
-  fs.writeFileSync(path.join(npmDir, "pm-loudkit-entry.mjs"), 'export { Engine } from "loudkit";\n');
+  fs.writeFileSync(path.join(npmDir, "pm-loudkit-entry.mjs"), 'export { Engine, Enroller, profileFrom } from "loudkit";\n');
   const built = (await import("node:child_process")).spawnSync("bun", ["build", "pm-loudkit-entry.mjs", "--target", "node", "--format", "esm",
     "--external", "onnxruntime-node", "--outfile", bundle], { cwd: npmDir, stdio: "inherit", shell: true });
   if (built.status !== 0) throw new Error("bun build failed");
   addFile("loudkit-engine", "dist/loudkit.mjs", read(bundle));
   for (const file of fs.readdirSync(path.join(modules, "loudkit", "data"))) addFile("loudkit-engine", `data/${file}`, read(modules, "loudkit", "data", file));
-  const walk = (dir, keep) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
-    e.isDirectory() ? walk(path.join(dir, e.name), keep) : keep(path.join(dir, e.name)) ? [path.join(dir, e.name)] : []);
   const js = (file) => /\.(js|json)$/.test(file);
   for (const [pkg, dirs] of [["onnxruntime-node", ["dist", "bin/napi-v6/win32/x64"]], ["onnxruntime-common", ["dist/cjs"]]]) {
     addFile("loudkit-engine", `node_modules/${pkg}/package.json`, read(modules, pkg, "package.json"));
@@ -209,18 +211,32 @@ if (args["loudkit-engine"] || args.loudkit) {
     "dist/loudkit.mjs = loudkit and @huggingface/tokenizers bundled by bun; onnxruntime-node and onnxruntime-common\n" +
     "unchanged (only the Windows x64 files). Licences: loudkit Apache-2.0 (LICENSE-loudkit.txt, NOTICE-loudkit.txt),\n" +
     "@huggingface/tokenizers Apache-2.0, onnxruntime MIT (LICENSE-onnxruntime.txt, ThirdPartyNotices-onnxruntime.txt).\n"));
-
-  const lk = args.loudkit;
+}
+// The two models, each a release folder Engine.load reads, without the cloning files
+for (const [option, pack, model] of [["loudkit", "loudkit-turbo", "loudr-1-turbo"], ["loudkit-natural", "loudkit-natural", "loudr-1"]]) {
+  const lk = args[option];
+  if (!lk) continue;
   const skip = /^(COMMIT\.txt|README\.md|logo\.png|.*enrollment.*|ve\.safetensors|onnx\/(s3_tokenizer|camp|voice_encoder)\.onnx|(samples|coreml)\/.*)$/;
   for (const file of walk(lk, () => true)) {
     const rel = path.relative(lk, file).replace(/\\/g, "/");
-    if (!skip.test(rel)) addFile("loudkit-turbo", rel, read(file));
+    if (!skip.test(rel)) addFile(pack, rel, read(file));
   }
-  addFile("loudkit-turbo", "SOURCE.txt", Buffer.from(
-    `loudr-1-turbo by loudreader (https://huggingface.co/loudreader/loudr-1-turbo, commit ${read(lk, "COMMIT.txt").toString().trim()}),\n` +
+  addFile(pack, "SOURCE.txt", Buffer.from(
+    `${model} by loudreader (https://huggingface.co/loudreader/${model}, commit ${read(lk, "COMMIT.txt").toString().trim()}),\n` +
     "unchanged, without the voice-cloning files. Licence: Apache-2.0 (LICENSE, NOTICE; derived from Chatterbox by Resemble AI, MIT).\n" +
     "Voices (voices/): CC0, except colette and henri (Kyutai tts-voices), carmen and ines (CML-TTS), dante (Multilingual\n" +
     "LibriSpeech): CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). See RESPONSIBLE_USE.md.\n"));
+}
+// Voice cloning: the three ONNX enrollment graphs (the same files in loudr-1 and loudr-1-turbo)
+if (args["loudkit-cloning"]) {
+  const lk = args["loudkit-cloning"];
+  for (const file of ["s3_tokenizer.onnx", "camp.onnx", "voice_encoder.onnx"]) addFile("loudkit-cloning", `onnx/${file}`, read(lk, "onnx", file));
+  addFile("loudkit-cloning", "LICENSE", read(lk, "LICENSE"));
+  addFile("loudkit-cloning", "NOTICE", read(lk, "NOTICE"));
+  addFile("loudkit-cloning", "SOURCE.txt", Buffer.from(
+    `onnx/s3_tokenizer.onnx, camp.onnx and voice_encoder.onnx from https://huggingface.co/loudreader/loudr-1-turbo (commit\n` +
+    `${read(lk, "COMMIT.txt").toString().trim()}; identical in loudr-1), unchanged. Licence: Apache-2.0 (LICENSE, NOTICE).\n` +
+    "Clone only voices you have permission to use.\n"));
 }
 
 const appPin = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, "$1")), "..", "app", "speech-models.json");

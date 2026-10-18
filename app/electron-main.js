@@ -407,7 +407,8 @@ async function installSpeechPacksOnRequest(names) {
 }
 
 // "Make a speech sound" with Loudkit: runs in its own process (loudkit-host.js) from the speech
-// packs loudkit-engine (Loudkit's code + onnxruntime-node) and loudkit-turbo (the model).
+// packs loudkit-engine (Loudkit's code + onnxruntime-node), loudkit-turbo or loudkit-natural (the
+// models) and loudkit-cloning (voice cloning).
 let loudkitHost = null;
 let loudkitNextId = 1;
 const loudkitJobs = new Map();
@@ -430,8 +431,7 @@ function loudkitSpeak(job) {
   const id = loudkitNextId++;
   return new Promise((resolve, reject) => {
     loudkitJobs.set(id, { resolve, reject });
-    loudkitHost.postMessage(Object.assign({ id, engineDir: path.join(SPEECH_DIR, "loudkit-engine"),
-      modelDir: path.join(SPEECH_DIR, "loudkit-turbo") }, job));
+    loudkitHost.postMessage(Object.assign({ id, engineDir: path.join(SPEECH_DIR, "loudkit-engine"), speechDir: SPEECH_DIR }, job));
   });
 }
 
@@ -768,10 +768,17 @@ function setupProtocol() {
           headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }
         }));
       }
-      // Loudkit speech (POST {text, voice, language, speed}): answers the samples as float32 with X-Sample-Rate
+      // Loudkit speech (POST {text, model, voice or clone: {key, sampleRate, samples: base64 float32}, language, speed}):
+      // answers the samples as float32 with X-Sample-Rate
       if (url.host === "studio.penguinmod.com" && url.pathname === SPEECH_PREFIX + "loudkit" && request.method === "POST") {
         return request.json()
           .then((job) => loudkitSpeak({ text: String(job.text).slice(0, 2000), voice: String(job.voice),
+            model: job.model === "loudkit-natural" ? "loudkit-natural" : "loudkit-turbo",
+            clone: job.clone ? { key: String(job.clone.key), sampleRate: Number(job.clone.sampleRate) || 24000,
+              samples: (() => {
+                const bytes = Buffer.from(String(job.clone.samples), "base64");
+                return new Float32Array(bytes.buffer, bytes.byteOffset, Math.min(bytes.length >> 2, 30 * 48000)).slice();
+              })() } : null,
             language: String(job.language), speed: Math.max(0.5, Math.min(2, Number(job.speed) || 1)) }))
           .then((r) => new Response(Buffer.from(r.samples.buffer, r.samples.byteOffset, r.samples.byteLength), {
             headers: { "Content-Type": "application/octet-stream", "X-Sample-Rate": String(r.sampleRate), "Cache-Control": "no-store" }
