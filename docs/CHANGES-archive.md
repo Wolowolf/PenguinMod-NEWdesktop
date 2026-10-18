@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 98 — Supertonic terms of use in packaged games (2026-10-18)
+- Asked: change the packaged game's README so it includes the Supertonic licence's use restrictions as binding terms (instead of leaving that to the game maker), and do it.
+- Changed: section 98 (Packager `c7fdb8c`; `upstream.json`, docs): with Supertonic voices, `speech/README.txt` ends with terms of use for the model (agreeing by using or passing on the game, no restricted uses, pass the terms on, machine-generated speech, permission ends when broken) and Attachment A copied unchanged from the pack's licence. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only the packager's README text; nothing that runs in games changed, so extensions' blocks calculate as before.
+- Verified (test app, gallery linked in): a zip package of a project with a Supertonic voice had the terms and the whole Attachment A, (a) to (m), in `speech/README.txt` (the first try started at paragraph 5's mention of "Attachment A"; fixed and checked again). Copy in `PenguinMod-testspeech-samplessupertonic-README-sample.txt`. · Not verified: whether the terms hold up legally (not legal advice).
+- Result after build: assumed working
+
 ### Session 97 — Supertonic 3 voices and a speech-sound maker (2026-10-18)
 - Asked: tweaks (c) and (d) of the offline speech plan: Supertonic 3 as a second in-game engine (OpenRAIL-M notice for players) and a tool that records speech in advance as sounds with credits.
 - Changed: section 97 (PenguinMod gallery `630748a`, Packager `cf92a98`; `app/electron-main.js`, `app/updater.js` (each pack names its release), `app/speech-models.json`, `scripts/make-speech-models.mjs`, `upstream.json`, docs); release `speech-models-2` (Supertonic 3, 18 files, 401 MB). Supertonic voices (5 female, 5 male, 31 languages) in the set voice menu; credit "machine-generated" + OpenRAIL-M; button "Make a speech sound" adds speech as a sound with its credits; packaged games get the Supertonic files and the use-restriction notice. To reverse: `git revert` the merge (fork commits and the release stay).
