@@ -469,8 +469,8 @@ function installElectronFile(filePath, installDir, pin) {
 // ---------------------------------------------------------------------------------------------
 // Offline text to speech: onnxruntime-web, the voices and one pack per engine language, each
 // downloaded on its own when a project first needs it. Pinned in app/speech-models.json
-// ({tag, packs: {<name>: {version, size, files: [{path, asset, size, sha256}]}}}); every file is
-// its own asset of that release. A pack folder holds its files and a version.json.
+// ({packs: {<name>: {tag, version, size, files: [{path, asset, size, sha256}]}}}); every file is
+// its own asset of the pack's release. A pack folder holds its files and a version.json.
 
 const SPEECH_PACK_NAME = /^[a-z0-9-]+$/;
 
