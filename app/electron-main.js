@@ -40,6 +40,11 @@ const LIBRARY_PREFIX = "/__library__/";
 // PMDESKTOP_PACKAGER_ELECTRON_DIR points elsewhere (the local test uses it).
 const ELECTRON_DIR = process.env.PMDESKTOP_PACKAGER_ELECTRON_DIR || path.join(process.resourcesPath, "packager-electron");
 const ELECTRON_PREFIX = "/__packager-electron__/";
+// Offline text to speech (onnxruntime-web, voices, models), served at
+// https://studio.penguinmod.com/__speech__/<pack>/. Each pack is downloaded on its own the first
+// time a project needs it (app/speech-models.json). PMDESKTOP_SPEECH_DIR points elsewhere (the local test uses it).
+const SPEECH_DIR = process.env.PMDESKTOP_SPEECH_DIR || path.join(process.resourcesPath, "speech-models");
+const SPEECH_PREFIX = "/__speech__/";
 
 // The offline packager (CI builds it from the Wolowolf/PenguinMod-Packager fork with the editor's
 // own VM and Render), at the address the editor's "Package project" button opens.
@@ -355,6 +360,49 @@ function offerElectronOnRequest() {
       updateInProgress = false;
     }
   }, 0);
+}
+
+// Offline text to speech asks for the packs a project needs (/__speech__/install?packs=a,b): offers
+// to download the missing ones (app/speech-models.json) and answers {ok} once they are in place.
+async function installSpeechPacksOnRequest(names) {
+  const pin = (() => {
+    try { return JSON.parse(fs.readFileSync(path.join(__dirname, "speech-models.json"), "utf8")); } catch { return null; }
+  })();
+  if (!pin || !pin.packs || names.some((name) => !pin.packs[name])) return { ok: false, reason: "unknown" };
+  const missing = names.filter((name) => updater.speechPackNeeded(SPEECH_DIR, name, pin.packs[name]));
+  if (!missing.length) return { ok: true };
+  if (updateInProgress) return { ok: false, reason: "busy" };
+  updateInProgress = true;
+  const win = BrowserWindow.getFocusedWindow() || mainWindow;
+  try {
+    const size = missing.reduce((sum, name) => sum + pin.packs[name].size, 0);
+    const choice = dialog.showMessageBoxSync(win, {
+      type: "question",
+      buttons: ["Download", "Not now"],
+      defaultId: 0,
+      cancelId: 1,
+      noLink: true,
+      message: "Text to speech needs files that are not downloaded yet.",
+      detail: `${missing.join(", ")}\nDownload size: about ${Math.round(size / 1048576)} MB, only once. ` +
+        "After that, speech works offline.",
+    });
+    if (choice !== 0) return { ok: false, reason: "declined" };
+    fs.mkdirSync(SPEECH_DIR, { recursive: true });
+    fs.accessSync(SPEECH_DIR, fs.constants.W_OK);
+    for (const name of missing) {
+      await updater.installSpeechPack(net.fetch.bind(net), UPDATE_REPO, pin.tag, SPEECH_DIR, name, pin.packs[name], sendUpdateProgress);
+    }
+    sendUpdateProgress("done");
+    return { ok: true };
+  } catch (err) {
+    console.error("[speech-models] failed", err);
+    sendUpdateProgress("done");
+    dialog.showMessageBoxSync(win, { type: "error", buttons: ["OK"], noLink: true,
+      message: "The text to speech files could not be downloaded.", detail: String((err && err.message) || err) });
+    return { ok: false, reason: "failed" };
+  } finally {
+    updateInProgress = false;
+  }
 }
 
 async function offerLibraryAtStart(win) {
@@ -677,6 +725,15 @@ function setupProtocol() {
         const res = serveFolderFile(ELECTRON_DIR, url.pathname.slice(ELECTRON_PREFIX.length));
         if (res instanceof Response && res.status === 404) offerElectronOnRequest();
         return res;
+      }
+      if (url.host === "studio.penguinmod.com" && url.pathname === SPEECH_PREFIX + "install") {
+        const names = (url.searchParams.get("packs") || "").split(",").filter(Boolean);
+        return installSpeechPacksOnRequest(names).then((result) => new Response(JSON.stringify(result), {
+          headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }
+        }));
+      }
+      if (url.host === "studio.penguinmod.com" && url.pathname.startsWith(SPEECH_PREFIX)) {
+        return serveFolderFile(SPEECH_DIR, url.pathname.slice(SPEECH_PREFIX.length));
       }
       const hostMap = {
         "studio.penguinmod.com": { dir: folders.editor, def: "editor.html" },
