@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 93 — 9 addons removed, category drag built in (2026-10-16)
+- Asked: delete the 8 addons from my overlap list (without checking what they do) and their code; make category drag part of the editor instead of an addon; new rule: never consider compatibility with older projects unless I say so.
+- Changed: section 93 (GUI `74db1ba`; `upstream.json`, `CLAUDE.md`, docs): Back to Home, cloud variables, Automatically add extensions, Newgrounds Audio Import, curved stage border, stage on left, hide stage, collapsing sprite properties gone with all their entries and translations; `src/lib/pm-category-drag.js` replaces the addon (always on). `CLAUDE.md` has the compatibility rule. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: GUI addon list and the category menu only; nothing in the engine changed, so extensions' blocks calculate as before.
+- Verified (test app): editor builds and starts, no new error in `app-err.log`; a 700 ms drag moved "looks" below "sensing" and the Stage comment ended with the new order; the drag style is present. · Not verified: the addon settings window itself, reopening a saved file with the order, light theme of the dragged box.
+- Result after build: assumed working
+
 ### Session 92 — Google Auth and Discord Auth on your own login setup (2026-10-16)
 - Asked: Google Auth and Discord Auth sent players through strangers' servers; make them use the game maker's own login setup with a privacy policy (research first).
 - Changed: section 92 (GUI `e1aa322`, PenguinMod gallery `0883b67`, Packager `775b565`; `app/electron-main.js`, `app/preload.js`, `upstream.json`, docs): both extensions rewritten (own client IDs, privacy notice before login, email only if asked, user / logged in? / last error / log out); desktop login through the user's browser and a temporary 127.0.0.1 listener (app + packaged desktop games), web login through a popup; docs page Game-Login with setup and a privacy policy template. To reverse: `git revert` the merge (fork commits stay).

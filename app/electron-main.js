@@ -726,6 +726,12 @@ function setupProtocol() {
         if (res instanceof Response && res.status === 404) offerElectronOnRequest();
         return res;
       }
+      // The pack list (files, sizes) for the packager, which copies the files a project uses
+      if (url.host === "studio.penguinmod.com" && url.pathname === SPEECH_PREFIX + "packs.json") {
+        return new Response(fs.readFileSync(path.join(__dirname, "speech-models.json")), {
+          headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }
+        });
+      }
       if (url.host === "studio.penguinmod.com" && url.pathname === SPEECH_PREFIX + "install") {
         const names = (url.searchParams.get("packs") || "").split(",").filter(Boolean);
         return installSpeechPacksOnRequest(names).then((result) => new Response(JSON.stringify(result), {
