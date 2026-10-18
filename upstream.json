@@ -3,12 +3,12 @@
   "penguinmod.github.io": {
     "repo": "https://github.com/Wolowolf/penguinmod.github.io.git",
     "branch": "desktop",
-    "commit": "46cbd9eb1972b527d745482bfe49404b2789633b"
+    "commit": "6131e55f8b5382c57ba4708c8306e9dadb9a6495"
   },
   "PenguinMod-Vm": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Vm.git",
     "branch": "desktop",
-    "commit": "29b381fcf764ed48b25f6c6fcfca308149f32d92"
+    "commit": "caabd567404d6cf17234d799d935543709ce5434"
   },
   "PenguinMod-Blocks": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Blocks.git",
@@ -33,7 +33,7 @@
   "TurboWarp-ExtensionsGallery": {
     "repo": "https://github.com/Wolowolf/TurboWarp-ExtensionsGallery.git",
     "branch": "desktop",
-    "commit": "476656a06875c8e13333e005babae0367daa4bcd"
+    "commit": "39880b2db81cd6af7658405b2a0965779466968e"
   },
   "SharkPools-Extensions": {
     "repo": "https://github.com/Wolowolf/SharkPools-Extensions.git",
@@ -43,7 +43,7 @@
   "PenguinMod-Packager": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Packager.git",
     "branch": "desktop",
-    "commit": "799689c5eaf3f95b85ac6952680d890c94999ec7"
+    "commit": "82031ed3352e84363bdba68d58e61b7b5aecbe00"
   },
   "game-icons": {
     "repo": "https://github.com/Wolowolf/game-icons.git",
