@@ -681,6 +681,554 @@
           "sha256": "d2ae9dc8e1a11113ae0ac62b5cef5f9ee961e43dd5cf8864af24358eaaec1eee"
         }
       ]
+    },
+    "loudkit-engine": {
+      "tag": "speech-models-3",
+      "version": "b6a69486e6838ae4",
+      "size": 75225778,
+      "files": [
+        {
+          "path": "dist/loudkit.mjs",
+          "asset": "loudkit-engine--dist.loudkit.mjs",
+          "size": 1044027,
+          "sha256": "6a712ae546cd22f8867ea1b6c59f6bbe0d0c387aff8e04ab1bbd41b7d3948815"
+        },
+        {
+          "path": "data/numbers.json",
+          "asset": "loudkit-engine--data.numbers.json",
+          "size": 47852,
+          "sha256": "4af2af20ec1e327c0bb443dca3b2c989b7294b9e05b5eccd475fe5673b3936cb"
+        },
+        {
+          "path": "data/numerals.json",
+          "asset": "loudkit-engine--data.numerals.json",
+          "size": 20498,
+          "sha256": "257faad7a97dcb39d1c2cc34deacfd2ba15401f076649ae23f275a2128203594"
+        },
+        {
+          "path": "data/pl_en_respell.json",
+          "asset": "loudkit-engine--data.pl_en_respell.json",
+          "size": 6585103,
+          "sha256": "02920bc3829b74d719f9f4c01eb7da978b388ad0dfe86f0926f4b198d8e654ee"
+        },
+        {
+          "path": "node_modules/onnxruntime-node/package.json",
+          "asset": "loudkit-engine--node_modules.onnxruntime-node.package.json",
+          "size": 1593,
+          "sha256": "0871cd56ac2b9c9dfc834c7eabba819e5d4f966f005388515abb3402b14e0874"
+        },
+        {
+          "path": "node_modules/onnxruntime-node/dist/backend.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-node.dist.backend.js",
+          "size": 6289,
+          "sha256": "a79e8019e7276a282987023f9d38d41063a99e563e5e1a6f38a73a7d39ea83ab"
+        },
+        {
+          "path": "node_modules/onnxruntime-node/dist/binding.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-node.dist.binding.js",
+          "size": 1590,
+          "sha256": "2a85ac5de943c7222aae5ca2897f52d73891f528d4295b701fab077470c668c0"
+        },
+        {
+          "path": "node_modules/onnxruntime-node/dist/index.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-node.dist.index.js",
+          "size": 1602,
+          "sha256": "019eb02133b94b1f7fdf2d89eb93b590ce1288d271f7b280647fb3978e6391fa"
+        },
+        {
+          "path": "node_modules/onnxruntime-node/dist/version.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-node.dist.version.js",
+          "size": 361,
+          "sha256": "0a1a7f532f4455ead0678966815c3114730150aa4368ebb5ebd9727425e9003b"
+        },
+        {
+          "path": "node_modules/onnxruntime-node/bin/napi-v6/win32/x64/DirectML.dll",
+          "asset": "loudkit-engine--node_modules.onnxruntime-node.bin.napi-v6.win32.x64.DirectML.dll",
+          "size": 18527584,
+          "sha256": "234e8898778cdec88d3cb0539508273494082812c968699f3de665a018971625"
+        },
+        {
+          "path": "node_modules/onnxruntime-node/bin/napi-v6/win32/x64/dxcompiler.dll",
+          "asset": "loudkit-engine--node_modules.onnxruntime-node.bin.napi-v6.win32.x64.dxcompiler.dll",
+          "size": 17986360,
+          "sha256": "593d42df78c7f9cbd97c1374af107cfe20985759f98b77afc1448fe41ee3cc76"
+        },
+        {
+          "path": "node_modules/onnxruntime-node/bin/napi-v6/win32/x64/dxil.dll",
+          "asset": "loudkit-engine--node_modules.onnxruntime-node.bin.napi-v6.win32.x64.dxil.dll",
+          "size": 1508664,
+          "sha256": "cf9a3981263f8ec30c9905d136eeaf4b4573209c602198671b958ec86905dea8"
+        },
+        {
+          "path": "node_modules/onnxruntime-node/bin/napi-v6/win32/x64/onnxruntime.dll",
+          "asset": "loudkit-engine--node_modules.onnxruntime-node.bin.napi-v6.win32.x64.onnxruntime.dll",
+          "size": 28754232,
+          "sha256": "508c362f5673483dd3a086379c392795b2e42d10d5e6f3f90ebd7ac21c97af67"
+        },
+        {
+          "path": "node_modules/onnxruntime-node/bin/napi-v6/win32/x64/onnxruntime_binding.node",
+          "asset": "loudkit-engine--node_modules.onnxruntime-node.bin.napi-v6.win32.x64.onnxruntime_binding.node",
+          "size": 298848,
+          "sha256": "ddd428464069b84414d34ec1796c7c2a69c33a976e4b0390692629e394f92fa1"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/package.json",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.package.json",
+          "size": 977,
+          "sha256": "4266741a80346e25820ccc494fbffb95e2f652b6dfb5585025be44df3b0d6722"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/backend-impl.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.backend-impl.js",
+          "size": 5608,
+          "sha256": "3d25321895995f7e9480570b9a88f121049adf152e1829d0ecb11218da02d487"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/backend.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.backend.js",
+          "size": 433,
+          "sha256": "325aaee7a2649ea27629666f3ca01c0d80b9751e704ce502e43a8352390749b4"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/env-impl.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.env-impl.js",
+          "size": 969,
+          "sha256": "35cd8cac33973538eab471b68622c86c35a6896f4307d1a74c9ca0eda7abbac6"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/env.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.env.js",
+          "size": 366,
+          "sha256": "22c7647f8ca1c1b83b437a92b95fee1457fcb72866fa029616b8f146dc609be8"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/index.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.index.js",
+          "size": 1955,
+          "sha256": "d7dd6cc9790e87299099fcd1b0ccb4969c01591d7eec0383a1c64dbea133dd1a"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/inference-session-impl.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.inference-session-impl.js",
+          "size": 8996,
+          "sha256": "88d90723a169297855ad3b564b134c6b685b2661316c81f71fc80da1e203bae0"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/inference-session.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.inference-session.js",
+          "size": 467,
+          "sha256": "458be26f316c5068d32a56ddbc30ca0aa687c636e079b3d161a69f0f14a683f1"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/onnx-model.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.onnx-model.js",
+          "size": 211,
+          "sha256": "667f5fdac4b6df25e17f8a864d4dc619507f541f9fa0aafb6d3572fcca1e25e5"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/onnx-value.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.onnx-value.js",
+          "size": 211,
+          "sha256": "8446854766f4955ce438a7338216f49223767ecc508bb502b73a3dc1a1f1998e"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/package.json",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.package.json",
+          "size": 20,
+          "sha256": "091a04fa67c7907b98e106fcff8b964e13129754fce72d24f3025b97c4887fa3"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/tensor-conversion-impl.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.tensor-conversion-impl.js",
+          "size": 8067,
+          "sha256": "9815e72c0bb91896035de93b3113a2256a1a998bc53c7b5e6bf5fb4e93714766"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/tensor-conversion.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.tensor-conversion.js",
+          "size": 218,
+          "sha256": "28cc462d4a9ea556ecc86c0e6d16a51d61b58d5bc5b4b7b48976b14bc8035bdc"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/tensor-factory-impl.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.tensor-factory-impl.js",
+          "size": 11656,
+          "sha256": "a3204838a2c14416e4e61c968dc17c663ab3c9b8b2c4a8b7f2a1c5b06e3e5173"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/tensor-factory.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.tensor-factory.js",
+          "size": 215,
+          "sha256": "13b8d735350b828a49bda8aeec50b1dac888cf42268006efc4312f50a88b6906"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/tensor-impl-type-mapping.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.tensor-impl-type-mapping.js",
+          "size": 2995,
+          "sha256": "333110edbbffdb7575ea340cb341bcaf691862d6594a649db28097f7d8cb19b7"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/tensor-impl.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.tensor-impl.js",
+          "size": 16458,
+          "sha256": "11645352ba5d08971344717d3339f86aac560f84f29229b2ebe07f1ec8aa8905"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/tensor-utils-impl.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.tensor-utils-impl.js",
+          "size": 2213,
+          "sha256": "e7b1db989d33d54bdd1807b080a0989ff0b10d5f7dd8c93b92bbf293103aa4d5"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/tensor-utils.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.tensor-utils.js",
+          "size": 213,
+          "sha256": "d3f577e90dc2257c72ac728e5e6355c34af0342d971158d9f22b69d22aa97b8d"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/tensor.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.tensor.js",
+          "size": 393,
+          "sha256": "9097114de356750f36f28776fa6ccd08d13694f0f9aac9e7669c30b6c43153f7"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/trace.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.trace.js",
+          "size": 2496,
+          "sha256": "faecd0df94998d786e2085d56aa6003449f1ac3b35c350e0d2762498604e5d72"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/type-helper.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.type-helper.js",
+          "size": 212,
+          "sha256": "7f786da8d2a611ad751c70a74edf4d9acfccd26be8e5c6b1cb730f982892bf32"
+        },
+        {
+          "path": "node_modules/onnxruntime-common/dist/cjs/version.js",
+          "asset": "loudkit-engine--node_modules.onnxruntime-common.dist.cjs.version.js",
+          "size": 361,
+          "sha256": "0a1a7f532f4455ead0678966815c3114730150aa4368ebb5ebd9727425e9003b"
+        },
+        {
+          "path": "LICENSE-loudkit.txt",
+          "asset": "loudkit-engine--LICENSE-loudkit.txt",
+          "size": 11308,
+          "sha256": "5d5671b95e9797856175dd08d5d2f20d21d72e8785aba077ee38eb378d432528"
+        },
+        {
+          "path": "NOTICE-loudkit.txt",
+          "asset": "loudkit-engine--NOTICE-loudkit.txt",
+          "size": 12437,
+          "sha256": "d4dbcf42f3e545b83fe4a687fecb63f1bc45a6394a2de4410dfd2e2bb63031d9"
+        },
+        {
+          "path": "DISCLOSURE-loudkit.txt",
+          "asset": "loudkit-engine--DISCLOSURE-loudkit.txt",
+          "size": 739,
+          "sha256": "0b9904fcbafa6814ed55ec9aaac3d1ad04d298b1ddcf16a574d19dde337f1a4c"
+        },
+        {
+          "path": "LICENSE-huggingface-tokenizers.txt",
+          "asset": "loudkit-engine--LICENSE-huggingface-tokenizers.txt",
+          "size": 11357,
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+        },
+        {
+          "path": "LICENSE-onnxruntime.txt",
+          "asset": "loudkit-engine--LICENSE-onnxruntime.txt",
+          "size": 1073,
+          "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c"
+        },
+        {
+          "path": "ThirdPartyNotices-onnxruntime.txt",
+          "asset": "loudkit-engine--ThirdPartyNotices-onnxruntime.txt",
+          "size": 338088,
+          "sha256": "143764b952fdb1a7c69ce653bfba74a7744d6a8a573bfb73e235fba356c83de3"
+        },
+        {
+          "path": "SOURCE.txt",
+          "asset": "loudkit-engine--SOURCE.txt",
+          "size": 463,
+          "sha256": "5ea4b12719fbb5447caa822a5cf348ba64354b8c4a16b0ab186b1db757a55c4b"
+        }
+      ]
+    },
+    "loudkit-turbo": {
+      "tag": "speech-models-3",
+      "version": "021dd9e30c3f21d5",
+      "size": 2441101603,
+      "files": [
+        {
+          "path": "LICENSE",
+          "asset": "loudkit-turbo--LICENSE",
+          "size": 11308,
+          "sha256": "5d5671b95e9797856175dd08d5d2f20d21d72e8785aba077ee38eb378d432528"
+        },
+        {
+          "path": "loudr-1-turbo.safetensors",
+          "asset": "loudkit-turbo--loudr-1-turbo.safetensors",
+          "size": 713889892,
+          "sha256": "590dcf9e1dcec31c54650ee139f345b248bdd7ba11288def664c5f1508f33593"
+        },
+        {
+          "path": "manifest.json",
+          "asset": "loudkit-turbo--manifest.json",
+          "size": 7663,
+          "sha256": "45e3446f4700be097e8e1e4b3b0b22d68ca5fff747153d3eb52b2e77c4b0d976"
+        },
+        {
+          "path": "NOTICE",
+          "asset": "loudkit-turbo--NOTICE",
+          "size": 12437,
+          "sha256": "d4dbcf42f3e545b83fe4a687fecb63f1bc45a6394a2de4410dfd2e2bb63031d9"
+        },
+        {
+          "path": "onnx/export.json",
+          "asset": "loudkit-turbo--onnx.export.json",
+          "size": 5299,
+          "sha256": "7138aef5debbce6a02dad090db4effa31f0832bd258a6e9691761705d572d589"
+        },
+        {
+          "path": "onnx/flow_encoder.onnx",
+          "asset": "loudkit-turbo--onnx.flow_encoder.onnx",
+          "size": 181313310,
+          "sha256": "126fee01af55a2cb03317a54e2ceb169b2a7fb149715aa1ddf035a86cca0340e"
+        },
+        {
+          "path": "onnx/flow_estimator.onnx",
+          "asset": "loudkit-turbo--onnx.flow_estimator.onnx",
+          "size": 286119949,
+          "sha256": "4156cd04622ecf0c5d5e6f0582af2a52048140e000f807340af3d112bca3bebb"
+        },
+        {
+          "path": "onnx/t3_cond.onnx",
+          "asset": "loudkit-turbo--onnx.t3_cond.onnx",
+          "size": 68368775,
+          "sha256": "abf7dcfc4e7423c76c62135af8db6417b9ab769ff2b43a477c8a92ef8b3e7f3f"
+        },
+        {
+          "path": "onnx/t3_head2.onnx",
+          "asset": "loudkit-turbo--onnx.t3_head2.onnx",
+          "size": 100688276,
+          "sha256": "9989d23ecd7b26b822e24b0f4c4737f12fdbd25701194f2bc8305d256f1697ef"
+        },
+        {
+          "path": "onnx/t3_pair_step.onnx",
+          "asset": "loudkit-turbo--onnx.t3_pair_step.onnx",
+          "size": 532424559,
+          "sha256": "b826e3687ed0ee901d1e44a7851c4a74d4fb318b2d122579c1f6aed6af9dee57"
+        },
+        {
+          "path": "onnx/t3_prefill.onnx",
+          "asset": "loudkit-turbo--onnx.t3_prefill.onnx",
+          "size": 469502017,
+          "sha256": "e96bd89fb785c5fe3f86efb594cf75b8a643a142b61c892a02795dc5000a9d67"
+        },
+        {
+          "path": "onnx/vocoder.onnx",
+          "asset": "loudkit-turbo--onnx.vocoder.onnx",
+          "size": 84330676,
+          "sha256": "75bea322be7969df4764f71091ef36014384f6009f616c56c3c63ebecac1744a"
+        },
+        {
+          "path": "release.json",
+          "asset": "loudkit-turbo--release.json",
+          "size": 13176,
+          "sha256": "846040dabaedbc198ab4463cff09a5939c63af9a5f1c951fea9586246c232626"
+        },
+        {
+          "path": "RESPONSIBLE_USE.md",
+          "asset": "loudkit-turbo--RESPONSIBLE_USE.md",
+          "size": 4240,
+          "sha256": "9dfbc1fedb3013764f2f0b214d8cadc0330411f1e67837ae2e0cd7df7b934d7b"
+        },
+        {
+          "path": "SHA256SUMS",
+          "asset": "loudkit-turbo--SHA256SUMS",
+          "size": 8385,
+          "sha256": "525de016d841593f5cac777b7759eb675217200b74dd59ad4c9fcee5df484f4d"
+        },
+        {
+          "path": "tokenizer.json",
+          "asset": "loudkit-turbo--tokenizer.json",
+          "size": 69989,
+          "sha256": "69632f47220a788a52ce2661d096453c5655e9bf25289d89a8d832c46ee07dbf"
+        },
+        {
+          "path": "voices/carmen.safetensors",
+          "asset": "loudkit-turbo--voices.carmen.safetensors",
+          "size": 165536,
+          "sha256": "c9387f3bc58e8e1dd41700339e886a546200597fe629e523282ba4dbd4ddc069"
+        },
+        {
+          "path": "voices/clara.safetensors",
+          "asset": "loudkit-turbo--voices.clara.safetensors",
+          "size": 159064,
+          "sha256": "c2b5db4c210657d6b2b81602fae8e73a733ac4312f33e80536a59a874e7d865f"
+        },
+        {
+          "path": "voices/colette.safetensors",
+          "asset": "loudkit-turbo--voices.colette.safetensors",
+          "size": 120824,
+          "sha256": "bdccafdc54f700cb456e3f531d0f9da3e5cc0c9fcece8284db44773f99c162c9"
+        },
+        {
+          "path": "voices/dante.safetensors",
+          "asset": "loudkit-turbo--voices.dante.safetensors",
+          "size": 165536,
+          "sha256": "d0ba2cf9871b7f933ff5f0dbdca9578077599c2e8209fc6246727edd79c15924"
+        },
+        {
+          "path": "voices/darkman.safetensors",
+          "asset": "loudkit-turbo--voices.darkman.safetensors",
+          "size": 161648,
+          "sha256": "78988a6769f90c209240f9f285eb9cdd760d1ba471cfa7d6e67db632599cfa1b"
+        },
+        {
+          "path": "voices/dave.safetensors",
+          "asset": "loudkit-turbo--voices.dave.safetensors",
+          "size": 165536,
+          "sha256": "14b5e58a6e5a457b516f5a9ae02d3a739449a02a92d0791b356377b68c366cb4"
+        },
+        {
+          "path": "voices/emma.safetensors",
+          "asset": "loudkit-turbo--voices.emma.safetensors",
+          "size": 154528,
+          "sha256": "0f5d8bfaceca353ca92db751c48b6a1653823f421ead3c901efe6366b8fa2dfb"
+        },
+        {
+          "path": "voices/freja.safetensors",
+          "asset": "loudkit-turbo--voices.freja.safetensors",
+          "size": 145448,
+          "sha256": "0a3f913b9b47c529393f843850228bd8eee6a883b4c138978fd3afa7758561e8"
+        },
+        {
+          "path": "voices/gosia.safetensors",
+          "asset": "loudkit-turbo--voices.gosia.safetensors",
+          "size": 165536,
+          "sha256": "e115cf64bfa0ad15770a50c0be8097312a58d41f84c7bb4f01ecbdbac5d21823"
+        },
+        {
+          "path": "voices/henri.safetensors",
+          "asset": "loudkit-turbo--voices.henri.safetensors",
+          "size": 109808,
+          "sha256": "2be79463e8a2cfe339a7d6088e397c22be4430c6796e76362a0f33f351bf940a"
+        },
+        {
+          "path": "voices/henry.safetensors",
+          "asset": "loudkit-turbo--voices.henry.safetensors",
+          "size": 159712,
+          "sha256": "5476670162065397f01fca60a1944eb75ddef8dc7e6792dde7fb603c76c14d8c"
+        },
+        {
+          "path": "voices/ines.safetensors",
+          "asset": "loudkit-turbo--voices.ines.safetensors",
+          "size": 165536,
+          "sha256": "b7f76b52170dfcdcef0e8835956967bf2fbc4973883b6e99d6b2be7fd4f3a496"
+        },
+        {
+          "path": "voices/joe.safetensors",
+          "asset": "loudkit-turbo--voices.joe.safetensors",
+          "size": 165536,
+          "sha256": "cfc3687fdb1f6b56fe13e252ca4a5bd681cef0702dc5cd56d4ebbc60e1aea6e8"
+        },
+        {
+          "path": "voices/kathleen.safetensors",
+          "asset": "loudkit-turbo--voices.kathleen.safetensors",
+          "size": 165544,
+          "sha256": "6a845e4eb11989fc9bd8e19eed7c5ac585e6d08e1ec824211f0eb240ce523d29"
+        },
+        {
+          "path": "voices/kerstin.safetensors",
+          "asset": "loudkit-turbo--voices.kerstin.safetensors",
+          "size": 161648,
+          "sha256": "d096ecde83dfc5de7a927acf67a5304c55f863ca722f826c67fafd31c48609a6"
+        },
+        {
+          "path": "voices/lucy.safetensors",
+          "asset": "loudkit-turbo--voices.lucy.safetensors",
+          "size": 163600,
+          "sha256": "009a5fe1b34a9c65b09254f41c01cfdc641ec671a83449ad8aa77dd933d5f27e"
+        },
+        {
+          "path": "voices/miles.safetensors",
+          "asset": "loudkit-turbo--voices.miles.safetensors",
+          "size": 159064,
+          "sha256": "184d5552881d2e6fd644f0546d9b470130664d84faf39a31979001cafe8f4ed9"
+        },
+        {
+          "path": "voices/nathalie.safetensors",
+          "asset": "loudkit-turbo--voices.nathalie.safetensors",
+          "size": 165544,
+          "sha256": "a61158533e125600613719617ccc89ea4b66fbc9fbe149ee02e3b5c4113cc11d"
+        },
+        {
+          "path": "voices/nils.safetensors",
+          "asset": "loudkit-turbo--voices.nils.safetensors",
+          "size": 165536,
+          "sha256": "be75721c99547ab3ecdf1f8629101e9fa3ea1d569fc6e1220b8e2f259fb49f4e"
+        },
+        {
+          "path": "voices/oliver.safetensors",
+          "asset": "loudkit-turbo--voices.oliver.safetensors",
+          "size": 163600,
+          "sha256": "bd2fdb4ff8fbc12b070654dc5dae82b24aee4990bda726185547ec613b9f9cb8"
+        },
+        {
+          "path": "voices/oscar.safetensors",
+          "asset": "loudkit-turbo--voices.oscar.safetensors",
+          "size": 165544,
+          "sha256": "8b8ff60604338eedddcd7317ed76ad2109fba6fa0ab79c9684a7954b64f963b2"
+        },
+        {
+          "path": "voices/paola.safetensors",
+          "asset": "loudkit-turbo--voices.paola.safetensors",
+          "size": 165536,
+          "sha256": "6c8bcd3d39dce92955833b1b9b2d483d1f8e48ac48fb772acbb63d45e4e00f6c"
+        },
+        {
+          "path": "voices/pim.safetensors",
+          "asset": "loudkit-turbo--voices.pim.safetensors",
+          "size": 165536,
+          "sha256": "05c5b3bd921240acc39cc8ffd576ab71dcbc36e6238ce468292ae74c61190130"
+        },
+        {
+          "path": "voices/selma.safetensors",
+          "asset": "loudkit-turbo--voices.selma.safetensors",
+          "size": 141560,
+          "sha256": "d3ba9ab18c676db23028c9561ad79a183b35adae377d20d46f1d8f253ce6eeec"
+        },
+        {
+          "path": "voices/sophie.safetensors",
+          "asset": "loudkit-turbo--voices.sophie.safetensors",
+          "size": 153232,
+          "sha256": "efb8047f93eda2a8e7cedaaa254b51957a845d55287298868a409662f8f75e1a"
+        },
+        {
+          "path": "voices/soren.safetensors",
+          "asset": "loudkit-turbo--voices.soren.safetensors",
+          "size": 122768,
+          "sha256": "30d9fe9ee02928cd65ef7f4cb286c401c1809f07c13c19de79ffa375a027412e"
+        },
+        {
+          "path": "voices/thorsten.safetensors",
+          "asset": "loudkit-turbo--voices.thorsten.safetensors",
+          "size": 106576,
+          "sha256": "87873fec8d3dceaa643ab1ab07cf5143364e659dd6b3caec707f51408ac2154a"
+        },
+        {
+          "path": "voices/tugao.safetensors",
+          "asset": "loudkit-turbo--voices.tugao.safetensors",
+          "size": 161648,
+          "sha256": "adcebf6fe42125bdc0aaca6ba3d23d79a30c8ad6a52aa65fd7970bed540eec43"
+        },
+        {
+          "path": "SOURCE.txt",
+          "asset": "loudkit-turbo--SOURCE.txt",
+          "size": 468,
+          "sha256": "c82860a056f6830339b181e92b3cf6cd082d72c8909d2b5fac2d960b2cee3333"
+        }
+      ]
     }
   }
 }
