@@ -8,6 +8,7 @@ const {
   net,
   Menu,
   shell,
+  utilityProcess,
 } = require("electron");
 const path = require("path");
 const fs = require("fs");
@@ -405,6 +406,35 @@ async function installSpeechPacksOnRequest(names) {
   }
 }
 
+// "Make a speech sound" with Loudkit: runs in its own process (loudkit-host.js) from the speech
+// packs loudkit-engine (Loudkit's code + onnxruntime-node) and loudkit-turbo (the model).
+let loudkitHost = null;
+let loudkitNextId = 1;
+const loudkitJobs = new Map();
+function loudkitSpeak(job) {
+  if (!loudkitHost) {
+    loudkitHost = utilityProcess.fork(path.join(__dirname, "loudkit-host.js"), [], { serviceName: "Loudkit speech" });
+    loudkitHost.on("message", (reply) => {
+      const pending = loudkitJobs.get(reply.id);
+      if (!pending) return;
+      loudkitJobs.delete(reply.id);
+      if (reply.error) pending.reject(new Error(reply.error));
+      else pending.resolve(reply);
+    });
+    loudkitHost.on("exit", () => {
+      loudkitHost = null;
+      for (const pending of loudkitJobs.values()) pending.reject(new Error("The Loudkit process stopped."));
+      loudkitJobs.clear();
+    });
+  }
+  const id = loudkitNextId++;
+  return new Promise((resolve, reject) => {
+    loudkitJobs.set(id, { resolve, reject });
+    loudkitHost.postMessage(Object.assign({ id, engineDir: path.join(SPEECH_DIR, "loudkit-engine"),
+      modelDir: path.join(SPEECH_DIR, "loudkit-turbo") }, job));
+  });
+}
+
 async function offerLibraryAtStart(win) {
   const installDir = getInstallDir();
   if (!installDir || updateInProgress) return;
@@ -738,6 +768,17 @@ function setupProtocol() {
           headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }
         }));
       }
+      // Loudkit speech (POST {text, voice, language, speed}): answers the samples as float32 with X-Sample-Rate
+      if (url.host === "studio.penguinmod.com" && url.pathname === SPEECH_PREFIX + "loudkit" && request.method === "POST") {
+        return request.json()
+          .then((job) => loudkitSpeak({ text: String(job.text).slice(0, 2000), voice: String(job.voice),
+            language: String(job.language), speed: Math.max(0.5, Math.min(2, Number(job.speed) || 1)) }))
+          .then((r) => new Response(Buffer.from(r.samples.buffer, r.samples.byteOffset, r.samples.byteLength), {
+            headers: { "Content-Type": "application/octet-stream", "X-Sample-Rate": String(r.sampleRate), "Cache-Control": "no-store" }
+          }), (err) => new Response(JSON.stringify({ error: String((err && err.message) || err) }), {
+            status: 500, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }
+          }));
+      }
       if (url.host === "studio.penguinmod.com" && url.pathname.startsWith(SPEECH_PREFIX)) {
         return serveFolderFile(SPEECH_DIR, url.pathname.slice(SPEECH_PREFIX.length));
       }
@@ -826,6 +867,8 @@ if (process.env.NOPROXY === "true") {
 }
 // Laptops with two graphics chips: draw the stage with the strong one.
 app.commandLine.appendSwitch('force_high_performance_gpu');
+// SharedArrayBuffer without cross-origin isolation: offline text to speech runs on several threads.
+app.commandLine.appendSwitch('enable-features', 'SharedArrayBuffer');
 
 app.whenReady().then(() => {
   cleanupOldUpdateFiles();
