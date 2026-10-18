@@ -390,7 +390,7 @@ async function installSpeechPacksOnRequest(names) {
     fs.mkdirSync(SPEECH_DIR, { recursive: true });
     fs.accessSync(SPEECH_DIR, fs.constants.W_OK);
     for (const name of missing) {
-      await updater.installSpeechPack(net.fetch.bind(net), UPDATE_REPO, pin.tag, SPEECH_DIR, name, pin.packs[name], sendUpdateProgress);
+      await updater.installSpeechPack(net.fetch.bind(net), UPDATE_REPO, pin.packs[name].tag, SPEECH_DIR, name, pin.packs[name], sendUpdateProgress);
     }
     sendUpdateProgress("done");
     return { ok: true };

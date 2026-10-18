@@ -1,13 +1,18 @@
 // Builds the speech-model release (offline text to speech) from downloaded source files and writes
 // app/speech-models.json. Run on a PC (node 20+), no npm packages needed:
 //
-//   node scripts/make-speech-models.mjs --tag speech-models-1 --ort <dir> --pocket <dir> --voices <dir> --out <dir>
+//   node scripts/make-speech-models.mjs --tag speech-models-<n> --out <dir> [--ort <dir> --pocket <dir> --voices <dir>] [--supertonic <dir>]
+//
+// Only the packs whose sources are given are made, in release --tag; the others stay as
+// app/speech-models.json has them (each pack names its release), so a new release holds only new files.
 //
 //   --ort     onnxruntime-web 1.30.0: dist/ort.wasm.bundle.min.mjs, dist/ort-wasm-simd-threaded.wasm, and
 //             LICENSE + ThirdPartyNotices.txt from github.com/microsoft/onnxruntime at v1.30.0
 //   --pocket  huggingface.co/KevinAHM/pocket-tts-onnx onnx/: LICENSE and, for each language folder below,
 //             bundle.json, bos_before_voice.npy, tokenizer.model and the five *_int8.onnx files
 //   --voices  the clips listed in VOICES below, from huggingface.co/kyutai/tts-voices, saved as <name>.wav
+//   --supertonic  huggingface.co/Supertone/supertonic-3: LICENSE, onnx/ (the 4 .onnx files, tts.json,
+//             unicode_indexer.json), voice_styles/ (F1-F5, M1-M5 .json) and COMMIT.txt (the commit downloaded)
 //
 // Output: <out>/assets/ (flat files to upload to the release, names "<pack>--<path>") and
 // <out>/installed/<pack>/ (the layout the app keeps in resources/speech-models, for the local test).
@@ -18,9 +23,11 @@ import crypto from "node:crypto";
 
 const args = Object.fromEntries(process.argv.slice(2).reduce((list, arg, i, all) =>
   arg.startsWith("--") ? [...list, [arg.slice(2), all[i + 1]]] : list, []));
-for (const key of ["tag", "ort", "pocket", "voices", "out"]) {
+for (const key of ["tag", "out"]) {
   if (!args[key]) throw new Error(`missing --${key}`);
 }
+const pocket = ["ort", "pocket", "voices"].filter((key) => args[key]);
+if (pocket.length && pocket.length < 3) throw new Error("--ort, --pocket and --voices go together");
 
 const LANGUAGES = {
   english: "english_2026-04",
@@ -63,6 +70,7 @@ const addFile = (pack, rel, data) => {
 };
 const read = (...p) => fs.readFileSync(path.join(...p));
 
+if (pocket.length) {
 // onnxruntime-web (MIT)
 addFile("onnxruntime", "ort.wasm.bundle.min.mjs", read(args.ort, "ort.wasm.bundle.min.mjs"));
 addFile("onnxruntime", "ort-wasm-simd-threaded.wasm", read(args.ort, "ort-wasm-simd-threaded.wasm"));
@@ -140,20 +148,40 @@ addFile("pocket-voices", "SOURCES.txt", Buffer.from(
   "(voice-donations, Unmute Voice Donation Project).\n\n" +
   Object.entries(VOICES).map(([name, source]) => `${name}: ${source}`).join("\n") + "\n"));
 addFile("pocket-voices", "LICENSE-CC-BY-4.0.txt", read(args.pocket, "LICENSE"));
-
-const pin = {
-  _about: "Offline text-to-speech files (scripts/make-speech-models.mjs). The app downloads each pack from the release below " +
-    "when a project first needs it (files named <pack>--<path>), checks size and SHA-256, and keeps it in resources/speech-models/<pack>.",
-  tag: args.tag,
-  packs: Object.fromEntries(Object.entries(packs).map(([name, files]) => [name, {
-    version: crypto.createHash("sha256").update(files.map((f) => f.path + f.sha256).join("\n")).digest("hex").slice(0, 16),
-    size: files.reduce((sum, f) => sum + f.size, 0),
-    files,
-  }])),
-};
-fs.writeFileSync(path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, "$1")), "..", "app", "speech-models.json"),
-  JSON.stringify(pin, null, 2) + "\n");
-for (const [name, pack] of Object.entries(pin.packs)) {
-  fs.writeFileSync(path.join(out, "installed", name, "version.json"), JSON.stringify({ version: pack.version }) + "\n");
 }
-for (const [name, pack] of Object.entries(pin.packs)) console.log(`${name}: ${pack.files.length} files, ${(pack.size / 1e6).toFixed(1)} MB`);
+
+// Supertonic 3 (Supertone Inc., OpenRAIL-M), unchanged; one model for all 31 languages
+if (args.supertonic) {
+  const st = args.supertonic;
+  for (const file of ["duration_predictor.onnx", "text_encoder.onnx", "vector_estimator.onnx", "vocoder.onnx", "tts.json", "unicode_indexer.json"]) {
+    addFile("supertonic", file, read(st, "onnx", file));
+  }
+  for (const voice of ["F1", "F2", "F3", "F4", "F5", "M1", "M2", "M3", "M4", "M5"]) addFile("supertonic", `${voice}.json`, read(st, "voice_styles", `${voice}.json`));
+  addFile("supertonic", "LICENSE.txt", read(st, "LICENSE"));
+  addFile("supertonic", "SOURCE.txt", Buffer.from(
+    `Supertonic 3 by Supertone Inc. (https://huggingface.co/Supertone/supertonic-3, commit ${read(st, "COMMIT.txt").toString().trim()}).\n` +
+    "Files from onnx/ and voice_styles/, unchanged (stored side by side here). Licence: OpenRAIL-M (LICENSE.txt).\n\n" +
+    "The model is subject to the use-based restrictions in paragraph 5 and Attachment A of LICENSE.txt:\n" +
+    "everyone who uses it, including a player of a game that contains it, agrees not to use it for any of\n" +
+    "those purposes. Speech made with it must be disclosed as machine-generated (Attachment A, item e).\n"));
+}
+
+const appPin = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, "$1")), "..", "app", "speech-models.json");
+const old = fs.existsSync(appPin) ? JSON.parse(fs.readFileSync(appPin, "utf8")) : { packs: {} };
+const pin = {
+  _about: "Offline text-to-speech files (scripts/make-speech-models.mjs). The app downloads each pack from its release (tag) " +
+    "when a project first needs it (files named <pack>--<path>), checks size and SHA-256, and keeps it in resources/speech-models/<pack>.",
+  packs: Object.fromEntries(Object.entries(old.packs).filter(([name]) => !packs[name])
+    .map(([name, pack]) => [name, Object.assign({ tag: pack.tag || old.tag }, pack)])
+    .concat(Object.entries(packs).map(([name, files]) => [name, {
+      tag: args.tag,
+      version: crypto.createHash("sha256").update(files.map((f) => f.path + f.sha256).join("\n")).digest("hex").slice(0, 16),
+      size: files.reduce((sum, f) => sum + f.size, 0),
+      files,
+    }]))),
+};
+fs.writeFileSync(appPin, JSON.stringify(pin, null, 2) + "\n");
+for (const name of Object.keys(packs)) {
+  fs.writeFileSync(path.join(out, "installed", name, "version.json"), JSON.stringify({ version: pin.packs[name].version }) + "\n");
+}
+for (const [name, pack] of Object.entries(pin.packs).filter(([name]) => packs[name])) console.log(`${name}: ${pack.files.length} files, ${(pack.size / 1e6).toFixed(1)} MB`);

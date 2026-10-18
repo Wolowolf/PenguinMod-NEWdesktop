@@ -1,8 +1,8 @@
 {
-  "_about": "Offline text-to-speech files (scripts/make-speech-models.mjs). The app downloads each pack from the release below when a project first needs it (files named <pack>--<path>), checks size and SHA-256, and keeps it in resources/speech-models/<pack>.",
-  "tag": "speech-models-1",
+  "_about": "Offline text-to-speech files (scripts/make-speech-models.mjs). The app downloads each pack from its release (tag) when a project first needs it (files named <pack>--<path>), checks size and SHA-256, and keeps it in resources/speech-models/<pack>.",
   "packs": {
     "onnxruntime": {
+      "tag": "speech-models-1",
       "version": "4224ce3d6402c272",
       "size": 14652112,
       "files": [
@@ -33,6 +33,7 @@
       ]
     },
     "pocket-english": {
+      "tag": "speech-models-1",
       "version": "546ea07ccd1ac200",
       "size": 146262578,
       "files": [
@@ -99,6 +100,7 @@
       ]
     },
     "pocket-french": {
+      "tag": "speech-models-1",
       "version": "f2677bbaa151700e",
       "size": 375084307,
       "files": [
@@ -165,6 +167,7 @@
       ]
     },
     "pocket-german": {
+      "tag": "speech-models-1",
       "version": "378a9bdf795c834a",
       "size": 146263048,
       "files": [
@@ -231,6 +234,7 @@
       ]
     },
     "pocket-italian": {
+      "tag": "speech-models-1",
       "version": "25acc2b8bc64fbad",
       "size": 146263293,
       "files": [
@@ -297,6 +301,7 @@
       ]
     },
     "pocket-portuguese": {
+      "tag": "speech-models-1",
       "version": "233b76cc92e68e2e",
       "size": 146264219,
       "files": [
@@ -363,6 +368,7 @@
       ]
     },
     "pocket-spanish": {
+      "tag": "speech-models-1",
       "version": "1b04bda9a76ccd19",
       "size": 146264110,
       "files": [
@@ -429,6 +435,7 @@
       ]
     },
     "pocket-voices": {
+      "tag": "speech-models-1",
       "version": "d3dc65c2752e6f6c",
       "size": 8794498,
       "files": [
@@ -557,6 +564,121 @@
           "asset": "pocket-voices--LICENSE-CC-BY-4.0.txt",
           "size": 18655,
           "sha256": "fe7b4ce83b8381cc5b216bbb4af73c570688d1b819c73bbaed8ca401f4677cd6"
+        }
+      ]
+    },
+    "supertonic": {
+      "tag": "speech-models-2",
+      "version": "68a95adadc701d5a",
+      "size": 401292289,
+      "files": [
+        {
+          "path": "duration_predictor.onnx",
+          "asset": "supertonic--duration_predictor.onnx",
+          "size": 3700147,
+          "sha256": "c3eb91414d5ff8a7a239b7fe9e34e7e2bf8a8140d8375ffb14718b1c639325db"
+        },
+        {
+          "path": "text_encoder.onnx",
+          "asset": "supertonic--text_encoder.onnx",
+          "size": 36416150,
+          "sha256": "c7befd5ea8c3119769e8a6c1486c4edc6a3bc8365c67621c881bbb774b9902ff"
+        },
+        {
+          "path": "vector_estimator.onnx",
+          "asset": "supertonic--vector_estimator.onnx",
+          "size": 256534781,
+          "sha256": "883ac868ea0275ef0e991524dc64f16b3c0376efd7c320af6b53f5b780d7c61c"
+        },
+        {
+          "path": "vocoder.onnx",
+          "asset": "supertonic--vocoder.onnx",
+          "size": 101424195,
+          "sha256": "085de76dd8e8d5836d6ca66826601f615939218f90e519f70ee8a36ed2a4c4ba"
+        },
+        {
+          "path": "tts.json",
+          "asset": "supertonic--tts.json",
+          "size": 8253,
+          "sha256": "42078d3aef1cd43ab43021f3c54f47d2d75ceb4e75f627f118890128b06a0d09"
+        },
+        {
+          "path": "unicode_indexer.json",
+          "asset": "supertonic--unicode_indexer.json",
+          "size": 277676,
+          "sha256": "9bf7346e43883a81f8645c81224f786d43c5b57f3641f6e7671a7d6c493cb24f"
+        },
+        {
+          "path": "F1.json",
+          "asset": "supertonic--F1.json",
+          "size": 292046,
+          "sha256": "bbdec6ee00231c2c742ad05483df5334cab3b52fda3ba38e6a07059c4563dbc2"
+        },
+        {
+          "path": "F2.json",
+          "asset": "supertonic--F2.json",
+          "size": 292423,
+          "sha256": "7c722c6a72707b1a77f035d67f0d1351ba187738e06f7683e8c72b1df3477fc6"
+        },
+        {
+          "path": "F3.json",
+          "asset": "supertonic--F3.json",
+          "size": 290794,
+          "sha256": "12f6ef2573baa2defa1128069cb59f203e3ab67c92af77b42df8a0e3a2f7c6ab"
+        },
+        {
+          "path": "F4.json",
+          "asset": "supertonic--F4.json",
+          "size": 291808,
+          "sha256": "c2fa764c1225a76dfc3e2c73e8aa4f70d9ee48793860eb34c295fff01c2e032b"
+        },
+        {
+          "path": "F5.json",
+          "asset": "supertonic--F5.json",
+          "size": 291479,
+          "sha256": "45966e73316415626cf41a7d1c6f3b4c70dbc1ba2bee5c1978ef0ce33244fc8d"
+        },
+        {
+          "path": "M1.json",
+          "asset": "supertonic--M1.json",
+          "size": 291748,
+          "sha256": "e35604687f5d23694b8e91593a93eec0e4eca6c0b02bb8ed69139ab2ea6b0a5b"
+        },
+        {
+          "path": "M2.json",
+          "asset": "supertonic--M2.json",
+          "size": 292055,
+          "sha256": "b76cbf62bac707c710cf0ae5aba5e31eea1a6339a9734bfae33ab98499534a50"
+        },
+        {
+          "path": "M3.json",
+          "asset": "supertonic--M3.json",
+          "size": 290198,
+          "sha256": "ea1ac35ccb91b0d7ecad533a2fbd0eec10c91513d8951e3b25fbba99954e159b"
+        },
+        {
+          "path": "M4.json",
+          "asset": "supertonic--M4.json",
+          "size": 291522,
+          "sha256": "ca8eefad4fcd989c9379032ff3e50738adc547eeb5e221b82593a6d7b3bac303"
+        },
+        {
+          "path": "M5.json",
+          "asset": "supertonic--M5.json",
+          "size": 291469,
+          "sha256": "dd22b92740314321f8ae11c5e87f8dd60d060f15dd3a632b5adf77f471f77af2"
+        },
+        {
+          "path": "LICENSE.txt",
+          "asset": "supertonic--LICENSE.txt",
+          "size": 15007,
+          "sha256": "0d944a9110fed9a9602d60e0423a272903e7bd21ab060490774efc77c2275e9f"
+        },
+        {
+          "path": "SOURCE.txt",
+          "asset": "supertonic--SOURCE.txt",
+          "size": 538,
+          "sha256": "d2ae9dc8e1a11113ae0ac62b5cef5f9ee961e43dd5cf8864af24358eaaec1eee"
         }
       ]
     }
