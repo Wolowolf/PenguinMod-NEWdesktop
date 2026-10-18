@@ -464,9 +464,58 @@ function installElectronFile(filePath, installDir, pin) {
   replaceFolder(target, staging);
 }
 
+// ---------------------------------------------------------------------------------------------
+// Speech models (resources/speech-models/<pack>)
+// ---------------------------------------------------------------------------------------------
+// Offline text to speech: onnxruntime-web, the voices and one pack per engine language, each
+// downloaded on its own when a project first needs it. Pinned in app/speech-models.json
+// ({tag, packs: {<name>: {version, size, files: [{path, asset, size, sha256}]}}}); every file is
+// its own asset of that release. A pack folder holds its files and a version.json.
+
+const SPEECH_PACK_NAME = /^[a-z0-9-]+$/;
+
+function installedSpeechPackVersion(speechDir, name) {
+  try {
+    return String(JSON.parse(fs.readFileSync(path.join(speechDir, name, "version.json"), "utf8")).version);
+  } catch {
+    return null;
+  }
+}
+
+const speechPackNeeded = (speechDir, name, pack) => !!pack && installedSpeechPackVersion(speechDir, name) !== String(pack.version);
+
+// Downloads every file of a pack into a new folder (size and SHA-256 checked), then swaps it in.
+async function installSpeechPack(fetchFn, repo, tag, speechDir, name, pack, onProgress = noop) {
+  if (!SPEECH_PACK_NAME.test(name)) throw new Error(`Unexpected speech pack name: ${name}`);
+  const target = path.join(speechDir, name);
+  const staging = target + NEW;
+  fs.rmSync(staging, { recursive: true, force: true });
+  try {
+    let done = 0;
+    for (const file of pack.files) {
+      const dest = safeTarget(staging, file.path);
+      if (!dest || !/^[\w.~-]+$/.test(file.asset)) throw new Error(`The speech pack ${name} has an unsafe file: ${file.path}`);
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      await downloadFile(fetchFn, libraryUrl(repo, { tag, asset: file.asset }), dest, {
+        expectedSize: file.size,
+        expectedDigest: `sha256:${file.sha256}`,
+        onProgress: (phase, percent) => onProgress("download", Math.round(((done + (file.size * Math.max(0, percent)) / 100) / pack.size) * 100),
+          `Downloading ${name}… ${((done + (file.size * Math.max(0, percent)) / 100) / 1048576).toFixed(1)} / ${(pack.size / 1048576).toFixed(1)} MB`),
+      });
+      done += file.size;
+    }
+    fs.writeFileSync(path.join(staging, "version.json"), JSON.stringify({ version: String(pack.version) }) + "\n");
+  } catch (err) {
+    fs.rmSync(staging, { recursive: true, force: true });
+    throw err;
+  }
+  replaceFolder(target, staging);
+}
+
 module.exports = {
   pickRelease, downloadFile, assertWritable, cleanupLeftovers, applyUpdateFromZip, ZIP_PREFIX,
   installedLibraryVersion, readLibraryPin, libraryPinFromZip, libraryNeeded, libraryUrl,
   installLibraryFromZip, cleanupLibraryLeftovers,
   installedElectronVersion, electronPinFromZip, electronNeeded, installElectronFile,
+  installedSpeechPackVersion, speechPackNeeded, installSpeechPack,
 };
