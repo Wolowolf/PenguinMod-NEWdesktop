@@ -79,6 +79,7 @@ Parent/child sprites · automatic parallel clones.
 - Wrap clone creation: tw `lab/video-sprites`, `Xeltalliv/clippingblending` (`makeClone`).
 - Manage clones and sprites: tw `Lily/ClonesPlus` · vm `jgTailgating` · sp `Sprite-Parenting`, `Scenes` (saves and restores every target), `Lazy-Collisions` · pm `SharkPool/Tile-Grids`.
 - Write target fields without the setters: sp `Scenes` (x, y, size, direction, effects, costume, visibility), `Sharktilities` (volume) · vm `pmMotionExpansion` (volume).
+- Wrap sprite and VM methods: vm `pmEventsExpansion` (`RenderedTarget.prototype.setCostume`, the VM's `startDrag`, `stopDrag`, `saveProjectSb3`, `saveProjectSb3Stream`; for its costume, drag and save hats; found by the step 2 block inventory).
 
 ## Editor (blocks library)
 Category menu (sections 11, 13, 55) · block shapes · workspace.

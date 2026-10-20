@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 103 — Text To Speech descriptions brought up to date (2026-10-18)
+- Asked: update the extension's description.
+- Changed: section 103 (GUI `46cbd9e`, PenguinMod gallery `546703e`; `upstream.json`, docs): the editor's Extensions window text (`extension-texts.js`), the gallery list's description (`extensions.js`) and the file header of `ttsrV2.js` now name Pocket TTS (6 languages) and Supertonic 3 (31 languages), set voice and language, voice cloning and Loudkit in "Make a speech sound". To reverse: `git revert` the merge (fork commits stay).
+- Extension check: texts only; nothing that runs blocks changed, so extensions' blocks calculate as before.
+- Verified (test app, gallery linked in): the Extensions window's Text to Speech card shows the new text completely (screenshot; a first, longer text ran past the card's bottom and was shortened); the built gallery list has the new description. · Not verified: —
+- Result after build: assumed working
+
 ### Session 102 — Text To Speech: Pocket voice switches the language to english (2026-10-18)
 - Asked: when a set voice block gets a Pocket voice and its language is one Pocket can't speak, switch it to english.
 - Changed: section 102 (PenguinMod gallery `141f74f`; `upstream.json`, docs): `ttsrV2.js` listens to the editor's main workspace and toolbox; a Pocket voice picked in a set voice block whose language menu holds another language sets that menu to english, in the same undo step. To reverse: `git revert` the merge (fork commit stays).
