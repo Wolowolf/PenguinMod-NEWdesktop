@@ -95,48 +95,6 @@ function getLocalFile(url) {
   return null;
 }
 
-// ---- extension names (Session 73) ------------------------------------------------------------
-// The editor treats the extensions of the three offline galleries like built-ins: a project saves
-// only the extension's ID, and this list (ID => gallery address) tells the editor where to load
-// it from. It is read from the gallery folders once (the ID is the first `id:` after `getInfo`
-// in each extension file); a file whose ID can't be found is left out and keeps being saved with
-// its address, as before.
-let extensionIdTable = null;
-function getExtensionIdTable() {
-  if (extensionIdTable) return extensionIdTable;
-  const table = {};
-  const roots = [
-    { dir: folders.penguinmod, base: "https://extensions.penguinmod.com/", sub: "extensions" },
-    { dir: folders.turbowarp, base: "https://extensions.turbowarp.org/", sub: "" },
-    { dir: folders.sharkpools, base: "https://sharkpools-extensions.vercel.app/", sub: "extension-code" }
-  ];
-  const walk = (dir, rel, base) => {
-    let entries;
-    try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (e) { return; }
-    for (const entry of entries) {
-      if (entry.name === "node_modules") continue;
-      const full = path.join(dir, entry.name);
-      const relPath = rel ? rel + "/" + entry.name : entry.name;
-      if (entry.isDirectory()) { walk(full, relPath, base); continue; }
-      if (!entry.name.endsWith(".js")) continue;
-      let source;
-      try { source = fs.readFileSync(full, "utf8"); } catch (e) { continue; }
-      if (!/Scratch\.extensions\.register/.test(source)) continue;
-      const getInfoAt = source.indexOf("getInfo");
-      if (getInfoAt < 0) continue;
-      const match = /\bid\s*:\s*(['"`])([A-Za-z0-9_.\-]+)\1/.exec(source.slice(getInfoAt));
-      if (!match || Object.prototype.hasOwnProperty.call(table, match[2])) continue;
-      table[match[2]] = base + relPath.split("/").map(encodeURIComponent).join("/");
-    }
-  };
-  for (const root of roots) {
-    const start = root.sub ? path.join(root.dir, root.sub) : root.dir;
-    walk(start, root.sub, root.base);
-  }
-  extensionIdTable = table;
-  return table;
-}
-
 // ---- in-app updater ------------------------------------------------------------------------
 
 // The folder the app is installed in (where "PenguinMod Desktop.exe" is), or null if this copy
@@ -738,11 +696,6 @@ function setupProtocol() {
           });
         }
         return new Response("Not found", { status: 404 });
-      }
-      if (url.host === "studio.penguinmod.com" && url.pathname === "/__extension-ids__.json") {
-        return new Response(JSON.stringify(getExtensionIdTable()), {
-          headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }
-        });
       }
       if (url.host === "studio.penguinmod.com" && url.pathname.startsWith(LIBRARY_PREFIX)) {
         return serveFolderFile(LIBRARY_DIR, url.pathname.slice(LIBRARY_PREFIX.length));
