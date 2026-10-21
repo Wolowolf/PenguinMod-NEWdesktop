@@ -1,5 +1,5 @@
 {
-  "_about": "Offline text-to-speech files (scripts/make-speech-models.mjs). The app downloads each pack from its release (tag) when a project first needs it (files named <pack>--<path>), checks size and SHA-256, and keeps it in resources/speech-models/<pack>.",
+  "_about": "Offline speech files: text to speech and dictation (scripts/make-speech-models.mjs). The app downloads each pack from its release (tag) when a project first needs it (files named <pack>--<path>), checks size and SHA-256, and keeps it in resources/speech-models/<pack>.",
   "packs": {
     "onnxruntime": {
       "tag": "speech-models-1",
@@ -1541,6 +1541,68 @@
           "asset": "loudkit-cloning--SOURCE.txt",
           "size": 279,
           "sha256": "c1c4312e559cfd33c21a78e9e02a574e723fe01f3b51072989d2a5a2f9d192bd"
+        }
+      ]
+    },
+    "moonshine-english": {
+      "tag": "speech-models-5",
+      "version": "7fba3bb887ff0487",
+      "size": 66788340,
+      "files": [
+        {
+          "path": "encoder_model_quantized.onnx",
+          "asset": "moonshine-english--encoder_model_quantized.onnx",
+          "size": 20513063,
+          "sha256": "1dd9ab0a7f987113d30affcba5a068d11c8f90fa0223caa3e491ade431ad9751"
+        },
+        {
+          "path": "decoder_model_merged_quantized.onnx",
+          "asset": "moonshine-english--decoder_model_merged_quantized.onnx",
+          "size": 42498870,
+          "sha256": "cc9f3cd6698a369c6008b41aa60aa3fb3322e7f03c9bdf19d8e6b7200afca4f3"
+        },
+        {
+          "path": "tokenizer.json",
+          "asset": "moonshine-english--tokenizer.json",
+          "size": 3761754,
+          "sha256": "7b913404bdd039af4756783218af4440bc07fb7d6d8258d677e34f95b3ec416f"
+        },
+        {
+          "path": "LICENSE.txt",
+          "asset": "moonshine-english--LICENSE.txt",
+          "size": 14180,
+          "sha256": "fa7d1174dd8af6a7cd280be20b80d10095ed4c19b5b20b61a7715c3ad790dc5f"
+        },
+        {
+          "path": "SOURCE.txt",
+          "asset": "moonshine-english--SOURCE.txt",
+          "size": 473,
+          "sha256": "27fa8fc31260b243e1ac7440784e915c59cd10c9bb422fe46a8410adee6970a6"
+        }
+      ]
+    },
+    "silero-vad": {
+      "tag": "speech-models-5",
+      "version": "515e42be09b2985f",
+      "size": 2328792,
+      "files": [
+        {
+          "path": "silero_vad.onnx",
+          "asset": "silero-vad--silero_vad.onnx",
+          "size": 2327524,
+          "sha256": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3"
+        },
+        {
+          "path": "LICENSE.txt",
+          "asset": "silero-vad--LICENSE.txt",
+          "size": 1075,
+          "sha256": "2e63e9a38b6e8fc0c7bc37ce174caca1862870856c6daf5697cfb785e925520b"
+        },
+        {
+          "path": "SOURCE.txt",
+          "asset": "silero-vad--SOURCE.txt",
+          "size": 193,
+          "sha256": "5c0a11d8e3c1711db26b9da3bf6ee8a2de42883efa48b5c3465873285fc521fe"
         }
       ]
     }
