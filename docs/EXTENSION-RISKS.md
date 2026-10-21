@@ -70,7 +70,7 @@ List index · typed variables · real data types.
 ## Sound
 Mixer channels, effects, positional sound.
 - Use the engine's audio: vm `music`, `pmSensingExpansion` (loudness) · pm `Gen1x/beat_sync` (engine's AudioContext), `SharkPool/Sound-Waves` (engine's context and input node) · tw `Lily/SoundExpanded` (sets the engine's master volume `inputNode.gain`), `Lily/Video` (follows it).
-- Own audio: pm `PuzzlingGGG/ttsrV2` · sp `Tune-Shark-V3` (own audio library), `Recording-V2` (microphone) · vm `jgPrism`. (sp `MIDI-Tools` plays no sound: it only times a MIDI file's notes for its hats; step 2 block inventory.)
+- Own audio: pm `PuzzlingGGG/ttsrV2`, `pooiod/Dictation` (microphone into its own AudioContext and worker, section 111) · sp `Tune-Shark-V3` (own audio library), `Recording-V2` (microphone) · vm `jgPrism`. (sp `MIDI-Tools` plays no sound: it only times a MIDI file's notes for its hats; step 2 block inventory.)
 
 ## Input
 Named actions, gamepads, mouse lock, key released: vm `pmSensingExpansion`, `pmEventsExpansion` · tw `runtime-options` (wraps `ioDevices.userData.postData` for its "username changed" hat; step 2 block inventory), `pointerlock`, `CubesterYT/KeySimulation` (posts key input to the VM), `veggiecan/mobilekeyboard`, `cursor`, `Lily/lmsutils` · sp `KeysPlusV2`, `Hyper-Sense-V2` (own key listeners on the window), `Extra-Controls` (keybinds: posts keyboard input, reads `_keysPressed`), `Popup-Phoenix` (`KEY_PRESSED`), `Gamepad-Expanded` (`navigator.getGamepads`) · pm `gaimerI17/DeviceMotion`, `electricfuzzball_pm/MIDI`, `pooiod/Dictation`.

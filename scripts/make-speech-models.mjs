@@ -24,6 +24,11 @@
 //   --loudkit-natural  the same from huggingface.co/loudreader/loudr-1 (slower, more natural). Becomes pack loudkit-natural.
 //   --loudkit-cloning  LICENSE, NOTICE, COMMIT.txt and onnx/s3_tokenizer.onnx, camp.onnx, voice_encoder.onnx from
 //             loudr-1-turbo (the same files in loudr-1). Becomes pack loudkit-cloning (Enroller, both models).
+//   --moonshine  huggingface.co/onnx-community/moonshine-base-ONNX: onnx/encoder_model_quantized.onnx,
+//             onnx/decoder_model_merged_quantized.onnx, tokenizer.json, COMMIT.txt (the commit downloaded) and LICENSE
+//             from github.com/moonshine-ai/moonshine (English Base = MIT). Becomes pack moonshine-english (dictation).
+//   --silero  github.com/snakers4/silero-vad: src/silero_vad/data/silero_vad.onnx, LICENSE, COMMIT.txt.
+//             Becomes pack silero-vad (dictation: when speech starts and ends).
 //
 // Output: <out>/assets/ (flat files to upload to the release, names "<pack>--<path>") and
 // <out>/installed/<pack>/ (the layout the app keeps in resources/speech-models, for the local test).
@@ -239,10 +244,30 @@ if (args["loudkit-cloning"]) {
     "Clone only voices you have permission to use.\n"));
 }
 
+// Dictation (speech to text): Moonshine Base English (MIT) and Silero VAD (MIT), unchanged
+if (args.moonshine) {
+  const ms = args.moonshine;
+  for (const file of ["encoder_model_quantized.onnx", "decoder_model_merged_quantized.onnx", "tokenizer.json"]) addFile("moonshine-english", file, read(ms, file));
+  addFile("moonshine-english", "LICENSE.txt", read(ms, "LICENSE"));
+  addFile("moonshine-english", "SOURCE.txt", Buffer.from(
+    "Moonshine Base (English) by Useful Sensors, Inc. (dba Moonshine AI), https://github.com/moonshine-ai/moonshine, MIT.\n" +
+    `ONNX export by onnx-community (https://huggingface.co/onnx-community/moonshine-base-ONNX, commit ${read(ms, "COMMIT.txt").toString().trim()}),\n` +
+    "onnx/encoder_model_quantized.onnx, onnx/decoder_model_merged_quantized.onnx and tokenizer.json, unchanged.\n" +
+    "Licence: LICENSE.txt (SECTION 1, MIT; the English Base model is not among the Community License exceptions).\n"));
+}
+if (args.silero) {
+  const sv = args.silero;
+  addFile("silero-vad", "silero_vad.onnx", read(sv, "silero_vad.onnx"));
+  addFile("silero-vad", "LICENSE.txt", read(sv, "LICENSE"));
+  addFile("silero-vad", "SOURCE.txt", Buffer.from(
+    `Silero VAD by Silero Team (https://github.com/snakers4/silero-vad, commit ${read(sv, "COMMIT.txt").toString().trim()}),\n` +
+    "src/silero_vad/data/silero_vad.onnx, unchanged. Licence: MIT (LICENSE.txt).\n"));
+}
+
 const appPin = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, "$1")), "..", "app", "speech-models.json");
 const old = fs.existsSync(appPin) ? JSON.parse(fs.readFileSync(appPin, "utf8")) : { packs: {} };
 const pin = {
-  _about: "Offline text-to-speech files (scripts/make-speech-models.mjs). The app downloads each pack from its release (tag) " +
+  _about: "Offline speech files: text to speech and dictation (scripts/make-speech-models.mjs). The app downloads each pack from its release (tag) " +
     "when a project first needs it (files named <pack>--<path>), checks size and SHA-256, and keeps it in resources/speech-models/<pack>.",
   packs: Object.fromEntries(Object.entries(old.packs).filter(([name]) => !packs[name])
     .map(([name, pack]) => [name, Object.assign({ tag: pack.tag || old.tag }, pack)])

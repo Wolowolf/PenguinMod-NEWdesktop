@@ -321,7 +321,7 @@ function offerElectronOnRequest() {
   }, 0);
 }
 
-// Offline text to speech asks for the packs a project needs (/__speech__/install?packs=a,b): offers
+// Offline text to speech and dictation ask for the packs a project needs (/__speech__/install?packs=a,b): offers
 // to download the missing ones (app/speech-models.json) and answers {ok} once they are in place.
 async function installSpeechPacksOnRequest(names) {
   const pin = (() => {
@@ -341,7 +341,7 @@ async function installSpeechPacksOnRequest(names) {
       defaultId: 0,
       cancelId: 1,
       noLink: true,
-      message: "Text to speech needs files that are not downloaded yet.",
+      message: "Offline speech needs files that are not downloaded yet.",
       detail: `${missing.join(", ")}\nDownload size: about ${Math.round(size / 1048576)} MB, only once. ` +
         "After that, speech works offline.",
     });
@@ -357,7 +357,7 @@ async function installSpeechPacksOnRequest(names) {
     console.error("[speech-models] failed", err);
     sendUpdateProgress("done");
     dialog.showMessageBoxSync(win, { type: "error", buttons: ["OK"], noLink: true,
-      message: "The text to speech files could not be downloaded.", detail: String((err && err.message) || err) });
+      message: "The speech files could not be downloaded.", detail: String((err && err.message) || err) });
     return { ok: false, reason: "failed" };
   } finally {
     updateInProgress = false;
