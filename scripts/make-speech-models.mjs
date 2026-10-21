@@ -29,6 +29,9 @@
 //             from github.com/moonshine-ai/moonshine (English Base = MIT). Becomes pack moonshine-english (dictation).
 //   --silero  github.com/snakers4/silero-vad: src/silero_vad/data/silero_vad.onnx, LICENSE, COMMIT.txt.
 //             Becomes pack silero-vad (dictation: when speech starts and ends).
+//   --whisper  huggingface.co/onnx-community/whisper-small: onnx/encoder_model_quantized.onnx,
+//             onnx/decoder_model_merged_quantized.onnx, tokenizer.json, config.json, generation_config.json,
+//             COMMIT.txt and LICENSE from github.com/openai/whisper (MIT). Becomes pack whisper-small (dictation, other languages).
 //
 // Output: <out>/assets/ (flat files to upload to the release, names "<pack>--<path>") and
 // <out>/installed/<pack>/ (the layout the app keeps in resources/speech-models, for the local test).
@@ -262,6 +265,18 @@ if (args.silero) {
   addFile("silero-vad", "SOURCE.txt", Buffer.from(
     `Silero VAD by Silero Team (https://github.com/snakers4/silero-vad, commit ${read(sv, "COMMIT.txt").toString().trim()}),\n` +
     "src/silero_vad/data/silero_vad.onnx, unchanged. Licence: MIT (LICENSE.txt).\n"));
+}
+if (args.whisper) {
+  const wh = args.whisper;
+  for (const file of ["encoder_model_quantized.onnx", "decoder_model_merged_quantized.onnx", "tokenizer.json", "config.json", "generation_config.json"]) {
+    addFile("whisper-small", file, read(wh, file));
+  }
+  addFile("whisper-small", "LICENSE.txt", read(wh, "LICENSE"));
+  addFile("whisper-small", "SOURCE.txt", Buffer.from(
+    "Whisper small by OpenAI (https://github.com/openai/whisper; code and model weights MIT, LICENSE.txt).\n" +
+    `ONNX export by onnx-community (https://huggingface.co/onnx-community/whisper-small, commit ${read(wh, "COMMIT.txt").toString().trim()}),\n` +
+    "onnx/encoder_model_quantized.onnx, onnx/decoder_model_merged_quantized.onnx, tokenizer.json, config.json and\n" +
+    "generation_config.json, unchanged.\n"));
 }
 
 const appPin = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, "$1")), "..", "app", "speech-models.json");
