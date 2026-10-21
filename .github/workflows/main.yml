@@ -183,6 +183,8 @@ jobs:
           cp -R SharkPools-Extensions app/
           cp -R TurboWarp-ExtensionsGallery/build app/TurboWarp-ExtensionsGallery
           cp -R PenguinMod-ExtensionsGallery/public app/PenguinMod-ExtensionsGallery
+          # Every gallery extension is built into the VM: the galleries keep only pages, listings and tiles.
+          node scripts/remove-moved-gallery-files.js penguinmod.github.io/node_modules/scratch-vm/src/extension-support/moved-gallery-extensions.json app
 
       # --- PenguinMod Packager (served offline at studio.penguinmod.com/PenguinMod-Packager/) ---
       # Built with the editor's own VM and Render (the upstream.json commits installed above, copied
