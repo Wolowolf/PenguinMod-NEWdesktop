@@ -32,6 +32,9 @@
 //   --whisper  huggingface.co/onnx-community/whisper-small: onnx/encoder_model_quantized.onnx,
 //             onnx/decoder_model_merged_quantized.onnx, tokenizer.json, config.json, generation_config.json,
 //             COMMIT.txt and LICENSE from github.com/openai/whisper (MIT). Becomes pack whisper-small (dictation, other languages).
+//   --parakeet  huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx: encoder-model.int8.onnx, decoder_joint-model.int8.onnx,
+//             nemo128.onnx, vocab.txt, config.json, COMMIT.txt and LICENSE (the CC BY 4.0 legal code). Becomes pack
+//             parakeet-v3 (dictation, high accuracy).
 //
 // Output: <out>/assets/ (flat files to upload to the release, names "<pack>--<path>") and
 // <out>/installed/<pack>/ (the layout the app keeps in resources/speech-models, for the local test).
@@ -277,6 +280,17 @@ if (args.whisper) {
     `ONNX export by onnx-community (https://huggingface.co/onnx-community/whisper-small, commit ${read(wh, "COMMIT.txt").toString().trim()}),\n` +
     "onnx/encoder_model_quantized.onnx, onnx/decoder_model_merged_quantized.onnx, tokenizer.json, config.json and\n" +
     "generation_config.json, unchanged.\n"));
+}
+if (args.parakeet) {
+  const pk = args.parakeet;
+  for (const file of ["encoder-model.int8.onnx", "decoder_joint-model.int8.onnx", "nemo128.onnx", "vocab.txt", "config.json"]) {
+    addFile("parakeet-v3", file, read(pk, file));
+  }
+  addFile("parakeet-v3", "LICENSE.txt", read(pk, "LICENSE"));
+  addFile("parakeet-v3", "SOURCE.txt", Buffer.from(
+    "Parakeet TDT 0.6B v3 by NVIDIA (https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3), CC BY 4.0.\n" +
+    `ONNX export and int8 quantization by istupakov (https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx, commit\n` +
+    `${read(pk, "COMMIT.txt").toString().trim()}), CC BY 4.0. Files unchanged. Licence: LICENSE.txt (https://creativecommons.org/licenses/by/4.0/).\n`));
 }
 
 const appPin = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, "$1")), "..", "app", "speech-models.json");

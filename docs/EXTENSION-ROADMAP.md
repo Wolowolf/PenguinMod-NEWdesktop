@@ -74,7 +74,7 @@ Columns 1–7 are the steps. ✓ done · ○ to do · — not needed · ? decide
 | 3D Math (`ObviousAlexC/3DMath`) | PenguinMod | `obviousAlexCMath3d` | 63 (0) | ✓ | ✓ | ✓ | — | ○ | — | ? | threads |
 | Beat Sync (`Gen1x/beat_sync`) | PenguinMod | `beatSync` | 24 (0) | ✓ | ✓ | ✓ | — | — | ○ | ? | frame loop, threads, sound, hidden state |
 | Extra Timers (`steve0greatness/timers`) | PenguinMod | `steve0greatnesstimers` | 10 (0) | ✓ | ✓ | ✓ | — | — | ○ | ? | threads, data, hidden state |
-| Dictation (`pooiod/Dictation`) | PenguinMod | `pooiod7Dictation` | 7 (0) | ✓ | ✓ | ✓ | — | — | — | ? | input, self-contained (microphone, own worker since section 111) |
+| Dictation (`pooiod/Dictation`) | PenguinMod | `pooiod7Dictation` | 8 (0) | ✓ | ✓ | ✓ | — | — | — | ? | input, self-contained (microphone, own worker since section 111) |
 | Text To Speech (`PuzzlingGGG/ttsrV2`) | PenguinMod | `pmTextToSpeech` | 8 (0) | ✓ | ✓ | ✓ | — | — | — | ? | sound |
 | E2EE (`MikeDev101/e2ee`) | PenguinMod | `e2ee` | 9 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
 | WebRTC (`MikeDev101/webrtc`) | PenguinMod | `webrtc` | 22 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |

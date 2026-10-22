@@ -1654,6 +1654,55 @@
           "sha256": "5f1dd92f37ad4d851ff8582ba723e29221c4a6e09f9ad20ca826acdc1b0a3af5"
         }
       ]
+    },
+    "parakeet-v3": {
+      "tag": "speech-models-7",
+      "version": "06edaf27a783dc82",
+      "size": 670638809,
+      "files": [
+        {
+          "path": "encoder-model.int8.onnx",
+          "asset": "parakeet-v3--encoder-model.int8.onnx",
+          "size": 652183999,
+          "sha256": "6139d2fa7e1b086097b277c7149725edbab89cc7c7ae64b23c741be4055aff09"
+        },
+        {
+          "path": "decoder_joint-model.int8.onnx",
+          "asset": "parakeet-v3--decoder_joint-model.int8.onnx",
+          "size": 18202004,
+          "sha256": "eea7483ee3d1a30375daedc8ed83e3960c91b098812127a0d99d1c8977667a70"
+        },
+        {
+          "path": "nemo128.onnx",
+          "asset": "parakeet-v3--nemo128.onnx",
+          "size": 139764,
+          "sha256": "a9fde1486ebfcc08f328d75ad4610c67835fea58c73ba57e3209a6f6cf019e9f"
+        },
+        {
+          "path": "vocab.txt",
+          "asset": "parakeet-v3--vocab.txt",
+          "size": 93939,
+          "sha256": "d58544679ea4bc6ac563d1f545eb7d474bd6cfa467f0a6e2c1dc1c7d37e3c35d"
+        },
+        {
+          "path": "config.json",
+          "asset": "parakeet-v3--config.json",
+          "size": 97,
+          "sha256": "666903c76b9798caf2c210afd4f6cd60b08a8dbf9800ec8d7a3bc0d2148ac466"
+        },
+        {
+          "path": "LICENSE.txt",
+          "asset": "parakeet-v3--LICENSE.txt",
+          "size": 18655,
+          "sha256": "fe7b4ce83b8381cc5b216bbb4af73c570688d1b819c73bbaed8ca401f4677cd6"
+        },
+        {
+          "path": "SOURCE.txt",
+          "asset": "parakeet-v3--SOURCE.txt",
+          "size": 351,
+          "sha256": "0e881fd4dc445d894fe3c49274b83da95df7572ebd06ab1165648cbbcf2ec1db"
+        }
+      ]
     }
   }
 }

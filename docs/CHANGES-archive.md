@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 112 — Packaged games get the Dictation files (2026-10-21)
+- Asked: step (b) of the offline dictation plan: packaged games get the dictation files and can use the microphone.
+- Changed: section 112 (Packager `5018ffc`; `upstream.json`, docs): a project with Dictation blocks gets `speech/onnxruntime`, `speech/silero-vad` and `speech/moonshine-english` (with licences, listed in `speech/README.txt`) in zip and Windows app packages; options page note and single-HTML warning. The microphone needed no change: packaged Electron games, like the app, have no permission handler. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only the packager's file copying and options page; the compiler, frame loop, timing and number handling are untouched, so extensions' blocks calculate as before.
+- Verified (test app): the options page showed the Dictation note, and the HTML target the warning; a Windows app package (234.9 MB) of a project with one Dictation block held exactly onnxruntime, silero-vad, moonshine-english (all files + licences) and a README naming only those; the unpacked game (run with a debug port) had `pmSpeechBase` `speech/`, recognized a clip played in place of the microphone word for word in 4.7 s, and opened the real microphone without asking ("" after 8 s without speech). · Not verified: a plain zip in a browser on a website, a project with both Text To Speech and Dictation (code path shared, reasoned), real speech into a microphone.
+- Result after build: assumed working
+
 ### Session 111 — Dictation offline with Moonshine (2026-10-21)
 - Asked: best offline speech recognition for the Dictation extension usable in sold games (like Text To Speech); then a step-by-step plan (in "Ideas offered") and its first step.
 - Changed: section 111 (VM `51406e7`, GUI `78f88d5`; `app/speech-models.json`, `scripts/make-speech-models.mjs`, `app/electron-main.js` download-box text, `upstream.json`, docs); release `speech-models-5` (8 files, ≈69 MB). Speech to Text (Dictation) recognizes English on this computer (Moonshine Base + Silero VAD, both MIT) instead of Google's servers: same 4 blocks, microphone on only while listening, ends after 1 s of quiet, stop sign stops it, credits. To reverse: `git revert` the merge (fork commits stay).
