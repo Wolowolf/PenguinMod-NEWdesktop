@@ -8,7 +8,7 @@
   "PenguinMod-Vm": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Vm.git",
     "branch": "desktop",
-    "commit": "934aeacf2161a1adf39f6b2c1dcf56c26190646e"
+    "commit": "bc82aa50b496ab3a30f458e19f4f506e4dde40fe"
   },
   "PenguinMod-Blocks": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Blocks.git",
@@ -18,7 +18,7 @@
   "PenguinMod-Render": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Render.git",
     "branch": "desktop",
-    "commit": "d3c5487fd7c9591aa3aa2d7d685da4ef4b589ebb"
+    "commit": "ff03480af4f2ce99286b859237f47d82d43c41c5"
   },
   "PenguinMod-Paint": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Paint.git",
@@ -43,7 +43,7 @@
   "PenguinMod-Packager": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Packager.git",
     "branch": "desktop",
-    "commit": "cdd3be7c5d1f0db433f0799e7a8433088c79fc21"
+    "commit": "0654ecaca7e59476fd9f3ac79107c8afb6fba328"
   },
   "game-icons": {
     "repo": "https://github.com/Wolowolf/game-icons.git",
