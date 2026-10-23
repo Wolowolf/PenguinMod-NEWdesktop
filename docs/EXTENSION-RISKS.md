@@ -17,7 +17,7 @@ Strong GPU · higher memory limit · Wasm for a few slow parts · heavy jobs in 
 
 ## Frame loop and timing
 Full speed in background · frames above refresh rate · fixed time step (deterministic mode) · logic/drawing threads.
-- Replace or wrap the step: tw `pointerlock` (wraps `runtime._step` to reset mouse movement each frame), `TheShovel/ShovelUtils` (wraps `runtime._step` to count frames per second).
+- Replace or wrap the step: none since section 119 (tw `pointerlock` and `TheShovel/ShovelUtils` listen to `RUNTIME_STEP_END` instead: reset mouse movement, count frames per second).
 - Run a step on demand: sp `Sharktilities` (blocks call `runtime._step()` and `frameLoop.stepCallback()`).
 - Listen to every frame (`BEFORE_EXECUTE` / `AFTER_EXECUTE` / `RUNTIME_STEP_START`): vm `pmEventsExpansion`, `jgTailgating` (followers) · pm `Gen1x/lighting` (redraws its light canvas after each frame), `Gen1x/beat_sync` · tw `obviousAlexC/penPlus`, `lab/video-sprites`, `Lily/Video`, `XeroName/Deltatime`, `godslayerakp/ws`, `TheShovel/ColorPicker` · sp `Turbo-Skins` (swaps skins before and after the scripts run), `Animations`, `Speech-Bubbles`, `Extra-Controls`, and `Sharktilities`, `Hyper-Sense-V2`, `KeysPlusV2`, `Variables-Expanded` (start their own hats every frame).
 - Read frame rate / step time: vm `videoSensing` · tw `XeroName/Deltatime` (`1 / framerate` or measured time), `runtime-options`, `TheShovel/ShovelUtils` · sp `Animations` and `Tune-Shark-V3` (`runtime.currentStepTime`), `Scenes`.
@@ -37,7 +37,7 @@ Skip redraw · batched drawing · shaders and lights · WebGPU renderer · logic
 - Built-in camera: vm `pmCamera` (moves sprites through the VM's `runtime.updateCamera`, binds the mouse to the camera; the renderer gets normal positions).
 - Change the stage size: tw `runtime-options` · sp `Scenes` · tw `TheShovel/CanvasEffects` (renderer canvas only).
 - Convert with the stage size or follow its changes: tw `obviousAlexC/penPlus` (`STAGE_SIZE_CHANGED`), `CubesterYT/KeySimulation`, `CubesterYT/WindowControls`, `obviousAlexC/SensingPlus` · pm `Gen1x/lighting` · vm `pmEventsExpansion` · sp `Particle-Engine`, `Sprite-Effects-V2`, `Variables-Expanded`, `Hyper-Sense-V2`.
-- Mouse position: tw `pointerlock` (rewrites mouse x/y and wraps the mouse's `postData`), `CubesterYT/KeySimulation` (posts mouse and key input) · sp `Hyper-Sense-V2`, `KeysPlusV2`.
+- Mouse position: tw `pointerlock` (rewrites mouse x/y; sets the mouse's `pointerLocked`, section 119: other posted mouse data is ignored and the position is not rounded), `CubesterYT/KeySimulation` (posts mouse and key input) · sp `Hyper-Sense-V2`, `KeysPlusV2`.
 
 ## Collision and sensing
 Per-frame sensing cache · faster collision / hitboxes.
@@ -45,7 +45,7 @@ Per-frame sensing cache · faster collision / hitboxes.
 - Change what touching sees: sp `Turbo-Skins` (swaps each drawable to its hitbox skin for the scripts, then back, through `updateDrawableSkinId`), `Camera-Sensing-Plus` (skin swapped without the setter; handled by section 40's full check), `Animations` (drawable `updateScale` directly) · tw `stretch` (stretched scale through the VM).
 - Call touching functions a lot (the cache helps them): tw `Lily/ClonesPlus`, `obviousAlexC/SensingPlus` (`isTouchingDrawables`, `isTouchingPoint`) · sp `Hyper-Sense-V2`, `Pen-Papers` · tw `Lily/lmsutils` (touching mouse).
 - Read Drawable internals directly: vm `pmMotionExpansion` (`getFastBounds`, `drawable.isTouching` for points), `videoSensing` (motion per sprite) · tw `lab/face-sensing` (`drawable.isTouching`), `box2d` and pm `pooiod/Box2D` (`_getConvexHullPointsForDrawable` for body shapes) · sp `Rigidbodies` and `Lazy-Collisions` (own box maths from `getBounds`).
-- sp `Lazy-Collisions` replaces `Runtime.prototype.getSpriteTargetByName` (calls the original, section 39's faster one, then falls back to looking up by ID).
+- sp `Lazy-Collisions` sets `runtime.pmSpriteLookupById` on its first "ID of clone" (section 119; it replaced `Runtime.prototype.getSpriteTargetByName` before): from then on `getSpriteTargetByName` falls back to looking up by ID when no sprite has that name.
 
 ## Compiler
 Remembered results · work before the game runs · type tracking · inlining custom blocks · strict mode · pre-compiled scripts · compiling to Wasm.
@@ -55,11 +55,12 @@ Remembered results · work before the game runs · type tracking · inlining cus
 
 ## Threads and scripts
 Parallel blocks · automatic parallel clones · debugger · event-driven hats.
-- Replace scheduler functions: sp `Messages-Plus` (`startHats`, `_restartThread`), `Extra-Controls` (`_restartThread`, `Blocks.prototype.getNextBlock` / `getBranch`), `My-Blocks-Plus` (`Blocks.prototype` `getBlock`, `getBranch`, `getInputs`, `getProcedureDefinition`, `populateProcedureCache`, `Runtime.prototype.getOpcodeFunction`, `Sequencer.prototype.stepToProcedure`; found by the step 2 block inventory) · `runtime.visualReport` (editor value bubbles only): pm `ObviousAlexC/3DMath`, sp `Extra-Controls`.
+- Scheduler hooks (section 119): sp `Messages-Plus` adds threads to a broadcast's through the `HATS_STARTED` event (vm `pmEventsExpansion` listens to it too; the two run in the order the extensions loaded) and decides restarts through `runtime.pmRestartThreadHooks` (it wrapped `startHats` and `_restartThread` before). Editor value bubbles: pm `ObviousAlexC/3DMath` through `runtime.pmVisualReportHooks`.
+- Replace scheduler functions: sp `Extra-Controls` (`_restartThread`, `Blocks.prototype.getNextBlock` / `getBranch`), `My-Blocks-Plus` (`Blocks.prototype` `getBlock`, `getBranch`, `getInputs`, `getProcedureDefinition`, `populateProcedureCache`, `Runtime.prototype.getOpcodeFunction`, `Sequencer.prototype.stepToProcedure`; found by the step 2 block inventory) · `runtime.visualReport` (editor value bubbles only): sp `Extra-Controls`.
 - Make threads by hand (`_pushThread`, `runtime.threads.push`): vm `pmEventsExpansion` · sp `Tune-Shark-V3`.
 - Change thread fields (status, target, stack frames): sp `Extra-Controls`, `My-Blocks-Plus` (also swaps a target's `getNextBlock` for a while), `Sharktilities` · tw `godslayerakp/ws` (sets status done) · vm `jgTween` (walks `runtime.threads`), `pmControlsExpansion` (`_restartThread` in compiled code).
 - Hats checked every frame (edge-activated, pattern scan): vm `videoSensing`, `pmEventsExpansion` (`whenTrueFalse`, `whenKeyAction`) · pm `Gen1x/beat_sync`, `steve0greatness/timers`, `electricfuzzball_pm/MIDI` · tw `lab/face-sensing`, `Lily/lmsutils`, `Lily/ClonesPlus`, `cloudlink` · sp `MIDI-Tools`. Most other extension hats are started from events with `startHats`.
-- Section 63 (hats checked only when their answer can change): applies only to the built-in "when <>" and "when timer >" with conditions made of numbers, text, variables, x/y/direction, plain operators and (section 118) the pure extension blocks of `pure-blocks.json` with their menus; extension hats and conditions with other extension blocks are checked every frame as before. Changes are found by comparing values, so extensions that write variables or sprite fields directly (`Scenes`, `ShovelUtils`, ...) are noticed; variables holding objects (the types below) make the hat checked every frame. Extensions that replace `startHats` with their own copy (sp `Messages-Plus`) get the old every-frame checks while loaded.
+- Section 63 (hats checked only when their answer can change): applies only to the built-in "when <>" and "when timer >" with conditions made of numbers, text, variables, x/y/direction, plain operators and (section 118) the pure extension blocks of `pure-blocks.json` with their menus; extension hats and conditions with other extension blocks are checked every frame as before. Changes are found by comparing values, so extensions that write variables or sprite fields directly (`Scenes`, `ShovelUtils`, ...) are noticed; variables holding objects (the types below) make the hat checked every frame. No shipped extension replaces `startHats` (sp `Messages-Plus` only wrapped it, which kept these checks, and uses the `HATS_STARTED` event since section 119).
 
 ## Lists, variables, data types
 List index · typed variables · real data types.
@@ -74,14 +75,15 @@ Mixer channels, effects, positional sound.
 - Own audio: pm `PuzzlingGGG/ttsrV2`, `pooiod/Dictation` (microphone into its own AudioContext and worker, section 111) · sp `Tune-Shark-V3` (own audio library), `Recording-V2` (microphone) · vm `jgPrism`. (sp `MIDI-Tools` plays no sound: it only times a MIDI file's notes for its hats; step 2 block inventory.)
 
 ## Input
-Named actions, gamepads, mouse lock, key released: vm `pmSensingExpansion`, `pmEventsExpansion` · tw `runtime-options` (wraps `ioDevices.userData.postData` for its "username changed" hat; step 2 block inventory), `pointerlock`, `CubesterYT/KeySimulation` (posts key input to the VM), `veggiecan/mobilekeyboard`, `cursor`, `Lily/lmsutils` · sp `KeysPlusV2`, `Hyper-Sense-V2` (own key listeners on the window), `Extra-Controls` (keybinds: posts keyboard input, reads `_keysPressed`), `Popup-Phoenix` (`KEY_PRESSED`), `Gamepad-Expanded` (`navigator.getGamepads`) · pm `gaimerI17/DeviceMotion`, `electricfuzzball_pm/MIDI`, `pooiod/Dictation`.
+Named actions, gamepads, mouse lock, key released: vm `pmSensingExpansion`, `pmEventsExpansion` · tw `runtime-options` ("username changed" hat through `runtime.pmUsernameChangedHooks`, section 119; it wrapped `ioDevices.userData.postData` before), `pointerlock`, `CubesterYT/KeySimulation` (posts key input to the VM), `veggiecan/mobilekeyboard`, `cursor`, `Lily/lmsutils` · sp `KeysPlusV2`, `Hyper-Sense-V2` (own key listeners on the window), `Extra-Controls` (keybinds: posts keyboard input, reads `_keysPressed`), `Popup-Phoenix` (`KEY_PRESSED`), `Gamepad-Expanded` (`navigator.getGamepads`) · pm `gaimerI17/DeviceMotion`, `electricfuzzball_pm/MIDI`, `pooiod/Dictation`.
 
 ## Clones and sprites
 Parent/child sprites · automatic parallel clones.
 - Wrap clone creation: tw `lab/video-sprites`, `Xeltalliv/clippingblending` (`makeClone`).
 - Manage clones and sprites: tw `Lily/ClonesPlus` · vm `jgTailgating` · sp `Sprite-Parenting`, `Scenes` (saves and restores every target), `Lazy-Collisions` · pm `SharkPool/Tile-Grids`.
 - Write target fields without the setters: sp `Scenes` (x, y, size, direction, effects, costume, visibility), `Sharktilities` (volume) · vm `pmMotionExpansion` (volume).
-- Wrap sprite and VM methods: vm `pmEventsExpansion` (`RenderedTarget.prototype.setCostume`, the VM's `startDrag`, `stopDrag`, `saveProjectSb3`, `saveProjectSb3Stream`; for its costume, drag and save hats) · sp `My-Blocks-Plus` (`VirtualMachine.prototype.toJSON`, the VM's `duplicateSprite`, `exportSprite`, `exportStandaloneBlocks`, `shareBlocksToTarget`) (both found by the step 2 block inventory).
+- Sprite and VM hooks (section 119): vm `pmEventsExpansion`'s costume, drag and save hats use `runtime.pmCostumeChangedHooks` (called by `setCostume` on a real change), `runtime.pmTargetDragHooks` (`vm.startDrag` / `stopDrag`) and `vm.pmBeforeSaveHooks` / `pmAfterSaveHooks` (`saveProjectSb3`, `saveProjectSb3Stream`); it wrapped those methods before.
+- Wrap sprite and VM methods: sp `My-Blocks-Plus` (`VirtualMachine.prototype.toJSON`, the VM's `duplicateSprite`, `exportSprite`, `exportStandaloneBlocks`, `shareBlocksToTarget`) (both found by the step 2 block inventory).
 
 ## Editor (blocks library)
 Category menu (sections 11, 13, 55) · block shapes · workspace.
