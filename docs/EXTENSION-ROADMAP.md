@@ -20,7 +20,7 @@ The final app only runs the extensions it ships with: the VM's built-in extensio
   - [x] PenguinMod gallery (27 extensions) — Session 108, section 108
   - [x] TurboWarp gallery (48 extensions) — Session 109, section 109
   - [x] SharkPool gallery (32 extensions) — Session 109, section 109
-- [ ] **4. Compile pure blocks directly.** First read in `src/compiler/jsgen.js` how extension blocks are called in compiled mode, and measure that cost. Then give pure blocks compiler code, so that folding (44/45), section 63's hats, type tracking and later Wasm treat them like built-in operators and they skip the compatibility path.
+- [x] **4. Compile pure blocks directly.** First read in `src/compiler/jsgen.js` how extension blocks are called in compiled mode, and measure that cost. Then give pure blocks compiler code, so that folding (44/45), section 63's hats, type tracking and later Wasm treat them like built-in operators and they skip the compatibility path. *Done for all 275 pure reporters and Booleans without compiler code of their own, in 40 extensions (Session 118, section 118; see "Pure blocks compiled directly" below). Pure hats are left to step 6.*
 - [ ] **5. Replace engine patches with hooks.** For every extension that replaces or wraps an engine function, add a proper hook to the engine and rewrite the extension to use it, so no optimisation has to step aside. Remove a step-aside fallback once no shipped extension needs it any more: section 63 falling back to every-frame checks when `startHats` is replaced (sp `Messages-Plus`), section 40's safety list (`touchingCacheOriginals` in Render), section 62 turning a list's table off when its `value` is read or written directly, compiler class wrappers around section 44's `descendInput`. Of the extensions this step was first written for, `Pause`, `JSON-Array`, `jwArray`, `jwScope`, `jwLambda` and `shoveldebugger` are not shipped any more (removed in earlier sessions); the ones still shipped are marked ○ in column 5.
 - [ ] **6. Hats checked every frame.** Turn the extension hats listed under "Hats checked every frame" in `EXTENSION-RISKS.md` (and the extensions that start their own hats every frame) into hats checked only when their answer can change (section 63's mechanism) or fired from events.
 - [ ] **7. Planned optimisations:** whenever one of them is built, give the extensions what it needs: what each block writes (parallel blocks, automatic parallel clones), hidden state registered with the engine (rewind, deterministic mode), page-dependent parts split off (engine in a worker), answer types (typed variables, type tracking).
@@ -46,6 +46,12 @@ The final app only runs the extensions it ships with: the VM's built-in extensio
 - **Found while moving them:** fixed: tw `Xeltalliv/simple3D` crashed the editor on a stage resize (section 109); sp `Sprite-Effects-V2` threw in its stop-all handler when the stage canvas had left the page (section 116).
 - **Found in the gallery groups:** fixed in section 116: pm `qxsck/big-decimal` "round" (a large negative number of places never returned), tw `text` "count regex" (answered the previous count for an invalid pattern; pure now), sp `Time-Calculation` add/subtract (fixed 8-hour shift), sp `Geolocation` "distance" (about 0.0003 of the real distance). Section 116's smoke test ran all 752 side-effect-free gallery reporters and Booleans compiled in the app: 745 answered; the other 7 fail with default inputs in an empty project, the same in the gallery code (Layer Control "owner", Turbo Skins "current skin", Sound Expanded "sound effect" with a missing target; Box2D density / friction / restitution before a body exists; Pen+ "edit triangle" with its non-JSON default). Still true: async blocks are not pure (pm `gaimerI17/crypto` RSA keys answer through a promise); engine patches (now in `EXTENSION-RISKS.md`, step 5): tw `runtime-options` wraps `userData.postData`; sp `My-Blocks-Plus` replaces 7 `Blocks` / runtime / sequencer methods and 5 VM methods; sp `Extra-Controls` replaces `window.Error` and `console.error`; sp `Sharktilities`, `QR-Codes` patch the block editor; sp `Pen-Papers` redirects the pen to its own layers. Many gallery extensions write `variable.value` / `list.value` directly (section 62 turns those lists' tables off).
 
+## Pure blocks compiled directly (step 4, section 118)
+- **Cost found:** a compiled extension reporter went through `executeInCompatibilityLayer` (a generator call with thread-status checks; it also makes the whole script a generator) and then the extension manager's wrapper (converts the arguments by their declared type, every call). Benchmark project 13 (a loop of 200,000 × 5 TurboWarp Bitwise calls per frame): 80.4 ms of work per frame, about 80 ns per call.
+- **How:** VM `src/extension-support/pure-blocks.json` lists the inventory's pure reporters and Booleans without compiler code (`"<ID>_<opcode>": "<answer type>"`; `desktop_block_inventory.js` checks it matches the inventory: after changing a `pure`, `compiled` or `answer` there, make it again from the inventory). `extension-manager.js` gives each non-dynamic block function `pmDirect` (`call` without the wrapper, `argumentTypes()`, `normalize`). `irgen.js` `getPureExtensionAnswer`: such a block is a `compat` node with `pure` = its answer type and does not make the script yield. `jsgen.js` `descendPureExtensionBlock`: a direct call with the arguments object the wrapper would pass on (same values, same order, `mutation` included); conversions are left out where the input's type already matches and done at compile time for fixed values; answer types number (may be NaN) and boolean are given to the compiler, text stays unknown (the compiler's true/false test for known text differs from Scratch's for "" and "FALSE"); with every input fixed the block runs once at compile time and its answer replaces the call (`foldPureExtensionBlock`, same limits as section 44: no NaN, infinity, -0 or objects). `edge-hats.js` (section 63): these blocks and extension menus (shadow blocks with fixed fields) may be in a skippable "when" condition. Switches (tests only): `runtime.pmNoPureExtensionCalls`, `runtime.pmNoConstantFolding`.
+- **Measured:** project 13 work 80.4 → 4.5 ms per frame; project 14 (2,000 clones × 4 "when" hats using Bitwise blocks) 14.3 → 1.05 ms. Equality: local `benchpure-eq.mjs 12`: every pure block × 12 input sets, fixed and from variables (6,600 answers), old path vs new: 0 differences, value and type (old: 6,600 compatibility-layer calls; new: none). `PURE_EXT=skip|every node benchedgehats-check.mjs <label>`: hats with Bitwise blocks, skippable vs forced every frame: the same hat firings in every frame and the same running state.
+- **Not done here:** pure hats (step 6); blocks that answer through a promise are not pure; dynamic blocks (`isDynamic`) keep the old path.
+
 ## Extensions (124: 17 built-in, 27 PenguinMod, 48 TurboWarp, 32 SharkPool)
 Columns 1–7 are the steps. ✓ done · ○ to do · — not needed · ? decided by the step 2 inventory. "Blocks (pure)": number of blocks and of pure blocks in the inventory (? = not inventoried yet). "ID" is the extension ID projects save. "Engine areas" are the `EXTENSION-RISKS.md` headings that name the extension ("most exposed" = in its most exposed list).
 
@@ -55,21 +61,21 @@ Columns 1–7 are the steps. ✓ done · ○ to do · — not needed · ? decide
 | Music (`music`) | built-in | `music` | 7 (0) | ✓ | ✓ | — | — | — | — | ? | sound |
 | Video Sensing (`videoSensing`) | built-in | `videoSensing` | 4 (0) | ✓ | ✓ | — | — | — | ○ | ? | frame loop, sensing, threads |
 | Motion Expansion (`pmMotionExpansion`) | built-in | `pmMotionExpansion` | 11 (0) | ✓ | ✓ | — | — | — | — | ? | overridden, sensing, clones |
-| Operators Expansion (`pmOperatorsExpansion`) | built-in | `pmOperatorsExpansion` | 31 (26) | ✓ | ✓ | — | ○ | — | — | ? | compiler |
-| Sensing Expansion (`pmSensingExpansion`) | built-in | `pmSensingExpansion` | 25 (2) | ✓ | ✓ | — | ○ | — | — | ? | drawing, sound, input |
+| Operators Expansion (`pmOperatorsExpansion`) | built-in | `pmOperatorsExpansion` | 31 (26) | ✓ | ✓ | — | ✓ | — | — | ? | compiler |
+| Sensing Expansion (`pmSensingExpansion`) | built-in | `pmSensingExpansion` | 25 (2) | ✓ | ✓ | — | ✓ | — | — | ? | drawing, sound, input |
 | Controls Expansion (`pmControlsExpansion`) | built-in | `pmControlsExpansion` | 6 (0) | ✓ | ✓ | — | — | — | — | ? | compiler, threads |
-| Events Expansion (`pmEventsExpansion`) | built-in | `pmEventsExpansion` | 33 (2) | ✓ | ✓ | — | ○ | ○ | ○ | ? | most exposed, frame loop, stage size, threads, input |
-| Prism (`jgPrism`) | built-in | `jgPrism` | 11 (7) | ✓ | ✓ | — | ○ | — | — | ? | drawing, sound |
-| Tween (`jgTween`) | built-in | `jgTween` | 8 (1) | ✓ | ✓ | — | ○ | — | — | ? | threads, hidden state |
+| Events Expansion (`pmEventsExpansion`) | built-in | `pmEventsExpansion` | 33 (2) | ✓ | ✓ | — | — | ○ | ○ | ? | most exposed, frame loop, stage size, threads, input |
+| Prism (`jgPrism`) | built-in | `jgPrism` | 11 (7) | ✓ | ✓ | — | ✓ | — | — | ? | drawing, sound |
+| Tween (`jgTween`) | built-in | `jgTween` | 8 (1) | ✓ | ✓ | — | ✓ | — | — | ? | threads, hidden state |
 | Tailgating (`jgTailgating`) | built-in | `jgTailgating` | 5 (0) | ✓ | ✓ | — | — | — | — | ? | frame loop, clones |
-| Proto (`jwProto`) | built-in | `jwProto` | 8 (5) | ✓ | ✓ | — | ○ | — | — | ? | compiler |
-| Color (`jwColor`) | built-in | `jwColor` | 12 (12) | ✓ | ✓ | — | ○ | — | — | ? | data |
-| LZ Compress (`shovellzcompresss`) | built-in | `shovellzcompresss` | 2 (2) | ✓ | ✓ | — | ○ | — | — | ? | self-contained |
+| Proto (`jwProto`) | built-in | `jwProto` | 8 (5) | ✓ | ✓ | — | ✓ | — | — | ? | compiler |
+| Color (`jwColor`) | built-in | `jwColor` | 12 (12) | ✓ | ✓ | — | ✓ | — | — | ? | data |
+| LZ Compress (`shovellzcompresss`) | built-in | `shovellzcompresss` | 2 (2) | ✓ | ✓ | — | ✓ | — | — | ? | self-contained |
 | Camera (`pmCamera`) | built-in | `pmCamera` | 22 (0) | ✓ | ✓ | — | — | — | — | ? | overridden, stage size |
 | Printing (`sharkpoolPrinting`) | built-in | `sharkpoolPrinting` | 19 (0) | ✓ | ✓ | — | — | — | — | ? | drawing |
-| Perlin Noise (`iygPerlin`) | built-in | `iygPerlin` | 3 (2) | ✓ | ✓ | — | ○ | — | — | ? | self-contained |
-| Iris Text (`Gen1x/iris-text`) | PenguinMod | `g1nxIrisText` | 105 (9) | ✓ | ✓ | ✓ | ○ | ○ | — | ? | most exposed, frame loop, drawing, compiler |
-| Boxed Physics (`pooiod/Box2D`) | PenguinMod | `P7BoxPhys` | 42 (4) | ✓ | ✓ | ✓ | ○ | — | — | ? | sensing, hidden state |
+| Perlin Noise (`iygPerlin`) | built-in | `iygPerlin` | 3 (2) | ✓ | ✓ | — | ✓ | — | — | ? | self-contained |
+| Iris Text (`Gen1x/iris-text`) | PenguinMod | `g1nxIrisText` | 105 (9) | ✓ | ✓ | ✓ | ✓ | ○ | — | ? | most exposed, frame loop, drawing, compiler |
+| Boxed Physics (`pooiod/Box2D`) | PenguinMod | `P7BoxPhys` | 42 (4) | ✓ | ✓ | ✓ | ✓ | — | — | ? | sensing, hidden state |
 | Lighting (`Gen1x/lighting`) | PenguinMod | `g1nxLighting` | 40 (0) | ✓ | ✓ | ✓ | — | — | — | ? | frame loop, drawing, stage size, page |
 | 3D Math (`ObviousAlexC/3DMath`) | PenguinMod | `obviousAlexCMath3d` | 63 (0) | ✓ | ✓ | ✓ | — | ○ | — | ? | threads |
 | Beat Sync (`Gen1x/beat_sync`) | PenguinMod | `beatSync` | 24 (0) | ✓ | ✓ | ✓ | — | — | ○ | ? | frame loop, threads, sound, hidden state |
@@ -79,8 +85,8 @@ Columns 1–7 are the steps. ✓ done · ○ to do · — not needed · ? decide
 | E2EE (`MikeDev101/e2ee`) | PenguinMod | `e2ee` | 9 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
 | WebRTC (`MikeDev101/webrtc`) | PenguinMod | `webrtc` | 22 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
 | PenguinHook (`MubiLop/penguinhook`) | PenguinMod | `mubiloppenguinhook` | 8 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
-| Number Utilities (`MubiLop/numutils`) | PenguinMod | `numberUtilities` | 11 (10) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
-| Big Decimal (`qxsck/big-decimal`) | PenguinMod | `qxsckbignumber` | 17 (8) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
+| Number Utilities (`MubiLop/numutils`) | PenguinMod | `numberUtilities` | 11 (10) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
+| Big Decimal (`qxsck/big-decimal`) | PenguinMod | `qxsckbignumber` | 17 (8) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
 | 3D Vectors & Quaternions (`Div/divVecQuat`) | PenguinMod | `divVecQuat` | 29 (29) | ✓ | ✓ | ✓ | — | — | — | ? | compiler, data |
 | Random Utilities (`Gen1x/random_utils`) | PenguinMod | `randomutils` | 11 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
 | Toast Notifications (`MubiLop/toastnotifs`) | PenguinMod | `toastnotifs` | 6 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
@@ -89,9 +95,9 @@ Columns 1–7 are the steps. ✓ done · ○ to do · — not needed · ? decide
 | Video Sharing (`pooiod/VideoSharing`) | PenguinMod | `p7videosharing` | 11 (0) | ✓ | ✓ | ✓ | — | — | — | ? | drawing, headers |
 | Google Auth (`Ikelene/googleAuthExtension`) | PenguinMod | `googleAuth` | 9 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
 | Discord Auth (`NotHouse/DiscordAuth`) | PenguinMod | `discordauth` | 10 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
-| Resolution (`DogeisCut/Resolution`) | PenguinMod | `dogeiscutResolution` | 10 (4) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
+| Resolution (`DogeisCut/Resolution`) | PenguinMod | `dogeiscutResolution` | 10 (4) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
 | Cryptography (`gaimerI17/crypto`) | PenguinMod | `gaimeriCryptoExtension` | 14 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
-| MIDI Controller (`electricfuzzball_pm/MIDI`) | PenguinMod | `midi` | 29 (1) | ✓ | ✓ | ✓ | ○ | — | ○ | ? | threads, input |
+| MIDI Controller (`electricfuzzball_pm/MIDI`) | PenguinMod | `midi` | 29 (1) | ✓ | ✓ | ✓ | ✓ | — | ○ | ? | threads, input |
 | Spritesheeter (`MubiLop/spritesheeter`) | PenguinMod | `spritesheeter` | 24 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
 | Sound Waves (`SharkPool/Sound-Waves`) | PenguinMod | `SPsoundWaves` | 13 (0) | ✓ | ✓ | ✓ | — | — | — | ? | sound |
 | Tile Grids (`SharkPool/Tile-Grids`) | PenguinMod | `SPgrids` | 9 (0) | ✓ | ✓ | ✓ | — | — | — | ? | clones |
@@ -102,22 +108,22 @@ Columns 1–7 are the steps. ✓ done · ○ to do · — not needed · ? decide
 | Pointerlock (`pointerlock`) | TurboWarp | `pointerlock` | 2 (0) | ✓ | ✓ | ✓ | — | ○ | — | ? | most exposed, frame loop, stage size, input, page |
 | Mouse Cursor (`cursor`) | TurboWarp | `MouseCursor` | 4 (0) | ✓ | ✓ | ✓ | — | — | — | ? | drawing, input, page |
 | Runtime Options (`runtime-options`) | TurboWarp | `runtimeoptions` | 11 (0) | ✓ | ✓ | ✓ | — | ○ | — | ? | overridden, frame loop, stage size, input |
-| Text (`text`) | TurboWarp | `strings` | 19 (17) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
+| Text (`text`) | TurboWarp | `strings` | 19 (17) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
 | Local Storage (`local-storage`) | TurboWarp | `localstorage` | 6 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
-| Base (`true-fantom/base`) | TurboWarp | `truefantombase` | 2 (2) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
-| Bitwise (`bitwise`) | TurboWarp | `Bitwise` | 12 (12) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
-| BigInt (`Skyhigh173/bigint`) | TurboWarp | `skyhigh173BigInt` | 21 (21) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
-| Utilities (`utilities`) | TurboWarp | `utilities` | 16 (14) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
+| Base (`true-fantom/base`) | TurboWarp | `truefantombase` | 2 (2) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
+| Bitwise (`bitwise`) | TurboWarp | `Bitwise` | 12 (12) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
+| BigInt (`Skyhigh173/bigint`) | TurboWarp | `skyhigh173BigInt` | 21 (21) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
+| Utilities (`utilities`) | TurboWarp | `utilities` | 16 (14) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
 | Video (`Lily/Video`) | TurboWarp | `lmsVideo` | 16 (0) | ✓ | ✓ | ✓ | — | — | — | ? | frame loop, drawing, sound, headers |
-| HTML Encode (`Clay/htmlEncode`) | TurboWarp | `claytonhtmlencode` | 1 (1) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
+| HTML Encode (`Clay/htmlEncode`) | TurboWarp | `claytonhtmlencode` | 1 (1) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
 | Clipping & Blending (`Xeltalliv/clippingblending`) | TurboWarp | `xeltallivclipblend` | 5 (0) | ✓ | ✓ | ✓ | — | ○ | — | ? | most exposed, drawing, clones |
 | Clipboard (`clipboard`) | TurboWarp | `clipboard` | 6 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
-| Pen Plus V7 (`obviousAlexC/penPlus`) | TurboWarp | `penP` | 84 (6) | ✓ | ✓ | ✓ | ○ | ○ | — | ? | most exposed, frame loop, drawing, stage size, hidden state |
-| Simple 3D (`Xeltalliv/simple3D`) | TurboWarp | `xeltallivSimple3D` | 93 (1) | ✓ | ✓ | ✓ | ○ | ○ | — | ? | most exposed, drawing, sensing, data, hidden state |
+| Pen Plus V7 (`obviousAlexC/penPlus`) | TurboWarp | `penP` | 84 (6) | ✓ | ✓ | ✓ | ✓ | ○ | — | ? | most exposed, frame loop, drawing, stage size, hidden state |
+| Simple 3D (`Xeltalliv/simple3D`) | TurboWarp | `xeltallivSimple3D` | 93 (1) | ✓ | ✓ | ✓ | ✓ | ○ | — | ? | most exposed, drawing, sensing, data, hidden state |
 | Sensing Plus (`obviousAlexC/SensingPlus`) | TurboWarp | `obviousalexsensing` | 28 (0) | ✓ | ✓ | ✓ | — | — | — | ? | drawing, stage size, sensing |
 | Key Simulation (`CubesterYT/KeySimulation`) | TurboWarp | `cubesterKeySimulation` | 3 (0) | ✓ | ✓ | ✓ | — | — | — | ? | stage size, input |
 | Clones Plus (`Lily/ClonesPlus`) | TurboWarp | `lmsclonesplus` | 20 (0) | ✓ | ✓ | ✓ | — | — | ○ | ? | sensing, threads, data, clones |
-| Looks Plus (`Lily/LooksPlus`) | TurboWarp | `lmsLooksPlus` | 14 (2) | ✓ | ✓ | ✓ | ○ | — | — | ? | drawing |
+| Looks Plus (`Lily/LooksPlus`) | TurboWarp | `lmsLooksPlus` | 14 (2) | ✓ | ✓ | ✓ | ✓ | — | — | ? | drawing |
 | List Tools (`Lily/ListTools`) | TurboWarp | `lmsData` | 15 (0) | ✓ | ✓ | ✓ | — | — | — | ? | data |
 | Mobile Keyboard (`veggiecan/mobilekeyboard`) | TurboWarp | `mobilekeyboard0419` | 12 (0) | ✓ | ✓ | ✓ | — | — | — | ? | input |
 | Window Controls (`CubesterYT/WindowControls`) | TurboWarp | `cubesterWindowControls` | 27 (0) | ✓ | ✓ | ✓ | — | — | — | ? | stage size |
@@ -126,52 +132,52 @@ Columns 1–7 are the steps. ✓ done · ○ to do · — not needed · ? decide
 | Color Picker (`TheShovel/ColorPicker`) | TurboWarp | `shovelColorPicker` | 6 (0) | ✓ | ✓ | ✓ | — | — | — | ? | frame loop, drawing |
 | Notifications (`mdwalters/notifications`) | TurboWarp | `mdwaltersnotifications` | 4 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
 | Delta Time (`XeroName/Deltatime`) | TurboWarp | `dtbyxeroname` | 2 (0) | ✓ | ✓ | ✓ | — | — | — | ? | frame loop |
-| Encoding (`encoding`) | TurboWarp | `Encoding` | 7 (5) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
+| Encoding (`encoding`) | TurboWarp | `Encoding` | 7 (5) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
 | Sound Expanded (`Lily/SoundExpanded`) | TurboWarp | `lmsSoundExpanded` | 19 (0) | ✓ | ✓ | ✓ | — | — | — | ? | sound |
 | CloudLink V4 (`cloudlink`) | TurboWarp | `cloudlink` | 49 (0) | ✓ | ✓ | ✓ | — | — | ○ | ? | threads, self-contained |
 | Network (`true-fantom/network`) | TurboWarp | `truefantomnetwork` | 22 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
-| Math (`true-fantom/math`) | TurboWarp | `truefantommath` | 32 (32) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
-| ShovelUtils (`TheShovel/ShovelUtils`) | TurboWarp | `ShovelUtils` | 13 (1) | ✓ | ✓ | ✓ | ○ | ○ | — | ? | frame loop, data |
+| Math (`true-fantom/math`) | TurboWarp | `truefantommath` | 32 (32) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
+| ShovelUtils (`TheShovel/ShovelUtils`) | TurboWarp | `ShovelUtils` | 13 (1) | ✓ | ✓ | ✓ | ✓ | ○ | — | ? | frame loop, data |
 | Font Manager (`SharkPool/Font-Manager`) | TurboWarp | `SPASfontManager` | 9 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
 | Wake Lock (`DNin/wake-lock`) | TurboWarp | `dninwakelock` | 2 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
 | Canvas Effects (`TheShovel/CanvasEffects`) | TurboWarp | `theshovelcanvaseffects` | 7 (0) | ✓ | ✓ | ✓ | — | — | — | ? | drawing, stage size, page |
-| Zip (`CST1229/zip`) | TurboWarp | `cst1229zip` | 26 (1) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
-| Graphics 2D (`NOname-awa/graphics2d`) | TurboWarp | `nonameawagraph` | 9 (9) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
-| Lily's Toolbox (`Lily/lmsutils`) | TurboWarp | `lmsutilsblocks` | 35 (24) | ✓ | ✓ | ✓ | ○ | — | ○ | ? | sensing, threads, input |
+| Zip (`CST1229/zip`) | TurboWarp | `cst1229zip` | 26 (1) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
+| Graphics 2D (`NOname-awa/graphics2d`) | TurboWarp | `nonameawagraph` | 9 (9) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
+| Lily's Toolbox (`Lily/lmsutils`) | TurboWarp | `lmsutilsblocks` | 35 (24) | ✓ | ✓ | ✓ | ✓ | — | ○ | ? | sensing, threads, input |
 | Variable and list (`qxsck/var-and-list`) | TurboWarp | `qxsckvarandlist` | 15 (0) | ✓ | ✓ | ✓ | — | — | — | ? | data |
 | WebSocket (`godslayerakp/ws`) | TurboWarp | `gsaWebsocket` | 15 (0) | ✓ | ✓ | ✓ | — | — | — | ? | frame loop, threads |
 | Steamworks (`steamworks`) | TurboWarp | `steamworks` | 6 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
 | itch.io (`itchio`) | TurboWarp | `itch` | 14 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
-| Text Case (`Medericoder/textcase`) | TurboWarp | `medericodertextcase` | 6 (4) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
-| Sharktilities (`Sharktilities`) | SharkPool | `SharkPoolSharktilities` | 22 (5) | ✓ | ✓ | ✓ | ○ | ○ | ○ | ? | frame loop, drawing, threads, clones, editor |
+| Text Case (`Medericoder/textcase`) | TurboWarp | `medericodertextcase` | 6 (4) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
+| Sharktilities (`Sharktilities`) | SharkPool | `SharkPoolSharktilities` | 22 (5) | ✓ | ✓ | ✓ | ✓ | ○ | ○ | ? | frame loop, drawing, threads, clones, editor |
 | Tune-Shark-V3 (`Tune-Shark-V3`) | SharkPool | `SPtuneShark3` | 38 (0) | ✓ | ✓ | ✓ | — | — | — | ? | frame loop, threads, sound |
-| Hyper-Sense (`Hyper-Sense-V2`) | SharkPool | `HyperSense2SP` | 40 (2) | ✓ | ✓ | ✓ | ○ | — | ○ | ? | frame loop, drawing, stage size, sensing, data, input |
+| Hyper-Sense (`Hyper-Sense-V2`) | SharkPool | `HyperSense2SP` | 40 (2) | ✓ | ✓ | ✓ | ✓ | — | ○ | ? | frame loop, drawing, stage size, sensing, data, input |
 | Keys-Plus-V2 (`KeysPlusV2`) | SharkPool | `enderKeysPlusV2` | 44 (0) | ✓ | ✓ | ✓ | — | — | ○ | ? | frame loop, stage size, input |
 | Popup-Phoenix (`Popup-Phoenix`) | SharkPool | `SPpopups` | 45 (0) | ✓ | ✓ | ✓ | — | — | — | ? | input, page |
 | Camera-Sensing-Plus (`Camera-Sensing-Plus`) | SharkPool | `CameraSensingPlusSP` | 12 (0) | ✓ | ✓ | ✓ | — | — | — | ? | drawing, sensing |
-| Particle-Engine (`Particle-Engine`) | SharkPool | `SPpartEngine` | 23 (1) | ✓ | ✓ | ✓ | ○ | ○ | — | ? | most exposed, overridden, frame loop, drawing, stage size, sensing, editor, hidden state |
-| Sprite-Effects (`Sprite-Effects-V2`) | SharkPool | `SPspriteEffectsV2` | 31 (6) | ✓ | ✓ | ✓ | ○ | — | — | ? | drawing, stage size |
+| Particle-Engine (`Particle-Engine`) | SharkPool | `SPpartEngine` | 23 (1) | ✓ | ✓ | ✓ | ✓ | ○ | — | ? | most exposed, overridden, frame loop, drawing, stage size, sensing, editor, hidden state |
+| Sprite-Effects (`Sprite-Effects-V2`) | SharkPool | `SPspriteEffectsV2` | 31 (6) | ✓ | ✓ | ✓ | ✓ | — | — | ? | drawing, stage size |
 | Recording (`Recording-V2`) | SharkPool | `SPrecording2` | 8 (0) | ✓ | ✓ | ✓ | — | — | — | ? | sound |
 | Sprite-Parenting (`Sprite-Parenting`) | SharkPool | `SPspriteParent` | 13 (0) | ✓ | ✓ | ✓ | — | — | — | ? | clones |
 | Rigidbodies (`Rigidbodies`) | SharkPool | `SPrigidBody` | 11 (0) | ✓ | ✓ | ✓ | — | ○ | — | ? | drawing, sensing, editor, hidden state |
 | Lazy-Collisions (`Lazy-Collisions`) | SharkPool | `LZcollisionsSP` | 5 (0) | ✓ | ✓ | ✓ | — | ○ | — | ? | sensing, data, clones |
-| Files-Expanded (`Files-Expanded`) | SharkPool | `filesExpanded` | 25 (1) | ✓ | ✓ | ✓ | ○ | — | — | ? | drawing |
+| Files-Expanded (`Files-Expanded`) | SharkPool | `filesExpanded` | 25 (1) | ✓ | ✓ | ✓ | ✓ | — | — | ? | drawing |
 | Temporary-Variables (`Temporary-Variables`) | SharkPool | `SPtempVars` | 10 (0) | ✓ | ✓ | ✓ | — | ○ | — | ? | most exposed, compiler |
 | Variables-Expanded (`Variables-Expanded`) | SharkPool | `DICandSPmonitorsPlus` | 24 (0) | ✓ | ✓ | ✓ | — | — | ○ | ? | frame loop, stage size, data |
 | Gamepad-Expanded (`Gamepad-Expanded`) | SharkPool | `Gamepad` | 12 (0) | ✓ | ✓ | ✓ | — | — | — | ? | input |
 | Animations (`Animations`) | SharkPool | `SPanimations` | 26 (0) | ✓ | ✓ | ✓ | — | — | — | ? | frame loop, drawing, sensing, hidden state |
 | Messages-Plus (`Messages-Plus`) | SharkPool | `SPmessagePlus` | 17 (0) | ✓ | ✓ | ✓ | — | ○ | — | ? | most exposed, threads |
-| Geolocation (`Geolocation`) | SharkPool | `SPgeolocation` | 15 (1) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
-| Color-Master (`Color-Master`) | SharkPool | `SPcolorMaster` | 17 (15) | ✓ | ✓ | ✓ | ○ | ○ | — | ? | editor |
+| Geolocation (`Geolocation`) | SharkPool | `SPgeolocation` | 15 (1) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
+| Color-Master (`Color-Master`) | SharkPool | `SPcolorMaster` | 17 (15) | ✓ | ✓ | ✓ | ✓ | ○ | — | ? | editor |
 | QR-Codes (`QR-Codes`) | SharkPool | `SPqrCodes` | 3 (0) | ✓ | ✓ | ✓ | — | ○ | — | ? | editor, self-contained |
 | Speech-Bubbles (`Speech-Bubbles`) | SharkPool | `speechSP` | 19 (0) | ✓ | ✓ | ✓ | — | — | — | ? | frame loop, drawing, page |
 | Layer-Control (`Layer-Control`) | SharkPool | `SPlayering` | 6 (0) | ✓ | ✓ | ✓ | — | — | — | ? | drawing |
-| Time-Calculation (`Time-Calculation`) | SharkPool | `SPtimeCalc` | 9 (4) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
+| Time-Calculation (`Time-Calculation`) | SharkPool | `SPtimeCalc` | 9 (4) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
 | Extra-Controls (`Extra-Controls`) | SharkPool | `SPadvControl` | 40 (0) | ✓ | ✓ | ✓ | — | ○ | — | ? | most exposed, frame loop, compiler, threads, data, input, editor |
-| SVG-Spritesheets (`SVG-Spritesheets`) | SharkPool | `SPsvgSheets` | 9 (5) | ✓ | ✓ | ✓ | ○ | — | — | ? | self-contained |
+| SVG-Spritesheets (`SVG-Spritesheets`) | SharkPool | `SPsvgSheets` | 9 (5) | ✓ | ✓ | ✓ | ✓ | — | — | ? | self-contained |
 | GIF-Manager (`GIF-Manager`) | SharkPool | `SPgifManager` | 13 (0) | ✓ | ✓ | ✓ | — | — | — | ? | self-contained |
 | My-Blocks-Plus (`My-Blocks-Plus`) | SharkPool | `SPmbpCST` | 4 (0) | ✓ | ✓ | ✓ | — | ○ | — | ? | most exposed, compiler, threads, clones, editor |
 | Turbo-Skins (`Turbo-Skins`) | SharkPool | `SPturboSkins` | 13 (0) | ✓ | ✓ | ✓ | — | ○ | — | ? | most exposed, frame loop, drawing, sensing |
 | Scenes (`Scenes`) | SharkPool | `SPscenes` | 8 (0) | ✓ | ✓ | ✓ | — | ○ | — | ? | most exposed, overridden, frame loop, drawing, stage size, threads, data, clones |
 | Pen-Papers (`Pen-Papers`) | SharkPool | `SPpenPapers` | 11 (0) | ✓ | ✓ | ✓ | — | — | — | ? | drawing, sensing, hidden state |
-| MIDI-Tools (`MIDI-Tools`) | SharkPool | `ObscurasMIDITools` | 36 (2) | ✓ | ✓ | ✓ | ○ | — | ○ | ? | threads |
+| MIDI-Tools (`MIDI-Tools`) | SharkPool | `ObscurasMIDITools` | 36 (2) | ✓ | ✓ | ✓ | ✓ | — | ○ | ? | threads |
