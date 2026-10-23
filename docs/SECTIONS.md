@@ -124,6 +124,7 @@ Commits: GUI 1 `f74b561`, 2 `f122c22`, 3 `3c4c322`, 4 `2b25f8c`, 5 `06a077e`, 6 
 - 133 Plain direct calls, group 2: 14 blocks of "Clones+" and 23 of "Variables Expanded" (VM)
 - 134 Plain direct calls, group 3: all 63 blocks of "3D Math" (VM)
 - 135 Plain direct calls, group 4: all 78 non-pure blocks of "Pen+" (VM)
+- 136 Plain direct calls, group 5: 89 of the 93 blocks of "Simple 3D" (VM)
 
 ## Details
 
@@ -257,3 +258,4 @@ Commits: GUI 1 `f74b561`, 2 `f122c22`, 3 `3c4c322`, 4 `2b25f8c`, 5 `06a077e`, 6 
 - 133 (VM `d59e79b`): group 2 of section 132's plain calls (`docs/EXTENSION-INTEGRATION.md` "Ordinary blocks called directly", Groups). `src/extension-support/block-inventory.json` (`"direct": true` on 14 Lily "Clones+" blocks: all but the hat, `stopScriptsInSprite`, `stopScriptsInClone`, `stopScriptsInMainSprite`, `deleteClonesInSprite`, `deleteCloneWithVar`; and on 23 SharkPool "Variables Expanded" blocks: all but the hat `whenButtonPressed`), `src/extension-support/direct-blocks.json` made again from it (67 blocks). No compiler change. (Session 134)
 - 134 (VM `b35cb4a`): group 3 of section 132's plain calls (`docs/EXTENSION-INTEGRATION.md` "Ordinary blocks called directly", Groups). `src/extension-support/block-inventory.json` (`"direct": true` on all 63 ObviousAlexC "3D Math" blocks), `src/extension-support/direct-blocks.json` made again from it (130 blocks). No compiler change. (Session 135)
 - 135 (VM `3ff99ac`): group 4 of section 132's plain calls (`docs/EXTENSION-INTEGRATION.md` "Ordinary blocks called directly", Groups). `src/extension-support/block-inventory.json` (`"direct": true` on all 78 ObviousAlexC "Pen+" blocks that are not pure; its 6 pure blocks keep section 118's call), `src/extension-support/direct-blocks.json` made again from it (208 blocks). No compiler change. (Session 136)
+- 136 (VM `80f31ff`): group 5 of section 132's plain calls (`docs/EXTENSION-INTEGRATION.md` "Ordinary blocks called directly", Groups). `src/extension-support/block-inventory.json` (`"direct": true` on 89 of the 93 Xeltalliv "Simple 3D" blocks; not marked: the pure "font" reporter, which keeps section 118's call, the 2 hats and the "wrapper" C block), `src/extension-support/direct-blocks.json` made again from it (297 blocks). No compiler change. (Session 137)
