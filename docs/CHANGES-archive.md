@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 126 — List Tools "index # of item" menu fixed (2026-10-23)
+- Asked: fix the problem found in Session 125 (List Tools' "index # [first/last/random] of item" block: the menu was never shown and its choices never worked; upstream code).
+- Changed: section 126 (VM `19725d7`; `upstream.json`, docs). The block's first input is now the extension's first / last / random menu (default "first"); a number or variable dropped into it still picks the Nth match; the code checks the menu's real values. To reverse: `git revert` the merge (fork commit stays).
+- Verified (test app): first 1, last 5, random only 1 / 3 / 5, "2" → 3, 3 → 5, 9 → 0, missing → 0; palette and dropdown show the menu. · Not verified: the dropdown opened by hand, packaged games.
+- Result after build: assumed working
+
 ### Session 125 — Extensions keep list lookup tables, group 5e (2026-10-23)
 - Asked: the next step of `docs/EXTENSION-ROADMAP.md` (step 5, group 5e: lists and variables written directly).
 - Changed: section 125 (VM `446dda6`; `upstream.json`, docs). Variables have `pmGetValue` / `pmSetValue` / `pmItemsChanged` / `pmIndexOf`, which read and change a list without turning off its "item # of" / "contains" lookup table (section 62). List Tools, var-and-list, ShovelUtils, Simple 3D, Sensing Plus, Pen+, Scenes and MIDI Tools use them (var-and-list's and Sensing Plus' "contains" / "item number" now use the table too). Scenes keeps a copy of each list in a saved scene (later list changes used to change the saved scene). Variables Expanded no longer mistakes a sprite's list for a variable of the same name. Clones Plus and the clone reads needed nothing (variables only). Reading `value` still turns the table off (the editor's list monitor needs it). Step 5 is done. To reverse: `git revert` the merge (fork commit stays).
