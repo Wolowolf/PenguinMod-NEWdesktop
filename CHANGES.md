@@ -26,6 +26,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 144 — Slimmer benchmark run, old equality-test results deleted (2026-10-24)
+- Asked: find benchmarks that only make tests long, then drop projects 12 and 21 from the default run, give the capped projects a short guard pass and delete old `block-eq` results.
+- Changed: docs only (`docs/PROCEDURES.md` "Benchmark" and "Monitor cost"). Local: `bench\bench.mjs` skips 12 (always matched project 2) and 21 (measured by `monitor-cost.mjs`); 3, 7, 10, 13, 14, 15, 16 (60 FPS limit, 0.1–5 ms of work) get one 3 s guard pass, `compare` says `guard ok` / `GUARD TRIPPED` (work ms 2×); `--all` = old full run. Deleted `bench\block-eq\results` except `s141-*` (250 → 14 MB) and the old `block-eq` logs. To reverse: `git revert` the merge (local files have no history).
+- Extension check: nothing in the engine changes.
+- Verified (test app): short run (2 runs × 2 s): 19 projects, 12 and 21 skipped, 7 guard passes; `compare` vs older results says `guard ok`, a faked 3× slower project 3 says `GUARD TRIPPED` · Not verified: a full-length run (estimate ≈11 instead of ≈15 min at `--runs 3`).
+- Result after build: no build (`.md` only)
+
 ### Session 143 — Plain direct calls, group 7: every remaining candidate (2026-10-24)
 - Asked: read the code of the 441 remaining candidate blocks (not `page`, `waits` or `threads` in the inventory) and mark the ones that pass.
 - Changed: section 141 (VM `2d3857a`; `upstream.json`, docs): every candidate's code read with its helpers; 425 blocks of 48 extensions marked `"direct": true` (list and the 7 left out with reasons: `docs/EXTENSION-INTEGRATION.md` Groups, 7; pen's 9 core blocks are compiled by the compiler itself), `direct-blocks.json` now 1,183. To reverse: `git revert` the merge (fork commit stays).
@@ -38,13 +45,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Changed: docs only (`docs/EXTENSION-RISKS.md` "Compiler": where the interpreter still runs and the measurement; `docs/PROCEDURES.md`: the new local tools). Local: bench project 21 (200 visible monitors) in `make-projects.mjs` (it also runs in `bench.mjs run` now), new `bench\monitor-cost.mjs`. Nothing compiled: 200 monitors cost 0.32 ms per frame, half of it handing values to the monitors, so compiling them would save well under 0.1 ms; the user chose to stop. The interpreter stays (fallback for scripts that cannot compile). To reverse: `git revert` the merge.
 - Extension check: nothing in the engine changes.
 - Verified (test app): `monitor-cost.mjs` on the current build, two runs each: 200 monitors, 200 value updates per frame, 0.32 / 0.32 ms per frame, 0.16 / 0.17 ms with `--no-report` · Not verified: a compiled version (not built; its gain is estimated from that split).
-- Result after build: no build (`.md` only)
-
-### Session 141 — Costume dropdown check, Session 131 numbers corrected (2026-10-24)
-- Asked: check whether the "costume dropdown" compiler gap from Session 131 is real, fix it as a new section if so, correct the doc numbers.
-- Changed: docs only (`docs/EXTENSION-INTEGRATION.md` "Equality test for every block" Result, Session 131 in the archive): no compiler gap. The compiler makes any dropdown block with one field and no inputs a fixed value (`irgen.js`, the menu case before "Unknown input"); the 16 blocks of Animations, Looks+ and Sound Expanded only failed to compile in Session 131's test because it left their costume and sound dropdowns empty (fixed in the test in Session 138), so 1,546, not 1,562, blocks were compared both ways then. No section added. To reverse: `git revert` the merge.
-- Extension check: nothing in the engine changes.
-- Verified: Session 140's `block-eq` results: all 4,700 jobs compiled, incl. these 16 blocks; read the compiler code (menu case) · Not verified: these blocks in a project saved by the editor (reasoned: the editor always fills the dropdown).
 - Result after build: no build (`.md` only)
 
 ## Template (keep entries this short)
