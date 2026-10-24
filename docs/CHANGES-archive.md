@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 135 — Plain direct calls for extension blocks that never wait, group 3 (2026-10-24)
+- Asked: do the next group of the plain-call optimisation.
+- Changed: section 134 (VM `b35cb4a`; `upstream.json`, docs): the code of ObviousAlexC "3D Math" read with its helpers and the Pen+ functions its two draw blocks call; all 63 blocks marked `"direct": true` (nothing waits, yields, stops or restarts a script; the textured draw block may switch the costume, which starts no running script again), `direct-blocks.json` now 130. Local `directcalls-check.mjs` got sprite D with the custom block "p3" of all 63 blocks and records every triangle Pen+ draws. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: this changes how these 63 blocks are called from compiled scripts (compiler); the equality tests show the same results as the guarded and old paths.
+- Verified (test app): inventory unit test passes; `directcalls-check` plain = `--guarded` = `--old`, two plain runs the same, "p3" compiled as a function with 75 plain calls, the same 8 triangles drawn; interpreted the same with and without `--guarded`; `block-eq.mjs all`: new vs old 0 differences, compiled vs interpreted 0 besides 3 expected, 1,558 blocks identical in every mode · Not verified: packaged games, real 3D projects; no benchmark (no bench project uses these blocks).
+- Result after build: assumed working
+
 ### Session 134 — Plain direct calls for extension blocks that never wait, group 2 (2026-10-23)
 - Asked: do group 2 of the plain-call optimisation.
 - Changed: section 133 (VM `d59e79b`; `upstream.json`, docs): the code of Lily "Clones+" and SharkPool "Variables Expanded" read (with `_createClone`, clone hooks and listeners, variable and monitor helpers); 37 blocks marked `"direct": true` (Clones+ 14 of 20: not the hat, the 3 "stop scripts" and 2 "delete clones" blocks, which can stop the calling script or delete its clone; Variables Expanded 23 of 24, not the hat), `direct-blocks.json` now 67. Local `directcalls-check.mjs` got sprite C with the custom block "p2" of all 37 blocks. To reverse: `git revert` the merge (fork commit stays).
