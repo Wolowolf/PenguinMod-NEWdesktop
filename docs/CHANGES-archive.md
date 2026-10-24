@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 136 — Plain direct calls for extension blocks that never wait, group 4 (2026-10-24)
+- Asked: do the next group of the plain-call optimisation.
+- Changed: section 135 (VM `3ff99ac`; `upstream.json`, docs): the code of ObviousAlexC "Pen+" read with its helpers (draw region, texture, attribute and render functions, the pen's stamp); its 78 blocks that are not pure marked `"direct": true` (nothing waits, yields, stops or restarts a script; "add image from URL" starts a load but returns nothing; texture lookups may switch the costume, as in group 3), `direct-blocks.json` now 208. Local `directcalls-check.mjs` got sprite E with the custom block "p4" of all 78 blocks, a test shader, and a record of every WebGL call "p4" makes. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: this changes how these 78 blocks are called from compiled scripts (compiler); the equality tests show the same results and the same WebGL calls as the guarded and old paths.
+- Verified (test app): inventory unit test passes; `directcalls-check` plain = `--guarded` = `--old` (incl. 1,137 WebGL calls), two plain runs the same, "p4" compiled as a function with 124 plain calls; interpreted the same with and without `--guarded`; `block-eq.mjs all`: new vs old 0 differences, compiled vs interpreted 0 besides 3 expected, 1,558 blocks identical in every mode · Not verified: what is drawn on screen, packaged games, real Pen+ projects; no benchmark (no bench project uses these blocks).
+- Result after build: assumed working
+
 ### Session 135 — Plain direct calls for extension blocks that never wait, group 3 (2026-10-24)
 - Asked: do the next group of the plain-call optimisation.
 - Changed: section 134 (VM `b35cb4a`; `upstream.json`, docs): the code of ObviousAlexC "3D Math" read with its helpers and the Pen+ functions its two draw blocks call; all 63 blocks marked `"direct": true` (nothing waits, yields, stops or restarts a script; the textured draw block may switch the costume, which starts no running script again), `direct-blocks.json` now 130. Local `directcalls-check.mjs` got sprite D with the custom block "p3" of all 63 blocks and records every triangle Pen+ draws. To reverse: `git revert` the merge (fork commit stays).
