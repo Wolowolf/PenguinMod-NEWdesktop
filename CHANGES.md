@@ -26,6 +26,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 151 — The equality test's `auto` picks a reasonable test (2026-10-25)
+- Asked: make sure the full 13-minute test is no longer run for a small change and a reasonable test is always chosen.
+- Changed: docs only (`CLAUDE.md` rule "Equality test after a VM or Render change", `docs/EXTENSION-INTEGRATION.md` rule and "`auto`, Session 150", `docs/PROCEDURES.md`). Local: `bench\block-eq.mjs` saves the git hash of every uncommitted VM / Render file with each run and decides what changed by file contents, so runs made before their change was committed count as `auto`'s base (before, none of the recent runs counted and `auto` fell back to Session 147's, so a one-file change ran everything); `auto` also runs the page test for the affected extensions with page blocks; Session 149's run got the hash of its one uncommitted file (PenSkin.js, the same content as the commit `bbe61e2`). To reverse: `git revert` the merge (local files have no history).
+- Extension check: nothing in the engine changes.
+- Verified (test app): `PLAN=1 auto` on section 146's change: base s149, "Sharktilities.js: SharkPoolSharktilities (every mode)" plus its page blocks; the real run took 1 min (block test 0 differences in every mode, page test new = guarded = interp = old) instead of the 13 min of `all` · Not verified: a base with uncommitted files other than s149's (the next runs will make such bases).
+- Result after build: no build (`.md` only)
+
 ### Session 150 — Sharktilities' step blocks fixed (2026-10-25)
 - Asked: fix Sharktilities' "request [project step]" and "step interpolation" (two of the equality test's expected differences): run the extra engine step right after the current one.
 - Changed: section 146 (VM `794bc05`; `upstream.json`, docs): the extra step runs in a microtask right after the engine step the block runs in, instead of inside it (which re-entered the running script: "Generator is already running" compiled, a stack overflow interpreted); the script waits for it and goes on in the next frame. Local: both blocks removed from `EXPECTED` in `bench\block-eq.mjs`. To reverse: `git revert` the merge (fork commits stay).
@@ -38,13 +45,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Changed: section 145 (Render `bbe61e2`; `upstream.json`, docs): `PenSkin.onNativeSizeChanged` works out the high quality pen's quality for the new stage size before resizing the pen layer (it used the old size's: after a 7×1 stage, 480×360 asked for a ≈52,000 × 39,000 pixel layer and failed). To reverse: `git revert` the merge (fork commits stay).
 - Extension check: this changes the pen layer's size only right after a stage size change (the size the renderer already gave it a moment later); the equality test shows the same results in every mode.
 - Verified (test app): with the pen layer made, 7×1 → 480×360 → 10×10 → 960×720 → 480×360 all work, the pen layer always about the canvas size (755×566 at 480×360; before the fix 7×1 → 480×360 failed); `block-eq.mjs auto s149` (ran everything): new vs old 0, new vs interpreted 0 besides the 3 expected, no reset errors any more; against `s148` only Pen Papers' chain changed, in every mode: it used to end with "offset is out of bounds" (the pen layer the failed resize left), now it finishes · Not verified: packaged games, fullscreen.
-- Result after build: assumed working
-
-### Session 148 — Plain direct calls, group 8: page blocks that never wait (2026-10-25)
-- Asked: an equality test that can run the inventory's page blocks (stubs and recorders for the page, a guarded mode), then read and mark the 343 page blocks that never wait.
-- Changed: section 144 (VM `a497ff7`; `upstream.json`, docs): 341 blocks of 47 extensions marked `direct` after reading their code and helpers (`direct-blocks.json` 1,524); not marked: Hyper-Sense V2 "is scrolled" (reads stack frames), ShovelUtils "delete sprite" (can delete the calling sprite). Local: `bench\block-eq.mjs page <label>` with new `bench\page-eq-page.js` (hooks and page mode in `block-eq-page.js`), `inventory\mark-direct-g8.cjs`. To reverse: `git revert` the merge (fork commits stay).
-- Extension check: this changes how these 341 blocks are called by compiled scripts (no check after the call); the page test shows the same results as the guarded and old calls for every page block.
-- Verified (test app): `block-eq.mjs page` twice: 638 page blocks (1,855 jobs), new = guarded = old, interpreted 0 besides 2 expected, the two runs identical in every mode; a test build with 2 promise blocks wrongly marked showed them differing (unfinished promise answered); the test app's window never moved, nothing opened; inventory unit test passes; `block-eq.mjs all s148`: new vs old 0, new vs interpreted 0 besides the 3 expected (3 jobs not compared: "Array buffer allocation failed" while resetting the stage size) · Not verified: real devices (camera, microphone, MIDI, gamepads), real servers' answers; no benchmark (no bench project uses these blocks in a loop).
 - Result after build: assumed working
 
 ## Template (keep entries this short)
