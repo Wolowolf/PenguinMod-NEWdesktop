@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 141 — Costume dropdown check, Session 131 numbers corrected (2026-10-24)
+- Asked: check whether the "costume dropdown" compiler gap from Session 131 is real, fix it as a new section if so, correct the doc numbers.
+- Changed: docs only (`docs/EXTENSION-INTEGRATION.md` "Equality test for every block" Result, Session 131 in the archive): no compiler gap. The compiler makes any dropdown block with one field and no inputs a fixed value (`irgen.js`, the menu case before "Unknown input"); the 16 blocks of Animations, Looks+ and Sound Expanded only failed to compile in Session 131's test because it left their costume and sound dropdowns empty (fixed in the test in Session 138), so 1,546, not 1,562, blocks were compared both ways then. No section added. To reverse: `git revert` the merge.
+- Extension check: nothing in the engine changes.
+- Verified: Session 140's `block-eq` results: all 4,700 jobs compiled, incl. these 16 blocks; read the compiler code (menu case) · Not verified: these blocks in a project saved by the editor (reasoned: the editor always fills the dropdown).
+- Result after build: no build (`.md` only)
+
 ### Session 140 — Inline compiler code for 34 Operators / Motion / Sensing Expansion blocks (2026-10-24)
 - Asked: which extensions are worth compiling inline like the core blocks, and how much faster; then a prototype for PenguinMod's Operators, Motion and Sensing Expansion with an off switch, equality tests and a benchmark against today's direct calls.
 - Changed: section 140 (VM `572535e`; `upstream.json`, docs): 34 blocks get inline compiler code instead of section 118's / 132's direct calls (list and what was left out: `docs/SECTIONS.md` 140); `runtime.pmNoExpansionInline` = old path (tests; in `block-eq` `old` mode). Local: `core-eq.mjs --expansion`, `bench.mjs --set <switch>`, bench project 20. To reverse: `git revert` the merge (fork commit stays).
