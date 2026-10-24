@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 142 — What monitors cost; interpreter kept (2026-10-24)
+- Asked: can the interpreter go completely; then measure what monitors cost before compiling monitors and the hand-made threads of Extra Controls and Events Expansion.
+- Changed: docs only (`docs/EXTENSION-RISKS.md` "Compiler": where the interpreter still runs and the measurement; `docs/PROCEDURES.md`: the new local tools). Local: bench project 21 (200 visible monitors) in `make-projects.mjs` (it also runs in `bench.mjs run` now), new `bench\monitor-cost.mjs`. Nothing compiled: 200 monitors cost 0.32 ms per frame, half of it handing values to the monitors, so compiling them would save well under 0.1 ms; the user chose to stop. The interpreter stays (fallback for scripts that cannot compile). To reverse: `git revert` the merge.
+- Extension check: nothing in the engine changes.
+- Verified (test app): `monitor-cost.mjs` on the current build, two runs each: 200 monitors, 200 value updates per frame, 0.32 / 0.32 ms per frame, 0.16 / 0.17 ms with `--no-report` · Not verified: a compiled version (not built; its gain is estimated from that split).
+- Result after build: no build (`.md` only)
+
 ### Session 141 — Costume dropdown check, Session 131 numbers corrected (2026-10-24)
 - Asked: check whether the "costume dropdown" compiler gap from Session 131 is real, fix it as a new section if so, correct the doc numbers.
 - Changed: docs only (`docs/EXTENSION-INTEGRATION.md` "Equality test for every block" Result, Session 131 in the archive): no compiler gap. The compiler makes any dropdown block with one field and no inputs a fixed value (`irgen.js`, the menu case before "Unknown input"); the 16 blocks of Animations, Looks+ and Sound Expanded only failed to compile in Session 131's test because it left their costume and sound dropdowns empty (fixed in the test in Session 138), so 1,546, not 1,562, blocks were compared both ways then. No section added. To reverse: `git revert` the merge.
