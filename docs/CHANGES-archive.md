@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 144 — Slimmer benchmark run, old equality-test results deleted (2026-10-24)
+- Asked: find benchmarks that only make tests long, then drop projects 12 and 21 from the default run, give the capped projects a short guard pass and delete old `block-eq` results.
+- Changed: docs only (`docs/PROCEDURES.md` "Benchmark" and "Monitor cost"). Local: `bench\bench.mjs` skips 12 (always matched project 2) and 21 (measured by `monitor-cost.mjs`); 3, 7, 10, 13, 14, 15, 16 (60 FPS limit, 0.1–5 ms of work) get one 3 s guard pass, `compare` says `guard ok` / `GUARD TRIPPED` (work ms 2×); `--all` = old full run. Deleted `bench\block-eq\results` except `s141-*` (250 → 14 MB) and the old `block-eq` logs. To reverse: `git revert` the merge (local files have no history).
+- Extension check: nothing in the engine changes.
+- Verified (test app): short run (2 runs × 2 s): 19 projects, 12 and 21 skipped, 7 guard passes; `compare` vs older results says `guard ok`, a faked 3× slower project 3 says `GUARD TRIPPED` · Not verified: a full-length run (estimate ≈11 instead of ≈15 min at `--runs 3`).
+- Result after build: no build (`.md` only)
+
 ### Session 143 — Plain direct calls, group 7: every remaining candidate (2026-10-24)
 - Asked: read the code of the 441 remaining candidate blocks (not `page`, `waits` or `threads` in the inventory) and mark the ones that pass.
 - Changed: section 141 (VM `2d3857a`; `upstream.json`, docs): every candidate's code read with its helpers; 425 blocks of 48 extensions marked `"direct": true` (list and the 7 left out with reasons: `docs/EXTENSION-INTEGRATION.md` Groups, 7; pen's 9 core blocks are compiled by the compiler itself), `direct-blocks.json` now 1,183. To reverse: `git revert` the merge (fork commit stays).
