@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 143 — Plain direct calls, group 7: every remaining candidate (2026-10-24)
+- Asked: read the code of the 441 remaining candidate blocks (not `page`, `waits` or `threads` in the inventory) and mark the ones that pass.
+- Changed: section 141 (VM `2d3857a`; `upstream.json`, docs): every candidate's code read with its helpers; 425 blocks of 48 extensions marked `"direct": true` (list and the 7 left out with reasons: `docs/EXTENSION-INTEGRATION.md` Groups, 7; pen's 9 core blocks are compiled by the compiler itself), `direct-blocks.json` now 1,183. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: this changes how these 425 blocks are called from compiled scripts (compiler); the equality test shows the same results as the old path for every tested block.
+- Verified (test app): inventory unit test passes; `block-eq.mjs all s141`: 1,660 blocks, new vs old 0 differences, compiled vs interpreted 0 besides the 3 expected, 194 of 196 chain jobs plain functions (2,006 plain calls); the other 2 (Sound Waves) compile as functions alone and fail to only right after Scenes' chain, in every mode (its block refresh lands in the next job: test artifact) · Not verified: Tune Shark V3's 28 blocks (the test skips them: needs a song; read only), page blocks, what is drawn or heard, packaged games, real projects; no benchmark.
+- Result after build: assumed working
+
 ### Session 142 — What monitors cost; interpreter kept (2026-10-24)
 - Asked: can the interpreter go completely; then measure what monitors cost before compiling monitors and the hand-made threads of Extra Controls and Events Expansion.
 - Changed: docs only (`docs/EXTENSION-RISKS.md` "Compiler": where the interpreter still runs and the measurement; `docs/PROCEDURES.md`: the new local tools). Local: bench project 21 (200 visible monitors) in `make-projects.mjs` (it also runs in `bench.mjs run` now), new `bench\monitor-cost.mjs`. Nothing compiled: 200 monitors cost 0.32 ms per frame, half of it handing values to the monitors, so compiling them would save well under 0.1 ms; the user chose to stop. The interpreter stays (fallback for scripts that cannot compile). To reverse: `git revert` the merge.
