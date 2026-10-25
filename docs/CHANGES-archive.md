@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 149 — Pen layer size right after a stage size change (2026-10-25)
+- Asked: fix the "Array buffer allocation failed" found in Session 148 (stale pen render quality after a stage size change).
+- Changed: section 145 (Render `bbe61e2`; `upstream.json`, docs): `PenSkin.onNativeSizeChanged` works out the high quality pen's quality for the new stage size before resizing the pen layer (it used the old size's: after a 7×1 stage, 480×360 asked for a ≈52,000 × 39,000 pixel layer and failed). To reverse: `git revert` the merge (fork commits stay).
+- Extension check: this changes the pen layer's size only right after a stage size change (the size the renderer already gave it a moment later); the equality test shows the same results in every mode.
+- Verified (test app): with the pen layer made, 7×1 → 480×360 → 10×10 → 960×720 → 480×360 all work, the pen layer always about the canvas size (755×566 at 480×360; before the fix 7×1 → 480×360 failed); `block-eq.mjs auto s149` (ran everything): new vs old 0, new vs interpreted 0 besides the 3 expected, no reset errors any more; against `s148` only Pen Papers' chain changed, in every mode: it used to end with "offset is out of bounds" (the pen layer the failed resize left), now it finishes · Not verified: packaged games, fullscreen.
+- Result after build: assumed working
 ### Session 148 — Plain direct calls, group 8: page blocks that never wait (2026-10-25)
 - Asked: an equality test that can run the inventory's page blocks (stubs and recorders for the page, a guarded mode), then read and mark the 343 page blocks that never wait.
 - Changed: section 144 (VM `a497ff7`; `upstream.json`, docs): 341 blocks of 47 extensions marked `direct` after reading their code and helpers (`direct-blocks.json` 1,524); not marked: Hyper-Sense V2 "is scrolled" (reads stack frames), ShovelUtils "delete sprite" (can delete the calling sprite). Local: `bench\block-eq.mjs page <label>` with new `bench\page-eq-page.js` (hooks and page mode in `block-eq-page.js`), `inventory\mark-direct-g8.cjs`. To reverse: `git revert` the merge (fork commits stay).
