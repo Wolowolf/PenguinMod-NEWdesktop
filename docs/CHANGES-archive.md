@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 150 — Sharktilities' step blocks fixed (2026-10-25)
+- Asked: fix Sharktilities' "request [project step]" and "step interpolation" (two of the equality test's expected differences): run the extra engine step right after the current one.
+- Changed: section 146 (VM `794bc05`; `upstream.json`, docs): the extra step runs in a microtask right after the engine step the block runs in, instead of inside it (which re-entered the running script: "Generator is already running" compiled, a stack overflow interpreted); the script waits for it and goes on in the next frame. Local: both blocks removed from `EXPECTED` in `bench\block-eq.mjs`. To reverse: `git revert` the merge (fork commits stay).
+- Extension check: only these two Sharktilities blocks change (no compiler, frame loop or number change); the equality test shows them the same in every mode.
+- Verified (test app): a script calling either block in a forever loop next to one counting steps: 60 steps in 30 frames (30 without it), compiled and interpreted, no errors; `ONLY=^SharkPoolSharktilities_ block-eq.mjs all s150st`: 21 blocks, 0 differences in every mode, all six step-block jobs finish without errors (before: an error in every mode) · Not verified: packaged games.
+- Result after build: assumed working
 ### Session 149 — Pen layer size right after a stage size change (2026-10-25)
 - Asked: fix the "Array buffer allocation failed" found in Session 148 (stale pen render quality after a stage size change).
 - Changed: section 145 (Render `bbe61e2`; `upstream.json`, docs): `PenSkin.onNativeSizeChanged` works out the high quality pen's quality for the new stage size before resizing the pen layer (it used the old size's: after a 7×1 stage, 480×360 asked for a ≈52,000 × 39,000 pixel layer and failed). To reverse: `git revert` the merge (fork commits stay).
