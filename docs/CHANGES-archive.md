@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 153 — Plain calls taken back from blocks that start a hat at once (2026-10-25)
+- Asked: find every block already marked plain that can start a hat at once (measured, not only read), take its mark away, test, ship as section 148.
+- Changed: section 148 (VM `ff0f701`; `upstream.json`, docs): `"direct"` taken from 26 blocks of 12 extensions (16 measured, 10 more on the same code paths; list in `docs/EXTENSION-INTEGRATION.md` "Taken back"); they use the guarded call again. Local: `bench\block-eq.mjs` `PROBE=1` (records the hats plain blocks start), `inventory\unmark-hat-starters.cjs`. To reverse: `git revert` the merge (fork commits stay).
+- Extension check: these 26 blocks go back to the guarded call, which behaves like the old path; the equality test shows no difference.
+- Verified (test app): the probe over every block and page block; runtime-options "set framerate" in the restart-hook case now the same plain, guarded, old and interpreted (it differed before); `block-eq.mjs auto s153` (16 extensions + page blocks of 11): new vs old 0, new vs interpreted 0, page new = guarded = old; VM unit test passes · Not verified: blocks whose hat start the test's inputs never reach and that the reading missed. Found, not changed: Font Manager "add system font" throws "isValidSystemFont is not a function".
+- Result after build: assumed working
+
 ### Session 152 — Plain direct calls, group 9: blocks that start or stop scripts (2026-10-25)
 - Asked: work out which of the 30 never-waiting blocks that start or stop scripts can be plain calls, and mark only those.
 - Changed: section 147 (VM `2994b33`; `upstream.json`, docs): 17 blocks marked (MIDI Tools 8, Tune Shark V3 5, Tween's 2 cancel blocks, Extra Controls "call [] to run", ShovelUtils "import project"); 13 left guarded (they can stop the calling script, directly or through Extra Controls' restart hook). Local: `bench\directcalls-g9-check.mjs`, `inventory\mark-direct-g9.cjs`. To reverse: `git revert` the merge (fork commits stay).
