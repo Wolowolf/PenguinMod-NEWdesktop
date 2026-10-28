@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 151 — The equality test's `auto` picks a reasonable test (2026-10-25)
+- Asked: make sure the full 13-minute test is no longer run for a small change and a reasonable test is always chosen.
+- Changed: docs only (`CLAUDE.md` rule "Equality test after a VM or Render change", `docs/EXTENSION-INTEGRATION.md` rule and "`auto`, Session 150", `docs/PROCEDURES.md`). Local: `bench\block-eq.mjs` saves the git hash of every uncommitted VM / Render file with each run and decides what changed by file contents, so runs made before their change was committed count as `auto`'s base (before, none of the recent runs counted and `auto` fell back to Session 147's, so a one-file change ran everything); `auto` also runs the page test for the affected extensions with page blocks; Session 149's run got the hash of its one uncommitted file (PenSkin.js, the same content as the commit `bbe61e2`). To reverse: `git revert` the merge (local files have no history).
+- Extension check: nothing in the engine changes.
+- Verified (test app): `PLAN=1 auto` on section 146's change: base s149, "Sharktilities.js: SharkPoolSharktilities (every mode)" plus its page blocks; the real run took 1 min (block test 0 differences in every mode, page test new = guarded = interp = old) instead of the 13 min of `all` · Not verified: a base with uncommitted files other than s149's (the next runs will make such bases).
+- Result after build: no build (`.md` only)
+
 ### Session 150 — Sharktilities' step blocks fixed (2026-10-25)
 - Asked: fix Sharktilities' "request [project step]" and "step interpolation" (two of the equality test's expected differences): run the extra engine step right after the current one.
 - Changed: section 146 (VM `794bc05`; `upstream.json`, docs): the extra step runs in a microtask right after the engine step the block runs in, instead of inside it (which re-entered the running script: "Generator is already running" compiled, a stack overflow interpreted); the script waits for it and goes on in the next frame. Local: both blocks removed from `EXPECTED` in `bench\block-eq.mjs`. To reverse: `git revert` the merge (fork commits stay).
