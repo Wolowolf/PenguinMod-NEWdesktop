@@ -101,6 +101,7 @@ Category menu (sections 11, 13, 55) · block shapes · workspace.
 
 ## Engine moved off the page
 Engine in a worker · new engine (Rust/C++, native player, Godot).
+- Since section 159 (Session 165) extensions reach the page's dialogs, localStorage and window / document event listeners through one object, `runtime.pmPage` (`docs/EXTENSION-INTEGRATION.md` "One door to the page"): an engine in a worker needs a stand-in for it only. Done: 31 extensions (6 with no page contacts left: Sound Waves, ShovelUtils, Keys+ V2, Device Motion, Looks+, Local Storage). Left, in order: page facts and actions, `navigator`, the stage canvas, images, page elements and the overlay, audio / camera / microphone / connections (page contacts now 70 extensions, 768 uses).
 - Use the page (DOM, window, canvas): 70 of 135 (vm 7, pm 20, tw 20, sp 23; scan of Session 85), e.g. tw `pointerlock`, `cursor`, `TheShovel/CanvasEffects` · sp `Popup-Phoenix`, `Speech-Bubbles` · pm `Gen1x/lighting` · vm `pen`.
 - A new engine without JavaScript: every extension named in this file needs a rewrite. The ones that could not exist there at all (JavaScript, HTML iframe Elements, Iframe, DOM Selector, Search Params, WindowHasher) and the web-only parts asked about with them (YouTube Operations, Twitch, the jgPrism eval, ShovelUtils load extension and Lily's Toolbox project URL blocks) were removed in section 85.
 
