@@ -82,6 +82,7 @@ List index · typed variables · real data types.
 ## Sound
 Mixer channels, effects, positional sound.
 - Use the engine's audio: vm `music`, `pmSensingExpansion` (loudness) · pm `Gen1x/beat_sync` (engine's AudioContext), `SharkPool/Sound-Waves` (engine's context and input node) · tw `Lily/SoundExpanded` (sets the engine's master volume `inputNode.gain`), `Lily/Video` (follows it).
+- Sounds decoded when first needed (section 162, `runtime.pmSounds`): an extension that reads `soundBank.soundPlayers[…]`, `getSoundPlayer(…)` or a player's `buffer` itself must be in `EAGER_EXTENSIONS` of VM `src/engine/lazy-sounds.js` (today tw `Lily/SoundExpanded`, sp `Tune-Shark-V3`), which decodes every sound at once from when it is loaded; the bank's `playSound` / `stop` / `stopAllSounds` work for every sound.
 - Own audio: pm `PuzzlingGGG/ttsrV2`, `pooiod/Dictation` (microphone into its own AudioContext and worker, section 111) · sp `Tune-Shark-V3` (own audio library), `Recording-V2` (microphone) · vm `jgPrism`. (sp `MIDI-Tools` plays no sound: it only times a MIDI file's notes for its hats; step 2 block inventory.)
 
 ## Input
