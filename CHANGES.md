@@ -43,14 +43,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Verified: `game-bench.mjs run after-s163 --runs 3` (printed UNRELIABLE: 24% CPU before the runs); one CPU sample each of 25 and 29 · Not verified: gains in the ranking are guesses until built; cause of project 25's 25 ms p99.
 - Result after build: nothing builds (`.md` only)
 
-### Session 175 — Replacing a project frees its costumes (2026-10-30)
-- Asked: look into why memory grew with each project opened (seen in Session 173), then fix it.
-- Found: a costume's skin stays in the renderer until something destroys it, and nothing did for costumes, so every project opened kept all earlier projects' images: about 1 GB per opening of `big-assets.sb3` (main app page +540 MB, graphics process +440 MB). Sounds did not leak: old sound banks are cleaned up by the browser, so the guess in Session 173's entry was wrong.
-- Changed: section 167 (VM `b10fff6`; `upstream.json`, docs): `Runtime.dispose` destroys the skins of the costumes of the sprites it disposes. Skins of sprites and costumes deleted earlier aren't destroyed (the memory budget frees them). To reverse: `git revert` the merge (fork commit stays).
-- Extension check: it could only hurt an extension that keeps a costume's skin or texture from one project into the next; read the ones reaching costume skins: only Pen+ can (a shader input set to a costume's texture stays set until the next project sets it, which would then draw black; reasoned, not run); Looks Plus and Sprite Effects V2 loaded across a replacement gave no graphics errors; the equality test found no difference.
-- Verified: test app, `project-reopen-check.mjs 3 made`: 3 openings stay flat, main app page 1490 / 1493 / 1486 MB, graphics process 551 / 550 / 552 MB, skins 142 each (before the fix 955 → 2040 and 552 → 1430 MB, skins 144 → 428; budget off in both); `project-replace-check.mjs`: new project's costumes work, a sprite deleted before the replacement restores and shows, a skin something else shows stays, a costume object held from the old project answers its size, no graphics errors; `memory-budget-check.mjs` same results as Session 173; `block-eq.mjs auto s175` (everything): new vs old 0, new vs interpreted 0 (1 expected), page test only Geolocation · Not verified: opening projects through the File menu by hand (the test calls `vm.loadProject`); opening many different projects in a row; a real packaged game (it opens one project, so the fix shouldn't run: reasoned).
-- Result after build: assumed working
-
 ## Template (keep entries this short)
 
 ```
