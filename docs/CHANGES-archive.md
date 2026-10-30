@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 176 — Measured again after batched drawing (2026-10-30)
+- Asked: measure again after section 163 and rank the next speed change; only docs change.
+- Changed: `docs/BENCH-BASELINE.md` (new table, function samples, GC reading, new ranking). No engine change. To reverse: `git revert` the merge.
+- Extension check: no engine change, so no extension can be affected.
+- Verified: `game-bench.mjs run after-s163 --runs 3` (printed UNRELIABLE: 24% CPU before the runs); one CPU sample each of 25 and 29 · Not verified: gains in the ranking are guesses until built; cause of project 25's 25 ms p99.
+- Result after build: nothing builds (`.md` only)
+
 ### Session 175 — Replacing a project frees its costumes (2026-10-30)
 - Asked: look into why memory grew with each project opened (seen in Session 173), then fix it.
 - Found: a costume's skin stays in the renderer until something destroys it, and nothing did for costumes, so every project opened kept all earlier projects' images: about 1 GB per opening of `big-assets.sb3` (main app page +540 MB, graphics process +440 MB). Sounds did not leak: old sound banks are cleaned up by the browser, so the guess in Session 173's entry was wrong.
