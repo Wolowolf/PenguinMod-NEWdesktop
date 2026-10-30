@@ -57,8 +57,8 @@ Reading: the engine is limited by clones. Project 32 is the steepest, and `dispo
 - The earlier 25 ms p99 can be explained by Windows' idle mode or a busy PC (not proven per run). In the normal state p99 is 18–23 ms, varying by run.
 - About 17.7 ms is the floor of every project: 28 has 0.6 ms of work, and its slowest frames are just late starts (18.2 ms at most). This is timer unevenness, not engine work.
 - 25 uses 11–13 of its 16 ms, so any wobble goes over: 0.75–5.5% of frames are ≥ 18 ms. Those frames' scripts take 13–16 ms, the others 8–9 ms.
-- Ruled out as the main cause: GC (0.17 ms inside a slow frame on average; a single full clean-up costs up to 8 ms, rarely); bounces (correlation 0.03); the PC stalling (a fixed maths loop after each step is equally fast in slow and other frames, but it only samples after the scripts).
-- **Not found:** what makes the scripts themselves take longer. They often come in runs of 2–3 frames. Giving 25 more margin hides them either way.
+- Session 180: every frame during a full clean-up's marking is a spike (100%, 2–11 frames per run); quick clean-ups show no link (2–3% with or without); no code is thrown away in steady running (V8 log). Most of the rest is the PC's shared memory traffic: in spikes all functions slow together, and with no engine at all a memory-walking loop spikes (1.7–12.9% of rounds over 1.4×) while a maths loop never does (`noise-probe.mjs`; reasoned link, not separable per frame).
+- After section 169 (less garbage, 3 runs, marked UNRELIABLE: 32% CPU before): 25 work 12.3 → 9.9 ms, p99 19.4 → 17.8, GC 9.9 → 4.7 ms/s; 32 work 9.1 → 7.4, p99 18.7 → 17.8. Garbage 10.7 → 3.3 MB per frame.
 
 ## Ranking of the remaining ideas (Session 176; next after Session 179: clone deletion, seen in project 32)
 
