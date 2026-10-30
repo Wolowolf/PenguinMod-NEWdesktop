@@ -29,6 +29,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 179 — Measured the limits (2026-10-30)
+- Asked: do both steps of "1 · Measure the limits" of the Engine Roadmap page once the other conversation ended.
+- Changed: `docs/BENCH-BASELINE.md` (idle table, headroom table, slow-frame findings, Windows idle mode; older tables removed, in `bench\results` and git), `docs/PROCEDURES.md`. Local tools: project 32 (clone churn), `frame-probe.mjs`, `game-bench` warns about the idle mode. To reverse: `git revert` the merge.
+- Extension check: no engine change, so no extension can be affected.
+- Verified: baseline ×3 and uncapped ×2 on all 8 projects; size ladder on all; 30 min without input slowed every project (25: 62 → 40 FPS) and input restored it at once. Scripts make up the slow frames in 25; GC, bounces and PC stalls ruled out as main cause · Not verified: what makes those scripts slower; why the idle mode slows the page; ladder sizes had 1 short run each; the `game-bench` idle warning has not fired yet.
+- Result after build: nothing builds (`.md` only)
+
 ### Session 178 — Benchmarks without the 60 FPS limit, and bigger (2026-10-30)
 - Asked: make every benchmark project able to show whether a speed idea helped, by removing the 60 FPS limit and/or making the projects bigger.
 - Changed (local test folder, outside this repo; docs here): `bench/bench-common.mjs` (new), `bench.mjs`, `game-bench.mjs`, `make-projects.mjs`. `--uncapped` replaces the frame loop by back-to-back engine steps (FPS = steps per second the engine could do); `--scale K` or `--scale 2,25-=8,26-=4` makes the projects K times bigger (`make-projects.mjs --scale K` writes `projects-x<K>/`, made on first use; the default files are byte-identical to before); uncapped runs print a rough `--scale` per project that would bring it to about 30 FPS. Both are recorded in the result file; `bench.mjs compare` warns when the two results differ in either. Docs: `docs/PROCEDURES.md` "Game benchmark".
@@ -42,13 +49,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Extension check: the map and list come out the same, and direct writes by extensions (Events Expansion, Extra Controls, Messages Plus) are noticed, so no block's result can change; the equality test agrees.
 - Verified: `thread-map-check.mjs` on 25, 26, 29: list and map equal the old result after every frame through stopping, restarting, swapped targets, hand-pushed threads, map writes, green flag, stop all; 0 rebuilds in a steady project. `game-bench` (25, 26, 29, 30): project 25 work 15.1 → 11.3 ms, p99 25.3 → 17.8 ms; others in `docs/BENCH-BASELINE.md` (the "before" run was marked UNRELIABLE). `block-eq.mjs auto s176` (everything): new vs old 0, new vs interpreted 0 (1 expected), page test only Geolocation · Not verified: a real packaged game; whether the lower longest GC pause lasts beyond the 8 s window.
 - Result after build: assumed working
-
-### Session 176 — Measured again after batched drawing (2026-10-30)
-- Asked: measure again after section 163 and rank the next speed change; only docs change.
-- Changed: `docs/BENCH-BASELINE.md` (new table, function samples, GC reading, new ranking). No engine change. To reverse: `git revert` the merge.
-- Extension check: no engine change, so no extension can be affected.
-- Verified: `game-bench.mjs run after-s163 --runs 3` (printed UNRELIABLE: 24% CPU before the runs); one CPU sample each of 25 and 29 · Not verified: gains in the ranking are guesses until built; cause of project 25's 25 ms p99.
-- Result after build: nothing builds (`.md` only)
 
 ## Template (keep entries this short)
 

@@ -19,47 +19,48 @@ Where the time goes in the engine after sections 36–162, measured to rank the 
 
 Words: **frame** = time from one frame to the next (16.0 = the 60 FPS limit); **p99** = the slowest 1% of frames take at least this long (stutter); **work** = time the engine is busy inside a frame; **GC** = garbage collection, the JavaScript engine pausing to clean up memory no longer used (ms per second, and the longest single pause); **load** = `vm.loadProject`; **first** = from load start to the end of the first frame after the green flag (it creates the clones; for 25 that first frame alone took ≈ 420 ms); **split** from the engine's profiler (scripts = running blocks, touching = inside the touching checks, draw = the renderer drawing, rest = the step's own bookkeeping); **heap / live** = JavaScript memory after 30 s, as is / after a forced clean-up. GPU memory and GPU time are not measured: "draw" is the main-thread time spent handing the drawing to the graphics card.
 
-## After section 163 (batched drawing, same build, switch on / off, 3 runs; also marked UNRELIABLE: PC busy)
+## Windows idle mode spoils benchmarks (Session 179)
 
-| # | FPS off → on | work ms off → on | draw ms off → on |
+30 min after the last keyboard or mouse input Windows changes the session state (System log, Kernel-Power 566, "3 to 4"; probably the screen turning off). From then on every project is slower, through app restarts and rebuilds: 25 fell from 62 to about 40 FPS, scripts about twice as slow, quick clean-ups 6–12× as many. Touching the PC ended it at once (21:13:48: "4 to 6", 25 back at 62). Asking Windows to keep the display on does not end it. Why this mode slows the page is not known. `game-bench` now prints UNRELIABLE when the last change was to state 4. Earlier "busy PC" results may partly be this.
+
+## Idle baseline (Session 179; 3 runs, build VM `4e2f831`, Render `b193075`, GUI `47b7237`)
+
+Marked UNRELIABLE for one moment only (CPU 36% in one run of 32; idle before 15%). Max FPS = steps per second with no frame limit (2 runs). Raw: `bench\results\game_20261030_203126_idle-baseline.json`, `game_20261030_203543_uncapped-x1.json`.
+
+| # | FPS | p99 | work | GC ms/s | GC max | load | first | scripts | touch | draw | other | max FPS |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 25 | 62.3 | 19.4 | 12.3 | 9.9 | 7.6 | 117 | 538 | 9.4 | 0.0 | 2.0 | 0.7 | 75 |
+| 26 | 62.5 | 17.7 | 3.5 | 3.3 | 0.9 | 108 | 258 | 2.2 | 0.9 | 0.4 | 0.8 | 308 |
+| 27 | 62.5 | 17.7 | 1.1 | 1.3 | 8.5 | 169 | 295 | 1.0 | 0.0 | 0.0 | 0.0 | 1,016 |
+| 28 | 62.5 | 17.6 | 0.6 | 1.2 | 0.8 | 153 | 293 | 0.2 | 0.0 | 0.3 | 0.1 | 2,167 |
+| 29 | 62.5 | 17.7 | 1.1 | 1.6 | 0.7 | 142 | 289 | 1.0 | 0.0 | 0.1 | 0.2 | 1,239 |
+| 30 | 62.5 | 17.7 | 1.0 | 1.6 | 0.8 | 129 | 267 | 0.7 | 0.0 | 0.1 | 0.2 | 1,218 |
+| 31 | 62.5 | 17.7 | 1.5 | 0.5 | 0.8 | 122 | 254 | 0.7 | 0.0 | 0.1 | 0.0 | 1,494 |
+| 32 (new: 100 clones made per frame, each deleted after 30 frames) | 62.4 | 18.7 | 9.1 | 17.4 | 10.0 | 118 | 222 | 7.8 | 0.0 | 1.2 | 0.8 | 122 |
+
+## Headroom: how far each project grows at the 60 FPS limit (Session 179; 1 short run per size)
+
+| # | Largest size tested that holds about 60 FPS | Next sizes (FPS) | Growth |
 |---|---|---|---|
-| 25 | 14.9 → 56.3 | 66.3 → 17.2 | 50.0 → 2.1 |
-| 26 | 58.4 → 60 (limit) | 15.2 → 4.8 | 10.0 → 0.5 |
-| 28 | 60 → 60 | 3.9 → 1.0 | 3.3 → 0.4 |
-| 31 | 60 → 60 | 3.3 → 2.0 | 1.6 → 0.2 |
+| 25 | ×1.25 (12,500 clones, 59.8) | ×1.5 52, ×2 36 | about linear |
+| 26 | ×4 (8,000 bullets, 59.0) | ×6 26 (marked UNRELIABLE), ×8 30 | faster than size |
+| 27 | ×16 (5,120 rays, 58.5) | ×24 42, ×32 34 | linear |
+| 28 | ×64 (62.3) | ×96 59 | linear |
+| 29 / 30 | ×8 (24,000 clones, 61.9) | ×16 about 32 | linear; ×24 and ×32 read 1.8 FPS, but they were probably still making clones (reasoned: the 500 ms limit of "run without screen refresh"), so not a real limit |
+| 31 | ×2.5 (750 bodies, 61.7) | ×3 24, ×4 12 | much faster than size |
+| 32 | ×1.5 (59.6) | ×2 41, ×3 19, ×4 11 | much faster than size |
 
-## Measured again after section 163 (Session 176, 2026-10-30)
+Reading: the engine is limited by clones. Project 32 is the steepest, and `disposeTarget` is 63% of its allocation (7.8 MB per frame; `filter` on the target list, one per deleted clone, so more clones cost more per delete: the last part reasoned). Physics also has a cliff. Lists, rays and tile maps have ×16 or more to spare, so typed variables, a collision grid and an engine worker have no project that needs them yet.
 
-Build: GUI `47b7237`, VM `b10fff6`, Render `b193075`, 3 runs. **UNRELIABLE** (24% CPU idle load before the runs): trust the shares more than exact milliseconds. Raw: `benchesultsgame_20261030_173532_after-s163.json`.
+## Why some frames of project 25 are slow (Session 179, `bench\frame-probe.mjs`)
 
-| # | FPS | frame | p99 | work | GC ms/s | GC max | load | first | scripts | touch | draw | other | heap / live MB |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 25 | 60.5 | 16.5 | 25.3 | 15.1 | 12.4 | 13.7 | 144 | 612 | 9.9 (64%) | 0.0 | 2.1 (14%) | 3.4 (22%) | 199 / 84 |
-| 26 | 60 | 16.0 | 17.9 | 4.1 | 5.9 | 5.8 | 131 | 307 | 2.4 (47%) | 1.0 (19%) | 0.5 (9%) | 1.3 (25%) | 66 / 50 |
-| 27 | 60 | 16.0 | 17.7 | 1.1 | 3.0 | 15.5 | 178 | 302 | 1.1 (93%) | 0.0 | 0.1 | 0.0 | 41 / 40 |
-| 28 | 60 | 16.0 | 17.5 | 0.8 | 1.6 | 2.5 | 171 | 312 | 0.2 (28%) | 0.0 | 0.4 (48%) | 0.2 (24%) | 72 / 44 |
-| 29 | 60 | 16.0 | 17.8 | 1.6 | 3.6 | 6.1 | 145 | 312 | 0.7 (46%) | 0.0 | 0.1 | 0.7 (48%) | 68 / 52 |
-| 30 | 60 | 16.0 | 17.6 | 1.5 | 3.0 | 3.6 | 137 | 293 | 0.7 (47%) | 0.0 | 0.1 | 0.7 (48%) | 66 / 52 |
-| 31 | 60 | 16.0 | 17.7 | 1.6 | 0.5 | 0.9 | 131 | 281 | 0.7 (79%) | 0.0 | 0.2 (18%) | 0.0 | 75 / 50 |
+- The earlier 25 ms p99 can be explained by Windows' idle mode or a busy PC (not proven per run). In the normal state p99 is 18–23 ms, varying by run.
+- About 17.7 ms is the floor of every project: 28 has 0.6 ms of work, and its slowest frames are just late starts (18.2 ms at most). This is timer unevenness, not engine work.
+- 25 uses 11–13 of its 16 ms, so any wobble goes over: 0.75–5.5% of frames are ≥ 18 ms. Those frames' scripts take 13–16 ms, the others 8–9 ms.
+- Ruled out as the main cause: GC (0.17 ms inside a slow frame on average; a single full clean-up costs up to 8 ms, rarely); bounces (correlation 0.03); the PC stalling (a fixed maths loop after each step is equally fast in slow and other frames, but it only samples after the scripts).
+- **Not found:** what makes the scripts themselves take longer. They often come in runs of 2–3 frames. Giving 25 more margin hides them either way.
 
-Sampled function times, one 5 s run, production build (share of all time; a one-off sample):
-- 25: `updateThreadMap` 14.8% + `getIdFromTargetAndBlock` 3.0% = **17.8%, the biggest single item**: every frame the engine empties the thread map and refills it, making one text id per clone. `_getTransformedHullPoints` 7.0%, `transformPoint` 4.2%, `initFromPointsAABB` 2.1% = 13.3% is the exact outline box for "if on edge bounce" (up to 22.6% with `_calculateTransform`, `multiply`, `ortho`, which drawing partly needs anyway). Running the scripts themselves: `s` (resumes each script) 11.0%, `gen7` 2.9%, `_moveSteps` 2.7%.
-- 29: of ≈ 490 ms of engine work in 5 s, `updateThreadMap` + id = 125 ms (≈ 25%); the 27,000 custom-block calls are less.
-
-GC in 25 (first run of each build, 8 s), measured: switch off 103 quick clean-ups at 15.4 FPS, longest 0.7 ms; on 163 + 1 full clean-up at 58.4 FPS, longest 15.7 ms. Quick clean-ups per frame fell (0.83 → 0.35), so the rise in ms per second comes from more frames, not more garbage per frame. The longest pause is the single full clean-up that now falls inside the window. Why 25's p99 is 25 ms is not known: one full clean-up in 8 s can't explain 1% of frames (≈ 5), and quick ones take under 1 ms.
-
-## After section 168 (thread map only when something changed; Session 177, 3 runs, not marked UNRELIABLE)
-
-| # | work ms before → after | other ms | p99 ms | GC max ms | first ms |
-|---|---|---|---|---|---|
-| 25 | 15.1 → 11.3 | 3.4 → 0.7 | 25.3 → 17.8 | 13.7 → 1.0 | 612 → 518 |
-| 26 | 4.1 → 3.5 | 1.3 → 0.8 | 17.9 → 17.6 | 5.8 → 0.9 | 307 → 269 |
-| 29 | 1.6 → 1.0 | 0.7 → 0.2 | 17.8 → 17.6 | 6.1 → 0.8 | 312 → 267 |
-| 30 | 1.5 → 1.0 | 0.7 → 0.2 | 17.6 → 17.5 | 3.6 → 0.7 | 293 → 283 |
-
-"Before" was marked UNRELIABLE (24% CPU idle load, now 15%), so part of the gain may be a quieter PC; `other` falling is the direct effect. No full clean-up fell in the window now (heap 199 → 261 MB in 25, live unchanged), so GC max may only have moved later: not proven. Raw: `bench\results\game_20261030_175330_after-s168.json`.
-
-## Ranking of the remaining ideas (Session 176)
+## Ranking of the remaining ideas (Session 176; next after Session 179: clone deletion, seen in project 32)
 
 The sizes of costs are measured; every gain below is a guess until built.
 
@@ -75,4 +76,4 @@ The sizes of costs are measured; every gain below is a guess until built.
 | 8 | Custom block inlining | 27,000 calls 0.7 ms | measured: small |
 | 9 | Worker for rendering | at most draw's 2.1 ms in 25 | gain limit measured: small now; large change |
 
-Recommendation: rank 2, measured with 25.
+Recommendation (Session 179): cheaper clone deletion first (part of rank 3), measured with 32 at ×2; then rank 2, measured with 25.
