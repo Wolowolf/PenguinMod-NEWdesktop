@@ -15,8 +15,6 @@ Where the time goes in the engine after sections 36–162, measured to rank the 
 | 29 / 30 | custom-blocks | 3,000 hidden clones, 9 custom-block calls each per frame; 29 normal, 30 "run without screen refresh" |
 | 31 | physics | Box2D Physics (griffpatch), 300 circle bodies in a boxed stage |
 
-Already covered by older projects: touching (1, 6–8), maths loop (2), list search (3), 5,000 moving clones (4), deep custom-block recursion (5).
-
 ## Words used in the tables (Session 170's own table: raw file above)
 
 Words: **frame** = time from one frame to the next (16.0 = the 60 FPS limit); **p99** = the slowest 1% of frames take at least this long (stutter); **work** = time the engine is busy inside a frame; **GC** = garbage collection, the JavaScript engine pausing to clean up memory no longer used (ms per second, and the longest single pause); **load** = `vm.loadProject`; **first** = from load start to the end of the first frame after the green flag (it creates the clones; for 25 that first frame alone took ≈ 420 ms); **split** from the engine's profiler (scripts = running blocks, touching = inside the touching checks, draw = the renderer drawing, rest = the step's own bookkeeping); **heap / live** = JavaScript memory after 30 s, as is / after a forced clean-up. GPU memory and GPU time are not measured: "draw" is the main-thread time spent handing the drawing to the graphics card.
@@ -29,8 +27,6 @@ Words: **frame** = time from one frame to the next (16.0 = the 60 FPS limit); **
 | 26 | 58.4 → 60 (limit) | 15.2 → 4.8 | 10.0 → 0.5 |
 | 28 | 60 → 60 | 3.9 → 1.0 | 3.3 → 0.4 |
 | 31 | 60 → 60 | 3.3 → 2.0 | 1.6 → 0.2 |
-
-Idea "batched drawing" (rank 1 of Session 170's ranking) is done.
 
 ## Measured again after section 163 (Session 176, 2026-10-30)
 
