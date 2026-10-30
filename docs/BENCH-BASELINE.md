@@ -40,21 +40,6 @@ Words: **frame** = time from one frame to the next (16.0 = the 60 FPS limit); **
 - 29 / 30 custom blocks: 27,000 calls take ≈ 1 ms with or without screen refresh (no difference); the step's bookkeeping for 3,000 clone threads costs as much again (0.9 ms).
 - 31 physics: drawing (72%), then Box2D's step (inside scripts, 0.8 ms).
 
-## Ranking of the ideas
-
-| Rank | Idea | Evidence | Measured or guess |
-|---|---|---|---|
-| 1 | Batched drawing | drawing is 69–90% of work in 25, 26, 28, 31 | the cost is measured; that batching removes most of it is a guess (≈ 6.8 µs per sprite now in 25 suggests per-sprite overhead) |
-| 2 | Clone creation / recycling | 10,000 clones = ≈ 420 ms first frame | measured for creating them at once; gain for games that spawn and delete clones constantly is a guess (not measured) |
-| 3 | Worker for rendering | would let scripts and drawing overlap | guess: at most the smaller of scripts / draw per frame (≈ 12 ms of 85 in 25); large change |
-| 4 | Fewer GC pauses (part of typed variables / number lists) | longest pauses 7–10 ms in 25, 26, 27 | pauses measured (25 and 26: ≈ 90 quick clean-ups in 8 s, so many short-lived objects per frame; 27: one full clean-up); their causes are guesses |
-| 5 | Startup speed | load 120–200 ms, first frame 280–660 ms | measured on tiny projects; real projects with many costumes would gain more from lazy costumes (plan step (b)): guess |
-| 6 | Collision grid | touching 1.0 ms with 2,000 bullets | measured: small |
-| 7 | Typed variables / number lists (speed) | raycaster scripts 1.3 ms | measured: small |
-| 8 | Custom block inlining | 27,000 calls ≈ 1 ms, warp or not | measured: small; thread bookkeeping per clone (0.9 ms) is as big |
-
-Recommendation: batched drawing next (drawing of many sprites with the same costume in fewer draw calls), measured with projects 25, 26 and 28.
-
 ## After section 163 (batched drawing, same build, switch on / off, 3 runs; also marked UNRELIABLE: PC busy)
 
 | # | FPS off → on | work ms off → on | draw ms off → on |
@@ -64,4 +49,42 @@ Recommendation: batched drawing next (drawing of many sprites with the same cost
 | 28 | 60 → 60 | 3.9 → 1.0 | 3.3 → 0.4 |
 | 31 | 60 → 60 | 3.3 → 2.0 | 1.6 → 0.2 |
 
-Now in 25 scripts are the biggest cost (10.9 ms of 17.2); idea 1 above is done, the rest of the ranking is unchanged and still needs measuring again before picking the next one.
+Idea "batched drawing" (rank 1 of Session 170's ranking) is done.
+
+## Measured again after section 163 (Session 176, 2026-10-30)
+
+Build: GUI `47b7237`, VM `b10fff6`, Render `b193075`, 3 runs. **UNRELIABLE** (24% CPU idle load before the runs): trust the shares more than exact milliseconds. Raw: `benchesultsgame_20261030_173532_after-s163.json`.
+
+| # | FPS | frame | p99 | work | GC ms/s | GC max | load | first | scripts | touch | draw | other | heap / live MB |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 25 | 60.5 | 16.5 | 25.3 | 15.1 | 12.4 | 13.7 | 144 | 612 | 9.9 (64%) | 0.0 | 2.1 (14%) | 3.4 (22%) | 199 / 84 |
+| 26 | 60 | 16.0 | 17.9 | 4.1 | 5.9 | 5.8 | 131 | 307 | 2.4 (47%) | 1.0 (19%) | 0.5 (9%) | 1.3 (25%) | 66 / 50 |
+| 27 | 60 | 16.0 | 17.7 | 1.1 | 3.0 | 15.5 | 178 | 302 | 1.1 (93%) | 0.0 | 0.1 | 0.0 | 41 / 40 |
+| 28 | 60 | 16.0 | 17.5 | 0.8 | 1.6 | 2.5 | 171 | 312 | 0.2 (28%) | 0.0 | 0.4 (48%) | 0.2 (24%) | 72 / 44 |
+| 29 | 60 | 16.0 | 17.8 | 1.6 | 3.6 | 6.1 | 145 | 312 | 0.7 (46%) | 0.0 | 0.1 | 0.7 (48%) | 68 / 52 |
+| 30 | 60 | 16.0 | 17.6 | 1.5 | 3.0 | 3.6 | 137 | 293 | 0.7 (47%) | 0.0 | 0.1 | 0.7 (48%) | 66 / 52 |
+| 31 | 60 | 16.0 | 17.7 | 1.6 | 0.5 | 0.9 | 131 | 281 | 0.7 (79%) | 0.0 | 0.2 (18%) | 0.0 | 75 / 50 |
+
+Sampled function times, one 5 s run, production build (share of all time; a one-off sample):
+- 25: `updateThreadMap` 14.8% + `getIdFromTargetAndBlock` 3.0% = **17.8%, the biggest single item**: every frame the engine empties the thread map and refills it, making one text id per clone. `_getTransformedHullPoints` 7.0%, `transformPoint` 4.2%, `initFromPointsAABB` 2.1% = 13.3% is the exact outline box for "if on edge bounce" (up to 22.6% with `_calculateTransform`, `multiply`, `ortho`, which drawing partly needs anyway). Running the scripts themselves: `s` (resumes each script) 11.0%, `gen7` 2.9%, `_moveSteps` 2.7%.
+- 29: of ≈ 490 ms of engine work in 5 s, `updateThreadMap` + id = 125 ms (≈ 25%); the 27,000 custom-block calls are less.
+
+GC in 25 (first run of each build, 8 s), measured: switch off 103 quick clean-ups at 15.4 FPS, longest 0.7 ms; on 163 + 1 full clean-up at 58.4 FPS, longest 15.7 ms. Quick clean-ups per frame fell (0.83 → 0.35), so the rise in ms per second comes from more frames, not more garbage per frame. The longest pause is the single full clean-up that now falls inside the window. Why 25's p99 is 25 ms is not known: one full clean-up in 8 s can't explain 1% of frames (≈ 5), and quick ones take under 1 ms.
+
+## Ranking of the remaining ideas (Session 176)
+
+The sizes of costs are measured; every gain below is a guess until built.
+
+| Rank | Idea | Evidence | Measured or guess |
+|---|---|---|---|
+| 1 | Thread map kept up to date, not rebuilt every frame | 17.8% of 25, ≈ 25% of engine work in 29 | cost measured; removing nearly all of it is a guess; small change |
+| 2 | "If on edge bounce" asks a quick box first | 13–23% of 25 | cost measured; only helps projects using this block or similar; that clones far from edges skip the outline is a guess |
+| 3 | Clone creation / recycling | first frame of 25 ≈ 400 ms | measured for 10,000 at once; constant spawning not measured |
+| 4 | Fewer GC pauses | full clean-up 14–16 ms in 25 and 27, about once per run, can cost a frame | measured; causes not measured |
+| 5 | Startup speed | load 130–180, first 280–610 ms | measured on tiny projects; lazy costumes already done |
+| 6 | Collision grid | touching 1.0 ms with 2,000 bullets (now 19% of 26) | measured: small in ms |
+| 7 | Typed variables / number lists (speed) | raycaster scripts 1.1 ms | measured: small |
+| 8 | Custom block inlining | 27,000 calls 0.7 ms | measured: small |
+| 9 | Worker for rendering | at most draw's 2.1 ms in 25 | gain limit measured: small now; large change |
+
+Recommendation: rank 1, measured with 25, 26, 29, 30.

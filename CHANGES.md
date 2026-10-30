@@ -29,6 +29,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 176 — Measured again after batched drawing (2026-10-30)
+- Asked: measure again after section 163 and rank the next speed change; only docs change.
+- Changed: `docs/BENCH-BASELINE.md` (new table, function samples, GC reading, new ranking). No engine change. To reverse: `git revert` the merge.
+- Extension check: no engine change, so no extension can be affected.
+- Verified: `game-bench.mjs run after-s163 --runs 3` (printed UNRELIABLE: 24% CPU before the runs); one CPU sample each of 25 and 29 · Not verified: gains in the ranking are guesses until built; cause of project 25's 25 ms p99.
+- Result after build: nothing builds (`.md` only)
+
 ### Session 175 — Replacing a project frees its costumes (2026-10-30)
 - Asked: look into why memory grew with each project opened (seen in Session 173), then fix it.
 - Found: a costume's skin stays in the renderer until something destroys it, and nothing did for costumes, so every project opened kept all earlier projects' images: about 1 GB per opening of `big-assets.sb3` (main app page +540 MB, graphics process +440 MB). Sounds did not leak: old sound banks are cleaned up by the browser, so the guess in Session 173's entry was wrong.
@@ -42,13 +49,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Changed: section 166 (VM `10c2fd4`; `upstream.json`, docs): see `docs/SECTIONS.md`. To reverse: `git revert` the merge (fork commit stays).
 - Extension check: it only widens which costumes wait; skins and the seven skin-reading extensions work as in section 164, and the equality test found no difference.
 - Verified: `lazy-costumes-more.mjs`, fresh app per mode, 26 costumes (5 interlaced color types, 1x1 and 3x2 images, transparent colors, 4 without rotation center, 2 SVGs): new vs old loading 0 differences in center, resolution, size, bounds, texture, stage pixels; on-the-spot decoder vs browser's equal; all stayed unmade until used; `block-eq.mjs auto s174` (everything): new vs old 0, new vs interpreted 0 (expected ones only), page test 0 · Correction to Session 172: its cold-SVG stage reading was empty (renderer skipped the redraw); redone with a forced redraw, equal · Not verified: a real packaged game; SVG comment scan's time on very large files (reasoned small).
-- Result after build: assumed working
-
-### Session 173 — Memory budget for sounds and costumes (2026-10-30)
-- Asked (step (c) of "load on first use"): when decoded sounds and costume skins go over a memory budget, free the ones not used for a while and rebuild them on next use; invisible, no settings, same results.
-- Changed: section 165 (VM `6a2681c`, Render `b193075`; `upstream.json`, docs): every 5 s the frame loop checks; over 512 MB, what wasn't used for 60 s is freed, oldest first. A playing sound, a shown costume and anything used in the last minute stay, so a project really using more goes over the budget instead of decoding things again and again. JPEGs, other PNGs, edited costumes and edited sounds can't be made again, so they stay and don't count. Warm-up stops at the budget. Reasons for the numbers: `docs/SECTIONS.md`. To reverse: `git revert` the merge (fork commits stay).
-- Extension check: it changes when costumes and sounds exist in memory, not what they contain: freed fields make the skin again when read, no shipped extension outside the eager lists keeps a costume's texture or a sound's player (grep), and those lists turn freeing off; the equality test found no difference.
-- Verified: test app, `bench\big-assets.sb3` (100 PNGs of 1200x900, 40 SVGs, 24 sounds of 60 s; `memory-budget-make`, `-check`, `-pack`): counted memory 1175 → 511 MB, app private memory 2162 → 1361 MB (first run 1980 → 1276), the check took 24 ms; with a budget of 1 byte the shown costume, the playing sound, an edited costume and an edited sound stayed; freed costumes give the same texture, silhouette, stage pixels, bounds and picks (3 PNGs, 3 SVGs, one drawn at 200%), shown at once, also after 3 more rounds; a 60 s WAV decodes again in 64 ms; freed sounds: same samples, id, rate, fade-out setting, length answered at once, stop all and effects don't fail, "sound playing?" true right after start; frame loop alone with the real wait: 1181 → 509 MB; packaged flag (no assets): PNG and sound come back from their own copy; sound editor's request for a freed sound comes back with one targets update; saved project same size; no graphics errors; `block-eq.mjs auto s173` (everything): new vs old 0, new vs interpreted 0 (1 expected), page test only Geolocation · Not verified: a real packaged game; MP3 sounds (decoding them again is slower: reasoned); how a late first play sounds (the test app is muted); the first show of a freed big PNG happens in the frame that needs it (about 70 ms at 1200x900 including my checks, not measured alone, may be visible as one long frame); graphics card memory itself. Seen: the test app's memory kept growing from one project opening to the next; cause and fix in Session 175.
 - Result after build: assumed working
 
 ## Template (keep entries this short)
