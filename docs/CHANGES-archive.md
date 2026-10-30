@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 177 — Thread map only when something changed (2026-10-30)
+- Asked: do the next logical change after Session 176's ranking (its rank 1).
+- Changed: section 168 (VM `4e2f831`; `upstream.json`, docs): each frame the engine emptied and refilled its map of running scripts, one text id per clone; now it only does when something changed. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: the map and list come out the same, and direct writes by extensions (Events Expansion, Extra Controls, Messages Plus) are noticed, so no block's result can change; the equality test agrees.
+- Verified: `thread-map-check.mjs` on 25, 26, 29: list and map equal the old result after every frame through stopping, restarting, swapped targets, hand-pushed threads, map writes, green flag, stop all; 0 rebuilds in a steady project. `game-bench` (25, 26, 29, 30): project 25 work 15.1 → 11.3 ms, p99 25.3 → 17.8 ms; others in `docs/BENCH-BASELINE.md` (the "before" run was marked UNRELIABLE). `block-eq.mjs auto s176` (everything): new vs old 0, new vs interpreted 0 (1 expected), page test only Geolocation · Not verified: a real packaged game; whether the lower longest GC pause lasts beyond the 8 s window.
+- Result after build: assumed working
+
 ### Session 176 — Measured again after batched drawing (2026-10-30)
 - Asked: measure again after section 163 and rank the next speed change; only docs change.
 - Changed: `docs/BENCH-BASELINE.md` (new table, function samples, GC reading, new ranking). No engine change. To reverse: `git revert` the merge.
