@@ -29,6 +29,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 178 — Benchmarks without the 60 FPS limit, and bigger (2026-10-30)
+- Asked: make every benchmark project able to show whether a speed idea helped, by removing the 60 FPS limit and/or making the projects bigger.
+- Changed (local test folder, outside this repo; docs here): `bench/bench-common.mjs` (new), `bench.mjs`, `game-bench.mjs`, `make-projects.mjs`. `--uncapped` replaces the frame loop by back-to-back engine steps (FPS = steps per second the engine could do); `--scale K` or `--scale 2,25-=8,26-=4` makes the projects K times bigger (`make-projects.mjs --scale K` writes `projects-x<K>/`, made on first use; the default files are byte-identical to before); uncapped runs print a rough `--scale` per project that would bring it to about 30 FPS. Both are recorded in the result file; `bench.mjs compare` warns when the two results differ in either. Docs: `docs/PROCEDURES.md` "Game benchmark".
+- Extension check: tools only, no engine change.
+- Verified: default projects regenerate byte-identical; `game-bench` uncapped on 25, 27, 31: 72 / 991 / 1,425 steps per second (the same build is 60 FPS capped); `--scale 27-=32`: 34.6 FPS (the suggestion hit); `bench.mjs` uncapped at ×2 runs. Not verified: speed ideas on bigger projects (no engine change yet). Project 31 (Box2D) grows much faster than its size: ×4 gave 11 FPS (from 1,425), and ×32 froze the test app, so raise physics in small steps. Project 21 (monitors) is not scaled.
+- Result after build: nothing builds (`.md` only)
+
 ### Session 177 — Thread map only when something changed (2026-10-30)
 - Asked: do the next logical change after Session 176's ranking (its rank 1).
 - Changed: section 168 (VM `4e2f831`; `upstream.json`, docs): each frame the engine emptied and refilled its map of running scripts, one text id per clone; now it only does when something changed. To reverse: `git revert` the merge (fork commit stays).
