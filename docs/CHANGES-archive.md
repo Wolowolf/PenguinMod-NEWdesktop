@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 174 — More costumes wait for first use (2026-10-30)
+- Asked: also put off bitmaps without a rotation center, interlaced PNGs and gray / RGB PNGs with a transparent color; test SVGs without a rotation center and include them if they work (they do).
+- Changed: section 166 (VM `10c2fd4`; `upstream.json`, docs): see `docs/SECTIONS.md`. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: it only widens which costumes wait; skins and the seven skin-reading extensions work as in section 164, and the equality test found no difference.
+- Verified: `lazy-costumes-more.mjs`, fresh app per mode, 26 costumes (5 interlaced color types, 1x1 and 3x2 images, transparent colors, 4 without rotation center, 2 SVGs): new vs old loading 0 differences in center, resolution, size, bounds, texture, stage pixels; on-the-spot decoder vs browser's equal; all stayed unmade until used; `block-eq.mjs auto s174` (everything): new vs old 0, new vs interpreted 0 (expected ones only), page test 0 · Correction to Session 172: its cold-SVG stage reading was empty (renderer skipped the redraw); redone with a forced redraw, equal · Not verified: a real packaged game; SVG comment scan's time on very large files (reasoned small).
+- Result after build: assumed working
+
 ### Session 173 — Memory budget for sounds and costumes (2026-10-30)
 - Asked (step (c) of "load on first use"): when decoded sounds and costume skins go over a memory budget, free the ones not used for a while and rebuild them on next use; invisible, no settings, same results.
 - Changed: section 165 (VM `6a2681c`, Render `b193075`; `upstream.json`, docs): every 5 s the frame loop checks; over 512 MB, what wasn't used for 60 s is freed, oldest first. A playing sound, a shown costume and anything used in the last minute stay, so a project really using more goes over the budget instead of decoding things again and again. JPEGs, other PNGs, edited costumes and edited sounds can't be made again, so they stay and don't count. Warm-up stops at the budget. Reasons for the numbers: `docs/SECTIONS.md`. To reverse: `git revert` the merge (fork commits stay).
