@@ -54,3 +54,14 @@ Words: **frame** = time from one frame to the next (16.0 = the 60 FPS limit); **
 | 8 | Custom block inlining | 27,000 calls ≈ 1 ms, warp or not | measured: small; thread bookkeeping per clone (0.9 ms) is as big |
 
 Recommendation: batched drawing next (drawing of many sprites with the same costume in fewer draw calls), measured with projects 25, 26 and 28.
+
+## After section 163 (batched drawing, same build, switch on / off, 3 runs; also marked UNRELIABLE: PC busy)
+
+| # | FPS off → on | work ms off → on | draw ms off → on |
+|---|---|---|---|
+| 25 | 14.9 → 56.3 | 66.3 → 17.2 | 50.0 → 2.1 |
+| 26 | 58.4 → 60 (limit) | 15.2 → 4.8 | 10.0 → 0.5 |
+| 28 | 60 → 60 | 3.9 → 1.0 | 3.3 → 0.4 |
+| 31 | 60 → 60 | 3.3 → 2.0 | 1.6 → 0.2 |
+
+Now in 25 scripts are the biggest cost (10.9 ms of 17.2); idea 1 above is done, the rest of the ranking is unchanged and still needs measuring again before picking the next one.
