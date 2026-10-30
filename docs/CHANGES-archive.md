@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 171 — Batched drawing (2026-10-30)
+- Asked (from Session 170's ranking): do batched drawing next.
+- Changed: section 163 (Render 1e1d525; `upstream.json`, docs): neighbouring sprites with the same texture and no effects, clip box or blend mode are drawn with one instanced call when the stage is drawn; runs under 4 and everything else as before; same order. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: it changes only how the stage is drawn, not calculations or touching; the extensions using the shared graphics context or own skins were checked (`hooks-render-check.mjs` ALL OK on a fresh start; the 4 fails on an earlier run came from a stage my pixel test had resized).
+- Verified: `batch-eq.mjs` every pixel identical on 12 scenes (4 projects × plain, mixed effects / sizes / rotation / hidden / off-stage / clip / blend / pen, large stage) with instanced calls used; `game-bench.mjs` same build off → on (PC busy, so marked unreliable): project 25 14.9 → 56.3 FPS (draw 50.0 → 2.1 ms), project 26 work 15.2 → 4.8 ms, 28 3.9 → 1.0, 31 3.3 → 2.0; `block-eq.mjs auto s170` (everything): new vs old 0, new vs interpreted 0 (1 expected), page test only Geolocation · Not verified: projects with many different costumes in a row (fewer long runs, so less gain: reasoned); the graphics card's own time; Simple 3D and Pen+ drawn in the same frame as a long batch, looked at by eye; WebGL 1 machines (they use the old path: reasoned).
+- Follow-up: removed an empty `game-bench.mjs` that the merge of this session added to the repo root by mistake (never packed into the app; made its own build).
+- Result after build: assumed working
+
 ### Session 170 — Measure again with game-shaped projects (2026-10-30)
 - Asked: step 1 of the speed plan: measure where the time goes on game-shaped projects, no engine change; only local test tools and docs.
 - Changed: local tools only (outside the repo): `bench\make-projects.mjs` makes projects 25–31 (10,000 bouncing clones, bullet hell, raycaster, tile map, custom blocks with / without screen refresh, Box2D with 300 bodies), new `bench\game-bench.mjs` (frame ms average / p99 / 1% low, GC pauses from Chrome tracing, load and first-frame time, JS heap after 30 s, frame split scripts / touching / drawing / rest from `runtime.profiler`; UNRELIABLE when the PC is busy), `bench.mjs` skips 25–31 by default. Docs: new `docs/BENCH-BASELINE.md` (results and ranked ideas), `docs/PROCEDURES.md` "Game benchmark". To reverse: `git revert` the merge.
