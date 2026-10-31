@@ -15,7 +15,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - **Speech models (Sessions 95, 97):** pinned by `app/speech-models.json`, each pack naming its release: `speech-models-1` (packs `onnxruntime`, `pocket-voices`, `pocket-<language>`), `speech-models-2` (pack `supertonic`, Supertonic 3, OpenRAIL-M), `speech-models-3` (pack `loudkit-turbo` = loudr-1-turbo, Apache-2.0), `speech-models-4` (packs `loudkit-engine` = Loudkit 0.1.1 + onnxruntime-node 1.30.0, `loudkit-natural` = loudr-1, `loudkit-cloning` = the 3 enrollment graphs); Loudkit only for "Make a speech sound", run by the app in its own process `app/loudkit-host.js`; each file its own asset; not in the installer or `win-unpacked.zip`; the app serves `resources/speech-models` at `https://studio.penguinmod.com/__speech__/` and downloads a pack (asking first) when Text To Speech first needs it; `speech-models-5` (packs `moonshine-english` = Moonshine Base English, MIT, and `silero-vad`, MIT) for Dictation (Session 111), `speech-models-6` (pack `whisper-small` = Whisper small, MIT, Dictation's other languages, Session 113), `speech-models-7` (pack `parakeet-v3` = Parakeet TDT 0.6B v3, CC BY 4.0, Dictation's high accuracy, Session 115), asked for the same way. Since Session 96 the packager copies the files a project uses (Dictation's too since Session 112) into `speech/` of zip and Windows app packages (the list comes from `/__speech__/packs.json`).
 - **Shipped extensions only (section 105):** the app loads only its built-in extensions, including all 107 gallery extensions (each a chunk of its own; nothing loads from an address since section 110). Projects name extensions by ID only. The integration plan is finished; mechanisms, direct calls and status per extension: `docs/EXTENSION-INTEGRATION.md`. Standard check after engine or compiler changes: `block-eq.mjs auto`.
 - **Engine contacts (section 153):** VM test `desktop_engine_contacts.js` keeps `engine-contacts.json` and fails on any new or removed contact. Shared `runtime.pm*` doors exist for random numbers and the clock, timers, hidden state and the page. What is left, in order: `docs/EXTENSION-INTEGRATION.md` "Hidden state" and "One door to the page".
-- **Editor changes:** 174 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
+- **Editor changes:** 175 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
 - **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80); benchmarks, extension scan, list and hat checks, the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), and putting the galleries into the test app: `docs/PROCEDURES.md`.
 - **Not verified yet:**
   - The updater's window and its downloads from a real release while installing a new offline library or packager Electron (its install steps are checked by the local `updater-check.cjs`, Session 116; an update itself worked end to end in Session 30).
@@ -27,6 +27,14 @@ Kept short on purpose (read at the start of every session). Not read by default,
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 188 — Packager: no frame limit option (2026-10-31)
+- Asked: roadmap item #7; no frame limit and more memory for V8 as packager options, both off by default.
+- Changed: section 175 (Packager; `upstream.json`, docs): "No frame limit" in Runtime Options. To reverse: `git revert` the merge (fork commit stays).
+- Decided: "More memory" not built: Electron 44's pointer compression caps V8's heap, so a game's limit stays 3586 MB whatever the flag says (`docs/SECTIONS.md` 175); a checkbox would do nothing.
+- Extension check: nothing in the engine changed and off gives the same package, so extension blocks are not affected unless the option is ticked; then only frames come faster, as on a faster screen.
+- Verified: real Windows games on the hidden desktop, 74 Hz screen: off byte for byte the same as before; light project on 75 → 153 frames/s, at 30 FPS still 30 steps/s; heavy project on 75 → 35 frames/s · Not verified: tearing and heat (hidden desktop), how the long option text looks, a game on other graphics chips.
+- Result after build: assumed working
 
 ### Session 187 — Faster start (2026-10-31)
 - Asked: roadmap item #6; measure start-up, build what pays off.
@@ -42,13 +50,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Decided: the memory reducer's cost is that memory goes back only at normal clean-ups (27 at 30 s: 41 → 47-49 MB). Remaining garbage in 25 stays (`docs/BENCH-BASELINE.md`).
 - Extension check: blocks get the same results and skins only read the scale during the call; `block-eq.mjs auto s186` agrees (new vs old: only Geolocation, as before).
 - Verified: 27: the 16-20 ms clean-up at 26.5 s gone in 3 of 3 runs; 25: garbage 2.31 → 0.79 MB per frame, GC 3.1 → 1.4 ms/s; same picture batched and unbatched for 1 to 10,002 sprites · Not verified: the switch in a packaged game; 25's work (7.4 → 7.0 in one test, unchanged in another); the "before" game-bench run is marked UNRELIABLE.
-- Result after build: assumed working
-
-### Session 185 — "If on edge, bounce" asks a quick box first (2026-10-31)
-- Asked: Engine Roadmap item #3.
-- Changed: section 172 (VM, Render; `upstream.json`, docs): far from every edge the block answers from the costume picture's box, without working out the exact outline. To reverse: `git revert` the merge (fork commits stay).
-- Extension check: the block gets the same result and no shipped extension calls or wraps it or the bounds functions, so extension blocks are not affected; `block-eq.mjs auto s184` agrees (page test only Geolocation as before).
-- Verified: 20,000 random sizes, directions, rotation styles, effects and positions: quick answer never wrong, block result always equal to the exact path; project 25: work 11.1 → 7.1 ms, p99 18.2 → 17.9, max FPS 96 → 153 (the "before" max FPS run is marked UNRELIABLE) · Not verified: projects other than 25.
 - Result after build: assumed working
 
 ## Template (keep entries this short)
