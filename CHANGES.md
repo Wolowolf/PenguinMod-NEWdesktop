@@ -15,7 +15,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - **Speech models (Sessions 95, 97):** pinned by `app/speech-models.json`, each pack naming its release: `speech-models-1` (packs `onnxruntime`, `pocket-voices`, `pocket-<language>`), `speech-models-2` (pack `supertonic`, Supertonic 3, OpenRAIL-M), `speech-models-3` (pack `loudkit-turbo` = loudr-1-turbo, Apache-2.0), `speech-models-4` (packs `loudkit-engine` = Loudkit 0.1.1 + onnxruntime-node 1.30.0, `loudkit-natural` = loudr-1, `loudkit-cloning` = the 3 enrollment graphs); Loudkit only for "Make a speech sound", run by the app in its own process `app/loudkit-host.js`; each file its own asset; not in the installer or `win-unpacked.zip`; the app serves `resources/speech-models` at `https://studio.penguinmod.com/__speech__/` and downloads a pack (asking first) when Text To Speech first needs it; `speech-models-5` (packs `moonshine-english` = Moonshine Base English, MIT, and `silero-vad`, MIT) for Dictation (Session 111), `speech-models-6` (pack `whisper-small` = Whisper small, MIT, Dictation's other languages, Session 113), `speech-models-7` (pack `parakeet-v3` = Parakeet TDT 0.6B v3, CC BY 4.0, Dictation's high accuracy, Session 115), asked for the same way. Since Session 96 the packager copies the files a project uses (Dictation's too since Session 112) into `speech/` of zip and Windows app packages (the list comes from `/__speech__/packs.json`).
 - **Shipped extensions only (section 105):** the app loads only its built-in extensions, including all 107 gallery extensions (each a chunk of its own; nothing loads from an address since section 110). Projects name extensions by ID only. The integration plan is finished; mechanisms, direct calls and status per extension: `docs/EXTENSION-INTEGRATION.md`. Standard check after engine or compiler changes: `block-eq.mjs auto`.
 - **Engine contacts (section 153):** VM test `desktop_engine_contacts.js` keeps `engine-contacts.json` and fails on any new or removed contact. Shared `runtime.pm*` doors exist for random numbers and the clock, timers, hidden state and the page. What is left, in order: `docs/EXTENSION-INTEGRATION.md` "Hidden state" and "One door to the page".
-- **Editor changes:** 171 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
+- **Editor changes:** 172 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
 - **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80); benchmarks, extension scan, list and hat checks, the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), and putting the galleries into the test app: `docs/PROCEDURES.md`.
 - **Not verified yet:**
   - The updater's window and its downloads from a real release while installing a new offline library or packager Electron (its install steps are checked by the local `updater-check.cjs`, Session 116; an update itself worked end to end in Session 30).
@@ -26,6 +26,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 185 — "If on edge, bounce" asks a quick box first (2026-10-31)
+- Asked: Engine Roadmap item #3.
+- Changed: section 172 (VM, Render; `upstream.json`, docs): far from every edge the block answers from the costume picture's box, without working out the exact outline. To reverse: `git revert` the merge (fork commits stay).
+- Extension check: the block gets the same result and no shipped extension calls or wraps it or the bounds functions, so extension blocks are not affected; `block-eq.mjs auto s184` agrees (page test only Geolocation as before).
+- Verified: 20,000 random sizes, directions, rotation styles, effects and positions: quick answer never wrong, block result always equal to the exact path; project 25: work 11.1 → 7.1 ms, p99 18.2 → 17.9, max FPS 96 → 153 (the "before" max FPS run is marked UNRELIABLE) · Not verified: projects other than 25.
+- Result after build: assumed working
 
 ### Session 184 — Tidied the notes (2026-10-31)
 - Asked: clean up notes, docs and memory; move out what was used once or twice.
@@ -40,13 +47,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Decided: no pool of clone objects. Making the target is 0.7 of a clone's 6.3 µs, and a pool could make extensions take a new clone for a deleted one (`docs/BENCH-BASELINE.md`).
 - Extension check: blocks get the same results, and thread lists hold exactly the running threads including scripts run as another sprite; `block-eq.mjs auto s183` agrees (new vs old: 0 differ, page test only Geolocation as before).
 - Verified: project 32: work 7.4 → 2.9 ms, ×2 39 → 62 FPS, ×4 11 → 60; deleting 3,000 clones 88 → 6 ms; project 25 first frame 538 → 375 ms; thread lists correct in every frame of projects 26, 29, 32 · Not verified: a packaged game; the "before" of 25, 32 work comes from a run marked UNRELIABLE.
-- Result after build: assumed working
-
-### Session 182 — Packaged games keep full speed with the screen off (2026-10-31)
-- Asked: give packaged games the screen-off fix too.
-- Changed: section 170 (Packager; `upstream.json`, docs): Windows app packages start with `disable-renderer-backgrounding`. To reverse: `git revert` the merge (fork commit stays).
-- Extension check: no calculation, compiler or frame loop changes, only the speed the page process gets, so extension blocks are not affected.
-- Verified: the packager builds and its built code holds the switch · Not verified: a packaged game run with the screen off.
 - Result after build: assumed working
 
 ## Template (keep entries this short)

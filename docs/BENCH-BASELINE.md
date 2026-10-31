@@ -74,7 +74,7 @@ The sizes of costs are measured; every gain below is a guess until built.
 | Rank | Idea | Evidence | Measured or guess |
 |---|---|---|---|
 | done | Thread map kept up to date, not rebuilt every frame (section 168) | 17.8% of 25, ≈ 25% of engine work in 29 | measured above |
-| 2 | "If on edge bounce" asks a quick box first | 13–23% of 25 | cost measured; only helps projects using this block or similar; that clones far from edges skip the outline is a guess |
+| done | "If on edge bounce" asks a quick box first (section 172) | project 25: work 11.1 → 7.1 ms, max FPS 96 → 153 | measured (the "before" max FPS run is marked UNRELIABLE) |
 | done | Clone deleting and creating (section 171); pool of clone objects not built, see above | project 32 at ×4: 11 → 60 FPS | measured |
 | 4 | Fewer GC pauses | full clean-up 14–16 ms in 25 and 27, about once per run, can cost a frame | measured; causes not measured |
 | 5 | Startup speed | load 130–180, first 280–610 ms | measured on tiny projects; lazy costumes already done |
