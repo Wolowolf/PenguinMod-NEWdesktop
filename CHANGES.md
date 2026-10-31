@@ -29,6 +29,14 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 181 — Full speed with the screen off (2026-10-31)
+- Asked: find and fix why projects slow down when the screen turns off.
+- Found: Windows counts the window as covered then, and Chromium puts the page in the background; details in `docs/BENCH-BASELINE.md`. My earlier "state 4" was only a counter, so the experiment and warning were fixed or removed.
+- Changed: `app/electron-main.js` adds the switch `disable-renderer-backgrounding`. To reverse: `git revert` the merge. Packaged games are unchanged.
+- Extension check: no calculation, compiler or frame loop changes, only the speed the page process gets, so extension blocks are not affected.
+- Verified: built test app with the screen off, project 25: 62.5 frames/s (45-47 without the switch), screen on 62.5 · Not verified: the real app on the visible desktop, a minimised window, projects other than 25.
+- Result after build: assumed working
+
 ### Session 180 — Less garbage per clone (2026-10-30)
 - Asked: keep looking into project 25's slow frames and the screen-off slowdown, and fix them.
 - Found: spikes come from GC marking and the PC's shared memory traffic (`docs/BENCH-BASELINE.md`). Screen-off cause: not found yet.
@@ -42,13 +50,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Changed: `docs/BENCH-BASELINE.md` (idle table, headroom table, slow-frame findings, Windows idle mode; older tables removed, in `bench\results` and git), `docs/PROCEDURES.md`. Local tools: project 32 (clone churn), `frame-probe.mjs`, `game-bench` warns about the idle mode. To reverse: `git revert` the merge.
 - Extension check: no engine change, so no extension can be affected.
 - Verified: baseline ×3 and uncapped ×2 on all 8 projects; size ladder on all; 30 min without input slowed every project (25: 62 → 40 FPS) and input restored it at once. Scripts make up the slow frames in 25; GC, bounces and PC stalls ruled out as main cause · Not verified: what makes those scripts slower; why the idle mode slows the page; ladder sizes had 1 short run each; the `game-bench` idle warning has not fired yet.
-- Result after build: nothing builds (`.md` only)
-
-### Session 178 — Benchmarks without the 60 FPS limit, and bigger (2026-10-30)
-- Asked: make every benchmark project able to show whether a speed idea helped, by removing the 60 FPS limit and/or making the projects bigger.
-- Changed (local test folder, outside this repo; docs here): `bench/bench-common.mjs` (new), `bench.mjs`, `game-bench.mjs`, `make-projects.mjs`. `--uncapped` replaces the frame loop by back-to-back engine steps (FPS = steps per second the engine could do); `--scale K` or `--scale 2,25-=8,26-=4` makes the projects K times bigger (`make-projects.mjs --scale K` writes `projects-x<K>/`, made on first use; the default files are byte-identical to before); uncapped runs print a rough `--scale` per project that would bring it to about 30 FPS. Both are recorded in the result file; `bench.mjs compare` warns when the two results differ in either. Docs: `docs/PROCEDURES.md` "Game benchmark".
-- Extension check: tools only, no engine change.
-- Verified: default projects regenerate byte-identical; `game-bench` uncapped on 25, 27, 31: 72 / 991 / 1,425 steps per second (the same build is 60 FPS capped); `--scale 27-=32`: 34.6 FPS (the suggestion hit); `bench.mjs` uncapped at ×2 runs. Not verified: speed ideas on bigger projects (no engine change yet). Project 31 (Box2D) grows much faster than its size: ×4 gave 11 FPS (from 1,425), and ×32 froze the test app, so raise physics in small steps. Project 21 (monitors) is not scaled.
 - Result after build: nothing builds (`.md` only)
 
 ## Template (keep entries this short)

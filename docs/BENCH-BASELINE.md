@@ -21,7 +21,7 @@ Words: **frame** = time from one frame to the next (16.0 = the 60 FPS limit); **
 
 ## Windows idle mode spoils benchmarks (Session 179)
 
-30 min after the last keyboard or mouse input Windows changes the session state (System log, Kernel-Power 566, "3 to 4"; probably the screen turning off). From then on every project is slower, through app restarts and rebuilds: 25 fell from 62 to about 40 FPS, scripts about twice as slow, quick clean-ups 6–12× as many. Touching the PC ended it at once (21:13:48: "4 to 6", 25 back at 62). Asking Windows to keep the display on does not end it. Why this mode slows the page is not known. `game-bench` now prints UNRELIABLE when the last change was to state 4. Earlier "busy PC" results may partly be this.
+Solved in Session 181. When Windows turned the screen off after no input (System log, Kernel-Power 566, `NextSessionType` 1), Chromium counted the window as covered and put the page's process in the background: 25 fell from 62.5 to 45-47 FPS (about 40 before section 169), recovering at once on input. All with the screen off: `--no-concurrent-recompilation`, `--no-concurrent-sparkplug`, `--single-threaded-gc`, power throttling off + High priority, `disable-background-timer-throttling` stayed at about 45; `disable-renderer-backgrounding`, `disable-backgrounding-occluded-windows` and `disable-features=CalculateNativeWinOcclusion` each gave 62.5. The app now sets the first (`app/electron-main.js`), and the built app measured 62.5 with the screen off. The number in event 566 is a counter, not a state. Earlier "busy PC" results may partly be this.
 
 ## Idle baseline (Session 179; 3 runs, build VM `4e2f831`, Render `b193075`, GUI `47b7237`)
 

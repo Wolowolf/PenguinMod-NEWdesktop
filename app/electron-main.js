@@ -829,6 +829,8 @@ if (process.env.NOPROXY === "true") {
 app.commandLine.appendSwitch('force_high_performance_gpu');
 // SharedArrayBuffer without cross-origin isolation: offline text to speech runs on several threads.
 app.commandLine.appendSwitch('enable-features', 'SharedArrayBuffer');
+// Scripts keep full speed when the screen turns off: Windows then counts the window as covered, and Chromium would treat the page as in the background.
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
 
 app.whenReady().then(() => {
   cleanupOldUpdateFiles();
