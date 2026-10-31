@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 187 — Faster start (2026-10-31)
+- Asked: roadmap item #6; measure start-up, build what pays off.
+- Changed: section 174 (Packager; `upstream.json`, docs), `app/updater.js` (`unzipper` loaded on first use), `app/preload.js` (audio service started while the page loads). To reverse: `git revert` the merge (fork commit stays).
+- Decided: V8 code cache, SVG pictures at export and compressed sounds not built: no measured gain worth it, reasons in `docs/BENCH-BASELINE.md` "Start-up". The largest part left is 860 ms waiting for the GPU process: listed as an idea.
+- Extension check: only when the audio service starts and when the updater's library loads changed, no calculation, compiler or frame loop, so extension blocks are not affected.
+- Verified: editor cold start 4.2 → 3.05 s; real packaged Windows game about 1.83 → 1.6 s to loaded; audio clock runs afterwards; `updater-check.cjs` passes · Not verified: audible sound (test app is muted), other audio devices, a visible window (all on the hidden desktop), a real update with the lazy `unzipper`.
+- Result after build: assumed working
 ### Session 186 — Fewer garbage-collection pauses (2026-10-31)
 - Asked: roadmap item #5; measure what allocates, reduce the biggest sources.
 - Changed: section 173 (VM, Render, Packager, `app/electron-main.js`; `upstream.json`, docs): no arrays per sprite for the drawing scale, no copies of the thread list per frame; V8's memory reducer off in the app and in Windows app packages. To reverse: `git revert` the merge (fork commits stay).
