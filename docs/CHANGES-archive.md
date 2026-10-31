@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 186 — Fewer garbage-collection pauses (2026-10-31)
+- Asked: roadmap item #5; measure what allocates, reduce the biggest sources.
+- Changed: section 173 (VM, Render, Packager, `app/electron-main.js`; `upstream.json`, docs): no arrays per sprite for the drawing scale, no copies of the thread list per frame; V8's memory reducer off in the app and in Windows app packages. To reverse: `git revert` the merge (fork commits stay).
+- Decided: the memory reducer's cost is that memory goes back only at normal clean-ups (27 at 30 s: 41 → 47-49 MB). Remaining garbage in 25 stays (`docs/BENCH-BASELINE.md`).
+- Extension check: blocks get the same results and skins only read the scale during the call; `block-eq.mjs auto s186` agrees (new vs old: only Geolocation, as before).
+- Verified: 27: the 16-20 ms clean-up at 26.5 s gone in 3 of 3 runs; 25: garbage 2.31 → 0.79 MB per frame, GC 3.1 → 1.4 ms/s; same picture batched and unbatched for 1 to 10,002 sprites · Not verified: the switch in a packaged game; 25's work (7.4 → 7.0 in one test, unchanged in another); the "before" game-bench run is marked UNRELIABLE.
+- Result after build: assumed working
 ### Session 185 — "If on edge, bounce" asks a quick box first (2026-10-31)
 - Asked: Engine Roadmap item #3.
 - Changed: section 172 (VM, Render; `upstream.json`, docs): far from every edge the block answers from the costume picture's box, without working out the exact outline. To reverse: `git revert` the merge (fork commits stay).

@@ -15,7 +15,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - **Speech models (Sessions 95, 97):** pinned by `app/speech-models.json`, each pack naming its release: `speech-models-1` (packs `onnxruntime`, `pocket-voices`, `pocket-<language>`), `speech-models-2` (pack `supertonic`, Supertonic 3, OpenRAIL-M), `speech-models-3` (pack `loudkit-turbo` = loudr-1-turbo, Apache-2.0), `speech-models-4` (packs `loudkit-engine` = Loudkit 0.1.1 + onnxruntime-node 1.30.0, `loudkit-natural` = loudr-1, `loudkit-cloning` = the 3 enrollment graphs); Loudkit only for "Make a speech sound", run by the app in its own process `app/loudkit-host.js`; each file its own asset; not in the installer or `win-unpacked.zip`; the app serves `resources/speech-models` at `https://studio.penguinmod.com/__speech__/` and downloads a pack (asking first) when Text To Speech first needs it; `speech-models-5` (packs `moonshine-english` = Moonshine Base English, MIT, and `silero-vad`, MIT) for Dictation (Session 111), `speech-models-6` (pack `whisper-small` = Whisper small, MIT, Dictation's other languages, Session 113), `speech-models-7` (pack `parakeet-v3` = Parakeet TDT 0.6B v3, CC BY 4.0, Dictation's high accuracy, Session 115), asked for the same way. Since Session 96 the packager copies the files a project uses (Dictation's too since Session 112) into `speech/` of zip and Windows app packages (the list comes from `/__speech__/packs.json`).
 - **Shipped extensions only (section 105):** the app loads only its built-in extensions, including all 107 gallery extensions (each a chunk of its own; nothing loads from an address since section 110). Projects name extensions by ID only. The integration plan is finished; mechanisms, direct calls and status per extension: `docs/EXTENSION-INTEGRATION.md`. Standard check after engine or compiler changes: `block-eq.mjs auto`.
 - **Engine contacts (section 153):** VM test `desktop_engine_contacts.js` keeps `engine-contacts.json` and fails on any new or removed contact. Shared `runtime.pm*` doors exist for random numbers and the clock, timers, hidden state and the page. What is left, in order: `docs/EXTENSION-INTEGRATION.md` "Hidden state" and "One door to the page".
-- **Editor changes:** 175 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
+- **Editor changes:** 176 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
 - **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80); benchmarks, extension scan, list and hat checks, the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), and putting the galleries into the test app: `docs/PROCEDURES.md`.
 - **Not verified yet:**
   - The updater's window and its downloads from a real release while installing a new offline library or packager Electron (its install steps are checked by the local `updater-check.cjs`, Session 116; an update itself worked end to end in Session 30).
@@ -27,6 +27,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 189 — Removed the no frame limit option (2026-10-31)
+- Asked: remove it; the project's frame rate already goes above the screen's limit.
+- Changed: section 176 (Packager; `upstream.json`, docs) reverts 175. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: the packager's code is back to what it was before 175 and the engine is untouched, so extension blocks are not affected.
+- Verified: packager's code identical to before 175; the option is gone from a rebuilt packager; a real packaged game has neither switch and steps above the screen's limit at frame rate 240 · Not verified: nothing else.
+- Result after build: assumed working
 
 ### Session 188 — Packager: no frame limit option (2026-10-31)
 - Asked: roadmap item #7; no frame limit and more memory for V8 as packager options, both off by default.
@@ -42,14 +49,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Decided: V8 code cache, SVG pictures at export and compressed sounds not built: no measured gain worth it, reasons in `docs/BENCH-BASELINE.md` "Start-up". The largest part left is 860 ms waiting for the GPU process: listed as an idea.
 - Extension check: only when the audio service starts and when the updater's library loads changed, no calculation, compiler or frame loop, so extension blocks are not affected.
 - Verified: editor cold start 4.2 → 3.05 s; real packaged Windows game about 1.83 → 1.6 s to loaded; audio clock runs afterwards; `updater-check.cjs` passes · Not verified: audible sound (test app is muted), other audio devices, a visible window (all on the hidden desktop), a real update with the lazy `unzipper`.
-- Result after build: assumed working
-
-### Session 186 — Fewer garbage-collection pauses (2026-10-31)
-- Asked: roadmap item #5; measure what allocates, reduce the biggest sources.
-- Changed: section 173 (VM, Render, Packager, `app/electron-main.js`; `upstream.json`, docs): no arrays per sprite for the drawing scale, no copies of the thread list per frame; V8's memory reducer off in the app and in Windows app packages. To reverse: `git revert` the merge (fork commits stay).
-- Decided: the memory reducer's cost is that memory goes back only at normal clean-ups (27 at 30 s: 41 → 47-49 MB). Remaining garbage in 25 stays (`docs/BENCH-BASELINE.md`).
-- Extension check: blocks get the same results and skins only read the scale during the call; `block-eq.mjs auto s186` agrees (new vs old: only Geolocation, as before).
-- Verified: 27: the 16-20 ms clean-up at 26.5 s gone in 3 of 3 runs; 25: garbage 2.31 → 0.79 MB per frame, GC 3.1 → 1.4 ms/s; same picture batched and unbatched for 1 to 10,002 sprites · Not verified: the switch in a packaged game; 25's work (7.4 → 7.0 in one test, unchanged in another); the "before" game-bench run is marked UNRELIABLE.
 - Result after build: assumed working
 
 ## Template (keep entries this short)
