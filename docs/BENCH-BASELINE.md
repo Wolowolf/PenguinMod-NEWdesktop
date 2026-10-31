@@ -60,6 +60,13 @@ Reading: the engine is limited by clones. Project 32 is the steepest, and `dispo
 - Session 180: every frame during a full clean-up's marking is a spike (100%, 2–11 frames per run); quick clean-ups show no link (2–3% with or without); no code is thrown away in steady running (V8 log). Most of the rest is the PC's shared memory traffic: in spikes all functions slow together, and with no engine at all a memory-walking loop spikes (1.7–12.9% of rounds over 1.4×) while a maths loop never does (`noise-probe.mjs`; reasoned link, not separable per frame).
 - After section 169 (less garbage, 3 runs, marked UNRELIABLE: 32% CPU before): 25 work 12.3 → 9.9 ms, p99 19.4 → 17.8, GC 9.9 → 4.7 ms/s; 32 work 9.1 → 7.4, p99 18.7 → 17.8. Garbage 10.7 → 3.3 MB per frame.
 
+## Clone deleting and creating (Session 183, section 171; `bench\clone-prof.mjs`, `clone-parts.js`)
+
+- Before, project 32 at ×2 (39 FPS): `stopForTarget` 25% (walked all threads, twice per delete), the "already running" check of `startHats` about 10%, removing from lists most of `dispose` and `disposeTarget`' 18%. `makeClone` itself 1.3%.
+- After: ×2 62 FPS, ×4 60 FPS (was 11). Normal size, work 7.4 → 2.9 ms (the "before" run is marked UNRELIABLE), GC 15.2 → 9.2 ms/s. 25: first frame 538 → 375 ms, work about the same (9.9 → 10.1, no clones made or deleted while running). Deleting 3,000 clones one by one 88 → 6 ms; stop-all with 10,000 clones 791 → 30 ms; making 10,000 165 → 66 ms.
+- Why no pool of clone objects: one clone costs 6.3 µs, of which the target object 0.7, the drawable 1.1, effects and variables 0.7 (not all reusable), so a pool saves at most about a third of a cost that is about 11% of project 32 at ×4, about 3% in all (reasoned from these times). The risk is real: `WeakMap`s and fields extensions keep per target would see a deleted clone come back as another one. Offer it again only if creation dominates a real project.
+- What is left at ×4: `updateThreadMap` 15%.
+
 ## Ranking of the remaining ideas (Session 176; next after Session 179: clone deletion, seen in project 32)
 
 The sizes of costs are measured; every gain below is a guess until built.
@@ -68,7 +75,7 @@ The sizes of costs are measured; every gain below is a guess until built.
 |---|---|---|---|
 | done | Thread map kept up to date, not rebuilt every frame (section 168) | 17.8% of 25, ≈ 25% of engine work in 29 | measured above |
 | 2 | "If on edge bounce" asks a quick box first | 13–23% of 25 | cost measured; only helps projects using this block or similar; that clones far from edges skip the outline is a guess |
-| 3 | Clone creation / recycling | first frame of 25 ≈ 400 ms | measured for 10,000 at once; constant spawning not measured |
+| done | Clone deleting and creating (section 171); pool of clone objects not built, see above | project 32 at ×4: 11 → 60 FPS | measured |
 | 4 | Fewer GC pauses | full clean-up 14–16 ms in 25 and 27, about once per run, can cost a frame | measured; causes not measured |
 | 5 | Startup speed | load 130–180, first 280–610 ms | measured on tiny projects; lazy costumes already done |
 | 6 | Collision grid | touching 1.0 ms with 2,000 bullets (now 19% of 26) | measured: small in ms |
