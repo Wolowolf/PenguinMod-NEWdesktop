@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 189 — Removed the no frame limit option (2026-10-31)
+- Asked: remove it; the project's frame rate already goes above the screen's limit.
+- Changed: section 176 (Packager; `upstream.json`, docs) reverts 175. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: the packager's code is back to what it was before 175 and the engine is untouched, so extension blocks are not affected.
+- Verified: packager's code identical to before 175; the option is gone from a rebuilt packager; a real packaged game has neither switch and steps above the screen's limit at frame rate 240 · Not verified: nothing else.
+- Result after build: assumed working
+
 ### Session 188 — Packager: no frame limit option (2026-10-31)
 - Asked: roadmap item #7; no frame limit and more memory for V8 as packager options, both off by default.
 - Changed: section 175 (Packager; `upstream.json`, docs): "No frame limit" in Runtime Options. To reverse: `git revert` the merge (fork commit stays).
