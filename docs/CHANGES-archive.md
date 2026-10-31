@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 185 — "If on edge, bounce" asks a quick box first (2026-10-31)
+- Asked: Engine Roadmap item #3.
+- Changed: section 172 (VM, Render; `upstream.json`, docs): far from every edge the block answers from the costume picture's box, without working out the exact outline. To reverse: `git revert` the merge (fork commits stay).
+- Extension check: the block gets the same result and no shipped extension calls or wraps it or the bounds functions, so extension blocks are not affected; `block-eq.mjs auto s184` agrees (page test only Geolocation as before).
+- Verified: 20,000 random sizes, directions, rotation styles, effects and positions: quick answer never wrong, block result always equal to the exact path; project 25: work 11.1 → 7.1 ms, p99 18.2 → 17.9, max FPS 96 → 153 (the "before" max FPS run is marked UNRELIABLE) · Not verified: projects other than 25.
+- Result after build: assumed working
 ### Session 184 — Tidied the notes (2026-10-31)
 - Asked: clean up notes, docs and memory; move out what was used once or twice.
 - Changed: `CLAUDE.md`, `CHANGES.md` trimmed and wrong facts fixed (npm snapshot, Electron version, `desktop` list, speech releases); `EXTENSION-INTEGRATION.md` group-by-group log moved to the archive; long lines in docs split. To reverse: `git revert` the merge.
