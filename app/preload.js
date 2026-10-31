@@ -1,5 +1,8 @@
 const { contextBridge, ipcRenderer, webFrame } = require("electron");
 
+// Starts the audio service while the page loads, so the editor's first AudioContext doesn't wait for it (370 ms).
+navigator.mediaDevices?.enumerateDevices().catch(() => { });
+
 function sendSync(channel, payload) {
   try {
     return ipcRenderer.sendSync(channel, payload);

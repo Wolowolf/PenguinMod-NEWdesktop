@@ -85,10 +85,19 @@ The sizes of costs are measured; every gain below is a guess until built.
 | done | "If on edge bounce" asks a quick box first (section 172) | project 25: work 11.1 → 7.1 ms, max FPS 96 → 153 | measured (the "before" max FPS run is marked UNRELIABLE) |
 | done | Clone deleting and creating (section 171); pool of clone objects not built, see above | project 32 at ×4: 11 → 60 FPS | measured |
 | done | Fewer GC pauses (section 173) | 27: the lost frame at 26.5 s gone; 25: garbage 2.3 → 0.8 MB per frame, GC 3.1 → 1.4 ms/s | measured |
-| 5 | Startup speed | load 130–180, first 280–610 ms | measured on tiny projects; lazy costumes already done |
+| done | Faster start (section 174, Session 187) | editor cold start 4.2 → 3.05 s; game 1.83 → about 1.6 s | measured, see "Start-up" |
 | 6 | Collision grid | touching 1.0 ms with 2,000 bullets (now 19% of 26) | measured: small in ms |
 | 7 | Typed variables / number lists (speed) | raycaster scripts 1.1 ms | measured: small |
 | 8 | Custom block inlining | 27,000 calls 0.7 ms | measured: small |
 | 9 | Worker for rendering | at most draw's 2.1 ms in 25 | gain limit measured: small now; large change |
 
 Recommendation (Session 179): cheaper clone deletion first (part of rank 3), measured with 32 at ×2; then rank 2, measured with 25.
+
+## Start-up (Session 187)
+Real cold starts (process started afresh on the hidden desktop, RTX 4060), not page reloads: a reload is 370 ms and hides most of this. Tools: `docs/PROCEDURES.md` "Start-up".
+- Editor, before: 4.2 s = 1650 ms before the page starts + 2500 ms page. After: 3.05 s = 840 + 2200.
+- Built: `unzipper` loaded on first use (-800 ms, process part); audio service started early (first AudioContext 370 → 40 ms; tiny game 1830 → 1530-1630 ms to loaded).
+- Left, not built: 860 ms is the page blocked on the GPU process's start (`isSupported`'s WebGL context in the first React render). `--disable-gpu` saves 950 ms (not usable), `--in-process-gpu` 400 ms (not used: a GPU crash would take the page with it); Graphite, Vulkan, ANGLE D3D11, shader cache, driver workarounds, GPU sandbox, high-performance GPU: no clear change. Idea: make the WebGL context after the rest of the first render, so the two run side by side (at most about 700 ms, a reasoned limit); the VM needs the renderer while loading a project, so it is a larger, riskier change.
+- V8 code cache, skipped: on a restart the saved cache was not used for pages served through our handler (seen in traces; the likely cause, Chromium's check of the response's time, was not confirmed). Giving https the `codeCache` privilege makes it survive (3.8 MB read back), but cold start stayed 3.3 s: only 200-240 ms of the start is compiling and that cache holds few functions. With eager compile and script streaming off, compiling falls to 52 ms but the load event comes later (2430 → 2570 ms). No gain.
+- SVG costumes as pictures at export, skipped: a 60-SVG + 30-WAV game (8 MB) is only about 100 ms slower to load than a one-costume game, since costumes wait for first use. One 200×200 SVG with 40 paths costs 14-40 ms on first use, the same PNG 1 ms, but a PNG loses sharpness when the sprite is drawn larger than the picture, a visible change; keeping both is a large change. Offer again if a game shows hitches from first use.
+- Compressed sounds, skipped: same game, so at most part of those 100 ms; decoding all 30 WAVs is 100 ms in the background. The same game as one HTML file adds about 70 ms. Compression would mainly shrink the file; not built, so no sound comparison was needed.
