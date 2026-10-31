@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 179 — Measured the limits (2026-10-30)
+- Asked: do both steps of "1 · Measure the limits" of the Engine Roadmap page once the other conversation ended.
+- Changed: `docs/BENCH-BASELINE.md` (idle table, headroom table, slow-frame findings, Windows idle mode; older tables removed, in `bench\results` and git), `docs/PROCEDURES.md`. Local tools: project 32 (clone churn), `frame-probe.mjs`, `game-bench` warns about the idle mode. To reverse: `git revert` the merge.
+- Extension check: no engine change, so no extension can be affected.
+- Verified: baseline ×3 and uncapped ×2 on all 8 projects; size ladder on all; 30 min without input slowed every project (25: 62 → 40 FPS) and input restored it at once. Scripts make up the slow frames in 25; GC, bounces and PC stalls ruled out as main cause · Not verified: what makes those scripts slower; why the idle mode slows the page; ladder sizes had 1 short run each; the `game-bench` idle warning has not fired yet.
+- Result after build: nothing builds (`.md` only)
+
 ### Session 178 — Benchmarks without the 60 FPS limit, and bigger (2026-10-30)
 - Asked: make every benchmark project able to show whether a speed idea helped, by removing the 60 FPS limit and/or making the projects bigger.
 - Changed (local test folder, outside this repo; docs here): `bench/bench-common.mjs` (new), `bench.mjs`, `game-bench.mjs`, `make-projects.mjs`. `--uncapped` replaces the frame loop by back-to-back engine steps (FPS = steps per second the engine could do); `--scale K` or `--scale 2,25-=8,26-=4` makes the projects K times bigger (`make-projects.mjs --scale K` writes `projects-x<K>/`, made on first use; the default files are byte-identical to before); uncapped runs print a rough `--scale` per project that would bring it to about 30 FPS. Both are recorded in the result file; `bench.mjs compare` warns when the two results differ in either. Docs: `docs/PROCEDURES.md` "Game benchmark".
