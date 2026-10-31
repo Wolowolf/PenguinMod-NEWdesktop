@@ -15,7 +15,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - **Speech models (Sessions 95, 97):** pinned by `app/speech-models.json`, each pack naming its release: `speech-models-1` (packs `onnxruntime`, `pocket-voices`, `pocket-<language>`), `speech-models-2` (pack `supertonic`, Supertonic 3, OpenRAIL-M), `speech-models-3` (pack `loudkit-turbo` = loudr-1-turbo, Apache-2.0), `speech-models-4` (packs `loudkit-engine` = Loudkit 0.1.1 + onnxruntime-node 1.30.0, `loudkit-natural` = loudr-1, `loudkit-cloning` = the 3 enrollment graphs); Loudkit only for "Make a speech sound", run by the app in its own process `app/loudkit-host.js`; each file its own asset; not in the installer or `win-unpacked.zip`; the app serves `resources/speech-models` at `https://studio.penguinmod.com/__speech__/` and downloads a pack (asking first) when Text To Speech first needs it; `speech-models-5` (packs `moonshine-english` = Moonshine Base English, MIT, and `silero-vad`, MIT) for Dictation (Session 111), `speech-models-6` (pack `whisper-small` = Whisper small, MIT, Dictation's other languages, Session 113), `speech-models-7` (pack `parakeet-v3` = Parakeet TDT 0.6B v3, CC BY 4.0, Dictation's high accuracy, Session 115), asked for the same way. Since Session 96 the packager copies the files a project uses (Dictation's too since Session 112) into `speech/` of zip and Windows app packages (the list comes from `/__speech__/packs.json`).
 - **Shipped extensions only (section 105):** the app loads only its built-in extensions, including all 107 gallery extensions (each a chunk of its own; nothing loads from an address since section 110). Projects name extensions by ID only. The integration plan is finished; mechanisms, direct calls and status per extension: `docs/EXTENSION-INTEGRATION.md`. Standard check after engine or compiler changes: `block-eq.mjs auto`.
 - **Engine contacts (section 153):** VM test `desktop_engine_contacts.js` keeps `engine-contacts.json` and fails on any new or removed contact. Shared `runtime.pm*` doors exist for random numbers and the clock, timers, hidden state and the page. What is left, in order: `docs/EXTENSION-INTEGRATION.md` "Hidden state" and "One door to the page".
-- **Editor changes:** 179 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
+- **Editor changes:** 180 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
 - **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80); benchmarks, extension scan, list and hat checks, the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), and putting the galleries into the test app: `docs/PROCEDURES.md`.
 - **Not verified yet:**
   - The updater's window and its downloads from a real release while installing a new offline library or packager Electron (its install steps are checked by the local `updater-check.cjs`, Session 116; an update itself worked end to end in Session 30).
@@ -27,6 +27,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 193 — Iris Text's mask fallback fixed (2026-10-31)
+- Asked: test Sprite Effects and Iris Text's fallback on costumes not made yet, then fix what was found.
+- Changed: section 180 (VM; `upstream.json`, docs): the fallback waits for a vector costume to load instead of keeping a blank mask (a fault from section 178). To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only this block's fallback changed; `block-eq.mjs auto s193`: new vs old 0, new vs interpreted 0, page test 0, 76 + 120 blocks identical in every mode.
+- Verified: `bench\lazy-ext-check2.mjs` on costumes not made yet: Sprite Effects' packaged path (bitmap, vector) and Iris Text's mask (bitmap, vector, file removed on purpose) give the same text and pixels as the old loading · Not verified: a costume whose file really fails in a project.
+- Result after build: assumed working
 
 ### Session 192 — Two compiled-vs-interpreted differences fixed (2026-10-31)
 - Asked: are the 3 known differences bugs? Fix those that are.
@@ -41,15 +48,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Changed: section 178 (VM; `upstream.json`, docs): Iris Text, Sprite Effects V2, Turbo Skins, Mouse Cursor, Looks Plus and Video Sprites no longer make every costume at once; costumes given to extension blocks by a reporter are made in idle time. To reverse: `git revert` the merge (fork commit stays).
 - Decided: Pen+, Sound Expanded and Tune Shark V3 stay as they were; the cheaper call for pure and guarded blocks was built, showed no gain and was taken out (`docs/EXTENSION-INTEGRATION.md` "Which optimisations").
 - Extension check: this changes when costumes are made, so it could matter; `bench\lazy-ext-check.mjs` gives the same answers as the old loading; `block-eq.mjs auto s191`: new vs old 0, new vs interpreted 0 (1 expected), page test 0 (2 expected), 1,658 + 636 blocks identical in every mode.
-- Verified: 151 MB project with the six loaded opens in 859 ms instead of 1872 ms · Not verified: Iris Text's fallback from a skin (only when a costume's file fails), Sprite Effects on a costume not made yet (the tested one was already made), how a video sprite looks during an SVG's first load (hidden desktop).
-- Result after build: assumed working
-
-### Session 190 — Logic separated from drawing (2026-10-31)
-- Asked: an option for game logic at the screen's rate, with a warning; separate logic from drawing.
-- Changed: section 177 (VM, GUI; `upstream.json`, docs): fixed frame rates draw on screen frames; settings "Run scripts at the screen's refresh rate" and "Smooth Movement" (off by default). To reverse: `git revert` the merge (fork commits stay).
-- Decided: smoothing is a setting, not always on, since the picture runs up to one step behind.
-- Extension check: this changes when drawing happens, so it could matter; `block-eq.mjs auto s190` agrees (new vs old: only Geolocation, as before). tw `runtime-options` and sp `Scenes` can switch smoothing on again.
-- Verified: 74 Hz: 10,000 clones at 240 FPS 140 → 179 steps/s; 30 FPS with smoothing 75 draws/s, 30 steps/s; drawables exact at each step start; real packaged games keep both settings · Not verified: how smoothing looks to the eye (hidden desktop), a screen other than 74 Hz, pixel check of smoothing with batched drawing.
+- Verified: 151 MB project with the six loaded opens in 859 ms instead of 1872 ms · Not verified: how a video sprite looks during an SVG's first load (hidden desktop).
 - Result after build: assumed working
 
 ## Template (keep entries this short)

@@ -10,6 +10,14 @@
 - Verified: packager's code identical to before 175; the option is gone from a rebuilt packager; a real packaged game has neither switch and steps above the screen's limit at frame rate 240 · Not verified: nothing else.
 - Result after build: assumed working
 
+### Session 190 — Logic separated from drawing (2026-10-31)
+- Asked: an option for game logic at the screen's rate, with a warning; separate logic from drawing.
+- Changed: section 177 (VM, GUI; `upstream.json`, docs): fixed frame rates draw on screen frames; settings "Run scripts at the screen's refresh rate" and "Smooth Movement" (off by default). To reverse: `git revert` the merge (fork commits stay).
+- Decided: smoothing is a setting, not always on, since the picture runs up to one step behind.
+- Extension check: this changes when drawing happens, so it could matter; `block-eq.mjs auto s190` agrees (new vs old: only Geolocation, as before). tw `runtime-options` and sp `Scenes` can switch smoothing on again.
+- Verified: 74 Hz: 10,000 clones at 240 FPS 140 → 179 steps/s; 30 FPS with smoothing 75 draws/s, 30 steps/s; drawables exact at each step start; real packaged games keep both settings · Not verified: how smoothing looks to the eye (hidden desktop), a screen other than 74 Hz, pixel check of smoothing with batched drawing.
+- Result after build: assumed working
+
 ### Session 188 — Packager: no frame limit option (2026-10-31)
 - Asked: roadmap item #7; no frame limit and more memory for V8 as packager options, both off by default.
 - Changed: section 175 (Packager; `upstream.json`, docs): "No frame limit" in Runtime Options. To reverse: `git revert` the merge (fork commit stays).
