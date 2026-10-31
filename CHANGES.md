@@ -28,6 +28,14 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 194 — Benchmarks for pen, sound, say bubbles, broadcasts, big project (2026-11-01)
+- Asked: Engine Roadmap item #2.
+- Changed: `docs/BENCH-BASELINE.md` (table, findings), `docs/PROCEDURES.md`. Local tools: projects 33-37, `bench\area-probe.mjs`, `game-bench` sends projects in pieces (a 106 MB one did not fit in one message). To reverse: `git revert` the merge.
+- Decided: no engine change, this item only measures. Biggest findings: a big project's load (6.8 s for 106 MB, 40% re-encoding pictures) and thread starts of a broadcast heard by many clones (6.6 ms for 5,000); pen and sound are fine; a broadcast index would save little.
+- Extension check: no engine change, so no extension can be affected.
+- Verified: each project does its work (frames advance, sound plays with audio running, bubble text changes, clones hear the broadcast); 3 + 2 runs of each · Not verified: hearing sound (test app muted), real game assets instead of noise pictures; both runs are marked UNRELIABLE.
+- Result after build: nothing builds (`.md` only)
+
 ### Session 193 — Iris Text's mask fallback fixed (2026-10-31)
 - Asked: test Sprite Effects and Iris Text's fallback on costumes not made yet, then fix what was found.
 - Changed: section 180 (VM; `upstream.json`, docs): the fallback waits for a vector costume to load instead of keeping a blank mask (a fault from section 178). To reverse: `git revert` the merge (fork commit stays).
@@ -41,14 +49,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Decided: Temporary Variables' "run in scope" is not a bug (one frame later, nothing else can see it) and stays expected.
 - Extension check: only these two extensions' files changed; `block-eq.mjs auto s192`, with both off the expected list: 0 differences in every mode, block and page test.
 - Verified: direct call: the popup's answer comes only after it closes · Not verified: a person clicking a real popup button; two scripts in a row in a real project using "is scrolled" with a real mouse wheel.
-- Result after build: assumed working
-
-### Session 191 — More extensions keep costumes waiting for first use (2026-10-31)
-- Asked: look at the optimisations, include as many extensions as possible, without asking.
-- Changed: section 178 (VM; `upstream.json`, docs): Iris Text, Sprite Effects V2, Turbo Skins, Mouse Cursor, Looks Plus and Video Sprites no longer make every costume at once; costumes given to extension blocks by a reporter are made in idle time. To reverse: `git revert` the merge (fork commit stays).
-- Decided: Pen+, Sound Expanded and Tune Shark V3 stay as they were; the cheaper call for pure and guarded blocks was built, showed no gain and was taken out (`docs/EXTENSION-INTEGRATION.md` "Which optimisations").
-- Extension check: this changes when costumes are made, so it could matter; `bench\lazy-ext-check.mjs` gives the same answers as the old loading; `block-eq.mjs auto s191`: new vs old 0, new vs interpreted 0 (1 expected), page test 0 (2 expected), 1,658 + 636 blocks identical in every mode.
-- Verified: 151 MB project with the six loaded opens in 859 ms instead of 1872 ms · Not verified: how a video sprite looks during an SVG's first load (hidden desktop).
 - Result after build: assumed working
 
 ## Template (keep entries this short)
