@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 182 — Packaged games keep full speed with the screen off (2026-10-31)
+- Asked: give packaged games the screen-off fix too.
+- Changed: section 170 (Packager; `upstream.json`, docs): Windows app packages start with `disable-renderer-backgrounding`. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: no calculation, compiler or frame loop changes, only the speed the page process gets, so extension blocks are not affected.
+- Verified: the packager builds and its built code holds the switch · Not verified: a packaged game run with the screen off.
+- Result after build: assumed working
+
 ### Session 181 — Full speed with the screen off (2026-10-31)
 - Asked: find and fix why projects slow down when the screen turns off.
 - Found: Windows counts the window as covered then, and Chromium puts the page in the background; details in `docs/BENCH-BASELINE.md`. My earlier "state 4" was only a counter, so the experiment and warning were fixed or removed.
