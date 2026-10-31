@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 188 — Packager: no frame limit option (2026-10-31)
+- Asked: roadmap item #7; no frame limit and more memory for V8 as packager options, both off by default.
+- Changed: section 175 (Packager; `upstream.json`, docs): "No frame limit" in Runtime Options. To reverse: `git revert` the merge (fork commit stays).
+- Decided: "More memory" not built: Electron 44's pointer compression caps V8's heap, so a game's limit stays 3586 MB whatever the flag says (`docs/SECTIONS.md` 175); a checkbox would do nothing.
+- Extension check: nothing in the engine changed and off gives the same package, so extension blocks are not affected unless the option is ticked; then only frames come faster, as on a faster screen.
+- Verified: real Windows games on the hidden desktop, 74 Hz screen: off byte for byte the same as before; light project on 75 → 153 frames/s, at 30 FPS still 30 steps/s; heavy project on 75 → 35 frames/s · Not verified: tearing and heat (hidden desktop), how the long option text looks, a game on other graphics chips.
+- Result after build: assumed working
+
 ### Session 187 — Faster start (2026-10-31)
 - Asked: roadmap item #6; measure start-up, build what pays off.
 - Changed: section 174 (Packager; `upstream.json`, docs), `app/updater.js` (`unzipper` loaded on first use), `app/preload.js` (audio service started while the page loads). To reverse: `git revert` the merge (fork commit stays).
