@@ -67,6 +67,14 @@ Reading: the engine is limited by clones. Project 32 is the steepest, and `dispo
 - Why no pool of clone objects: one clone costs 6.3 µs, of which the target object 0.7, the drawable 1.1, effects and variables 0.7 (not all reusable), so a pool saves at most about a third of a cost that is about 11% of project 32 at ×4, about 3% in all (reasoned from these times). The risk is real: `WeakMap`s and fields extensions keep per target would see a deleted clone come back as another one. Offer it again only if creation dominates a real project.
 - What is left at ×4: `updateThreadMap` 15%.
 
+## Clean-up pauses (Session 186, section 173; 40 s runs with Chrome's tracing, allocation sampling)
+
+- 27 makes almost no garbage (0.03 MB per frame), so its one long pause was not about garbage: V8's memory reducer started a full clean-up about 26.5 s after the flag in 3 of 3 runs, 16-20 ms (a third of it compacting the page's C++ memory), frame gap 25-30 ms, one lost frame. With `--no-memory-reducer`: none in 3 of 3 runs, quick clean-ups in 40 s 37 → 3, GC 1.9 → 0.8 ms/s. Left: one full clean-up at about 8 s (load-time memory, global limit), 6-10 ms, as before; its frame gap varied 16-20 ms before and 20-25 ms after (3 runs each, likely timing, not explained).
+- 25 before: 2.31 MB per frame: drawing 1,092 KB (3 arrays per sprite for the scale; batch lists regrown each frame), `_moveSteps` 394, thread list copies about 450. After: 0.79 MB. GC 3.1 → 1.4 ms/s, draw 2.1 → 1.7 ms, work 7.4 → 7.0 (`game-bench`; `bench.mjs` work 7.38 ±0.83 → 7.46 ±1.60, so the work change is within noise). Both before and after runs had 20-24% CPU idle load; the before run is marked UNRELIABLE.
+- 25's "261 MB heap, 14-16 ms" from the ranking is out of date. Now: heap still climbs to about 280-300 MB in the first 21-25 s (V8's limit after load), then a 6 ms full clean-up, then 4 ms ones every 2-2.5 s, frame gap about 16 ms (they fit in the frame). Not lowered by this work; no frame lost after the first 2 s, except one 33 ms gap at 26 s in one run with an earlier build, cause not looked at.
+- What is left in 25 (0.79 MB): `_moveSteps` 387 KB (numbers passed on to `setXY`, reasoned), generator results 196 KB and `stepThread` 138 KB (each compiled script's `yield`, reasoned). Removing them means changing how compiled scripts run or call `setXY`, which extensions wrap: not worth it at 1.4 ms/s.
+- The profiler charges inlined functions to their caller, so "`_drawThese` allocates" misled: a matrix-copy helper changed nothing (reverted); replacing parts in the running app found the getter.
+
 ## Ranking of the remaining ideas (Session 176; next after Session 179: clone deletion, seen in project 32)
 
 The sizes of costs are measured; every gain below is a guess until built.
@@ -76,7 +84,7 @@ The sizes of costs are measured; every gain below is a guess until built.
 | done | Thread map kept up to date, not rebuilt every frame (section 168) | 17.8% of 25, ≈ 25% of engine work in 29 | measured above |
 | done | "If on edge bounce" asks a quick box first (section 172) | project 25: work 11.1 → 7.1 ms, max FPS 96 → 153 | measured (the "before" max FPS run is marked UNRELIABLE) |
 | done | Clone deleting and creating (section 171); pool of clone objects not built, see above | project 32 at ×4: 11 → 60 FPS | measured |
-| 4 | Fewer GC pauses | full clean-up 14–16 ms in 25 and 27, about once per run, can cost a frame | measured; causes not measured |
+| done | Fewer GC pauses (section 173) | 27: the lost frame at 26.5 s gone; 25: garbage 2.3 → 0.8 MB per frame, GC 3.1 → 1.4 ms/s | measured |
 | 5 | Startup speed | load 130–180, first 280–610 ms | measured on tiny projects; lazy costumes already done |
 | 6 | Collision grid | touching 1.0 ms with 2,000 bullets (now 19% of 26) | measured: small in ms |
 | 7 | Typed variables / number lists (speed) | raycaster scripts 1.1 ms | measured: small |

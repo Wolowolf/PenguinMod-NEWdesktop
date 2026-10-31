@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 183 — Cheaper clone deleting and creating (2026-10-31)
+- Asked: roadmap item #4, cheaper clone creation and recycled clones, and cheaper clone deleting.
+- Changed: section 171 (VM, Render; `upstream.json`, docs): each target lists its own threads, so deleting a clone and starting a clone's hat no longer walk all threads; clones leave long lists without copying them. To reverse: `git revert` the merge (fork commits stay).
+- Decided: no pool of clone objects. Making the target is 0.7 of a clone's 6.3 µs, and a pool could make extensions take a new clone for a deleted one (`docs/BENCH-BASELINE.md`).
+- Extension check: blocks get the same results, and thread lists hold exactly the running threads including scripts run as another sprite; `block-eq.mjs auto s183` agrees (new vs old: 0 differ, page test only Geolocation as before).
+- Verified: project 32: work 7.4 → 2.9 ms, ×2 39 → 62 FPS, ×4 11 → 60; deleting 3,000 clones 88 → 6 ms; project 25 first frame 538 → 375 ms; thread lists correct in every frame of projects 26, 29, 32 · Not verified: a packaged game; the "before" of 25, 32 work comes from a run marked UNRELIABLE.
+- Result after build: assumed working
+
 ### Session 182 — Packaged games keep full speed with the screen off (2026-10-31)
 - Asked: give packaged games the screen-off fix too.
 - Changed: section 170 (Packager; `upstream.json`, docs): Windows app packages start with `disable-renderer-backgrounding`. To reverse: `git revert` the merge (fork commit stays).
