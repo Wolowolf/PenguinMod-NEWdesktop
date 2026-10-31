@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 180 — Less garbage per clone (2026-10-30)
+- Asked: keep looking into project 25's slow frames and the screen-off slowdown, and fix them.
+- Found: spikes come from GC marking and the PC's shared memory traffic (`docs/BENCH-BASELINE.md`). Screen-off cause: not found yet.
+- Changed: section 169 (VM, Render; `upstream.json`, docs): 10,000 clones make 3.3 instead of 10.7 MB of garbage per frame. To reverse: `git revert` the merge (fork commits stay).
+- Extension check: blocks get the same results (events still fire when listened to; no shipped extension wraps `emit`, `setXY` or `updateDrawablePosition`); the equality test agrees.
+- Verified: `frame-probe` allocation before/after; `game-bench` 25, 26, 28, 32 (marked UNRELIABLE, 32% CPU before): 25 work 12.3 → 9.9 ms, p99 19.4 → 17.8; `block-eq.mjs auto s179`: page test only Geolocation (as before) · Not verified: a packaged game; project 25 on a quiet PC.
+- Result after build: assumed working
+
 ### Session 179 — Measured the limits (2026-10-30)
 - Asked: do both steps of "1 · Measure the limits" of the Engine Roadmap page once the other conversation ended.
 - Changed: `docs/BENCH-BASELINE.md` (idle table, headroom table, slow-frame findings, Windows idle mode; older tables removed, in `bench\results` and git), `docs/PROCEDURES.md`. Local tools: project 32 (clone churn), `frame-probe.mjs`, `game-bench` warns about the idle mode. To reverse: `git revert` the merge.

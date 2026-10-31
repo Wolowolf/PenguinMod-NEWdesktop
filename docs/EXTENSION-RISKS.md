@@ -96,6 +96,7 @@ Named actions, gamepads, mouse lock, key released: vm `pmSensingExpansion`, `pmE
 ## Clones and sprites
 Parent/child sprites · automatic parallel clones.
 - After clone creation: tw `lab/video-sprites`, `Xeltalliv/clippingblending` (`runtime.pmCloneCreatedHooks`, end of `makeClone`; they no longer wrap it, section 120).
+- Threads and targets (section 171): `thread.target` is a setter that keeps `target._pmThreads`; `runtime.targets` is changed in place, so a loop over it that deletes clones must go backwards or over a copy (`sp Scenes` goes backwards).
 - Manage clones and sprites: tw `Lily/ClonesPlus` · vm `jgTailgating` · sp `Sprite-Parenting`, `Scenes` (saves and restores every target), `Lazy-Collisions` · pm `SharkPool/Tile-Grids`.
 - Write target fields without the setters: sp `Scenes` (x, y, size, direction, effects, costume, visibility), `Sharktilities` (volume) · vm `pmMotionExpansion` (volume).
 - Sprite and VM hooks (section 119): vm `pmEventsExpansion`'s costume, drag and save hats use `runtime.pmCostumeChangedHooks` (called by `setCostume` on a real change), `runtime.pmTargetDragHooks` (`vm.startDrag` / `stopDrag`) and `vm.pmBeforeSaveHooks` / `pmAfterSaveHooks` (`saveProjectSb3`, `saveProjectSb3Stream`); it wrapped those methods before.
