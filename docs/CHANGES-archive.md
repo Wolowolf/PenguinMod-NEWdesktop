@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 184 — Tidied the notes (2026-10-31)
+- Asked: clean up notes, docs and memory; move out what was used once or twice.
+- Changed: `CLAUDE.md`, `CHANGES.md` trimmed and wrong facts fixed (npm snapshot, Electron version, `desktop` list, speech releases); `EXTENSION-INTEGRATION.md` group-by-group log moved to the archive; long lines in docs split. To reverse: `git revert` the merge.
+- Extension check: only notes changed, so extension blocks are not affected.
+- Verified: split docs have the same text apart from line breaks; speech packs pinned by the app are all on GitHub · Not verified: nothing else needed, no code changed.
+- Result after build: no build (`.md` only)
+
 ### Session 183 — Cheaper clone deleting and creating (2026-10-31)
 - Asked: roadmap item #4, cheaper clone creation and recycled clones, and cheaper clone deleting.
 - Changed: section 171 (VM, Render; `upstream.json`, docs): each target lists its own threads, so deleting a clone and starting a clone's hat no longer walk all threads; clones leave long lists without copying them. To reverse: `git revert` the merge (fork commits stay).

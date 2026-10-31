@@ -23,7 +23,6 @@ const fs = require("fs");
 const path = require("path");
 const zlib = require("zlib");
 const crypto = require("crypto");
-const unzipper = require("unzipper");
 
 const ZIP_PREFIX = "builds/win-unpacked/";
 const APP_DIR = "resources/app"; // stale files are only removed below this folder
@@ -32,6 +31,8 @@ const NEW = ".new"; // the new version of a file, written before anything is swa
 
 const key = (rel) => rel.split(path.sep).join("/").toLowerCase(); // Windows paths are case-insensitive
 const noop = () => { };
+// Loaded on first use: loading it took 0.9 s of every app start, and only updates need it.
+const openZip = (zipPath) => require("unzipper").Open.file(zipPath);
 
 // Turns a path from the zip into a full path inside installDir, or null if it is not safe.
 function safeTarget(installDir, rel) {
@@ -186,7 +187,7 @@ function sameAsEntry(target, entry) {
 }
 
 async function planUpdate(zipPath, installDir, requiredEntries, onProgress) {
-  const directory = await unzipper.Open.file(zipPath);
+  const directory = await openZip(zipPath);
   const inZip = new Map(); // lowercase relative path -> { entry, rel, target }
   for (const entry of directory.files) {
     if (entry.type !== "File" || !entry.path.startsWith(ZIP_PREFIX)) continue;
@@ -353,7 +354,7 @@ function readLibraryPin(file) {
 
 // A pin an update needs: app/<pinFile> inside the update zip (null if it has none).
 async function pinFromZip(zipPath, pinFile) {
-  const directory = await unzipper.Open.file(zipPath);
+  const directory = await openZip(zipPath);
   const entry = directory.files.find((f) => f.path === `${ZIP_PREFIX}resources/app/app/${pinFile}`);
   if (!entry) return null;
   const pin = JSON.parse((await entry.buffer()).toString("utf8"));
@@ -390,7 +391,7 @@ async function installLibraryFromZip(zipPath, installDir, pin, onProgress = noop
   const staging = target + NEW;
   fs.rmSync(staging, { recursive: true, force: true });
   try {
-    const directory = await unzipper.Open.file(zipPath);
+    const directory = await openZip(zipPath);
     const files = directory.files.filter((f) => f.type === "File" && f.path.startsWith(LIBRARY_PREFIX));
     if (!files.length) throw new Error("The offline library download is empty.");
     let i = 0;
