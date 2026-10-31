@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 191 — More extensions keep costumes waiting for first use (2026-10-31)
+- Asked: look at the optimisations, include as many extensions as possible, without asking.
+- Changed: section 178 (VM; `upstream.json`, docs): Iris Text, Sprite Effects V2, Turbo Skins, Mouse Cursor, Looks Plus and Video Sprites no longer make every costume at once; costumes given to extension blocks by a reporter are made in idle time. To reverse: `git revert` the merge (fork commit stays).
+- Decided: Pen+, Sound Expanded and Tune Shark V3 stay as they were; the cheaper call for pure and guarded blocks was built, showed no gain and was taken out (`docs/EXTENSION-INTEGRATION.md` "Which optimisations").
+- Extension check: this changes when costumes are made, so it could matter; `bench\lazy-ext-check.mjs` gives the same answers as the old loading; `block-eq.mjs auto s191`: new vs old 0, new vs interpreted 0 (1 expected), page test 0 (2 expected), 1,658 + 636 blocks identical in every mode.
+- Verified: 151 MB project with the six loaded opens in 859 ms instead of 1872 ms · Not verified: how a video sprite looks during an SVG's first load (hidden desktop).
+- Result after build: assumed working
+
 ### Session 189 — Removed the no frame limit option (2026-10-31)
 - Asked: remove it; the project's frame rate already goes above the screen's limit.
 - Changed: section 176 (Packager; `upstream.json`, docs) reverts 175. To reverse: `git revert` the merge (fork commit stays).

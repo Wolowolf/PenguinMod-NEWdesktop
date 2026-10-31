@@ -14,6 +14,11 @@ Where the time goes in the engine after sections 36–162, measured to rank the 
 | 28 | tile-map | 400 × 18 level in one list, scrolling, 468 tile clones picking costumes from it, 200 walkers colliding with tiles |
 | 29 / 30 | custom-blocks | 3,000 hidden clones, 9 custom-block calls each per frame; 29 normal, 30 "run without screen refresh" |
 | 31 | physics | Box2D Physics (griffpatch), 300 circle bodies in a boxed stage |
+| 33 | pen | one sprite: clear, 2,000 lines and 100 stamps every frame |
+| 34 | sound | 50 hidden clones, each starting a 0.2 s sound every frame (test app muted, audio running) |
+| 35 | say-bubbles | 200 clones whose say text changes every frame |
+| 36 | broadcasts | one broadcast heard by 5,000 hidden clones and 20 nobody hears, every frame |
+| 37 | big-project | 106 MB: 200 sprites, each 10 SVG and 1 256 × 256 PNG costume (resolution 1), a 1 s sound, 40 scripts of 25 blocks; for load and memory |
 
 ## Words used in the tables (Session 170's own table: raw file above)
 
@@ -74,6 +79,25 @@ Reading: the engine is limited by clones. Project 32 is the steepest, and `dispo
 - 25's "261 MB heap, 14-16 ms" from the ranking is out of date. Now: heap still climbs to about 280-300 MB in the first 21-25 s (V8's limit after load), then a 6 ms full clean-up, then 4 ms ones every 2-2.5 s, frame gap about 16 ms (they fit in the frame). Not lowered by this work; no frame lost after the first 2 s, except one 33 ms gap at 26 s in one run with an earlier build, cause not looked at.
 - What is left in 25 (0.79 MB): `_moveSteps` 387 KB (numbers passed on to `setXY`, reasoned), generator results 196 KB and `stepThread` 138 KB (each compiled script's `yield`, reasoned). Removing them means changing how compiled scripts run or call `setXY`, which extensions wrap: not worth it at 1.4 ms/s.
 - The profiler charges inlined functions to their caller, so "`_drawThese` allocates" misled: a matrix-copy helper changed nothing (reverted); replacing parts in the running app found the getter.
+
+## Pen, sound, say bubbles, broadcasts, big project (Session 194; roadmap item #2)
+
+3 runs, 2 without the frame limit for max FPS, build VM `0ce264a`, Render `56bde15`, GUI `8bcc339`. Both runs are marked UNRELIABLE (CPU 23% before the runs, 36% once during 35), so trust the sizes more than the exact milliseconds. Raw: `bench\results\game_20261031_233624_s194-areas.json`, `game_20261031_234103_s194-areas-uncapped.json`; causes: `bench\area-probe.mjs`.
+
+| # | FPS | p99 | work | GC ms/s | GC max | load | first | scripts | draw | live MB | max FPS |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 33 pen | 62.5 | 17.8 | 1.9 | 1.8 | 0.9 | 106 | 242 | 1.3 | 0.1 | 44 | 472 |
+| 34 sound | 61.9 | 20.1 | 1.3 | 4.9 | 15.6 | 118 | 207 | 1.2 | 0.1 | 41 | 473 |
+| 35 say | 62.2 | 25.8 | 2.3 | 9.9 | 8.7 | 122 | 242 | 2.3 | about 9 | 108 | 81 |
+| 36 broadcasts | 62.4 | 24.8 | 9.0 | 55.1 | 12.4 | 116 | 263 | 8.5 | 0.1 | 63 | 94 |
+| 37 big project | 62.5 | 17.9 | 0.1 | 0.7 | 1.2 | 6,839 | 7,197 | 0.0 | about 1 | 451 | not run |
+
+Work leaves out bubble drawing in 35 at the limit: it seems to be drawn outside the measured step (reasoned, not checked), so it is in the draw column (the capped split reads 8.8 draw, -8.8 other); without the limit work is 11.3.
+
+- **Pen, sound: no problem.** Sound has a rare single clean-up (15.6 ms; 91 ms once without the limit), measured but not explained.
+- **Say bubbles: about 45-50 µs per changed bubble at drawing** (9 to 9.9 ms for 200). Only matters with very many bubbles changing every frame; the p99 of 25.8 ms shows a stutter not explained here.
+- **Broadcasts: the largest cost found.** One broadcast heard by 5,000 clones costs 6.6 ms (1.3 µs per clone: thread start and restart), with 55 ms/s of clean-up. One nobody hears costs 0.08 ms with 5,000 clones. So a broadcast index (name → scripts) saves at most the 1.7 ms of the 20 unheard here; cheaper thread starts are the better idea.
+- **Big project: load is the problem, 6.8 s for 106 MB.** In the profile 2.9 s of 7.3 s is `toDataURL`, the browser encoding pictures back into PNG (bitmaps at resolution 1); noise PNGs are the worst case for this. After loading: 451 MB live, 1 GB heap before a clean-up. Not looked into further: how a real project's pictures compare.
 
 ## Ranking of the remaining ideas (Session 176; next after Session 179: clone deletion, seen in project 32)
 
