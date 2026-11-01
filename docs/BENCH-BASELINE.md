@@ -99,6 +99,23 @@ Work leaves out bubble drawing in 35 at the limit: it seems to be drawn outside 
 - **Broadcasts: the largest cost found.** One broadcast heard by 5,000 clones costs 6.6 ms (1.3 µs per clone: thread start and restart), with 55 ms/s of clean-up. One nobody hears costs 0.08 ms with 5,000 clones. So a broadcast index (name → scripts) saves at most the 1.7 ms of the 20 unheard here; cheaper thread starts are the better idea.
 - **Big project: load is the problem, 6.8 s for 106 MB.** In the profile 2.9 s of 7.3 s is `toDataURL`, the browser encoding pictures back into PNG (bitmaps at resolution 1); noise PNGs are the worst case for this. After loading: 451 MB live, 1 GB heap before a clean-up. Not looked into further: how a real project's pictures compare.
 
+## Broadcast heard by many clones (Session 195, section 181)
+
+3 runs each, same options, before = VM `0ce264a`, after = `01a9cb4`. The capped "before" run is marked UNRELIABLE (CPU 37% idle load, 40% in one run). Raw: `bench\results\game_20261101_000112_s195-before.json`, `game_20261101_000803_s195-before-uncapped.json`, `game_20261101_002348_s195-after.json`, `game_20261101_003040_s195-after-uncapped.json`. Causes: `bench\broadcast-probe.mjs`.
+
+| project | work ms, before → after | GC ms/s | scripts ms | max FPS |
+|---|---|---|---|---|
+| 36 broadcasts | 8.9 → 3.8 | 54.3 → 36.8 | 9.6 → 3.7 | 101.8 → 213.2 |
+| 25 bouncing clones | 5.0 → 4.3 | 1.6 → 1.0 | 4.5 → 4.0 | 167.7 → 178.6 |
+| 26 bullet hell | 2.9 → 2.6 | 1.2 → 1.2 | 1.7 → 1.5 | 367.0 → 382.2 |
+| 32 clone churn | 2.5 → 1.9 | 9.0 → 7.4 | 1.8 → 1.7 | 318.7 → 384.5 |
+
+Without the frame limit GC goes up in 36 (92.9 → 114.1 ms/s) because it runs twice as many frames. Direct calls with 5,000 clones: unheard broadcast 0.11 → 0.013 ms; restart of all 5,000 7.5 → 3.0-3.5 ms. The gains in 25, 26 and 32 are small and may be partly the busy PC in the "before" runs.
+
+- **Where the time went (before):** matching each clone's hat one by one, also for the 20 unheard broadcasts (largest own time, 22% of the profile); on restart, searching the thread list from the start for every clone; joining and hashing a thread ID string up to three times per clone; thread start objects.
+- **Built:** matching once per shared set of blocks (this also gives the gain a broadcast index would have); restart tries the place after the last one first; each target remembers its last thread ID; `thread.variables` made on first read; first stack push without a 17-place array; no event array or `splice` array when not needed.
+- **Left:** `tryCompile` and `stepThread` (each about 6% of the profile, idle included). Reasoned, not measured: most of that is each thread's own compiled function; sharing it would need a change to the compiler's output. Not tried.
+
 ## Ranking of the remaining ideas (Session 176; next after Session 179: clone deletion, seen in project 32)
 
 The sizes of costs are measured; every gain below is a guess until built.

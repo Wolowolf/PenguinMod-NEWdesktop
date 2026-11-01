@@ -15,7 +15,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - **Speech models (Sessions 95, 97):** pinned by `app/speech-models.json`, each pack naming its release: `speech-models-1` (packs `onnxruntime`, `pocket-voices`, `pocket-<language>`), `speech-models-2` (pack `supertonic`, Supertonic 3, OpenRAIL-M), `speech-models-3` (pack `loudkit-turbo` = loudr-1-turbo, Apache-2.0), `speech-models-4` (packs `loudkit-engine` = Loudkit 0.1.1 + onnxruntime-node 1.30.0, `loudkit-natural` = loudr-1, `loudkit-cloning` = the 3 enrollment graphs); Loudkit only for "Make a speech sound", run by the app in its own process `app/loudkit-host.js`; each file its own asset; not in the installer or `win-unpacked.zip`; the app serves `resources/speech-models` at `https://studio.penguinmod.com/__speech__/` and downloads a pack (asking first) when Text To Speech first needs it; `speech-models-5` (packs `moonshine-english` = Moonshine Base English, MIT, and `silero-vad`, MIT) for Dictation (Session 111), `speech-models-6` (pack `whisper-small` = Whisper small, MIT, Dictation's other languages, Session 113), `speech-models-7` (pack `parakeet-v3` = Parakeet TDT 0.6B v3, CC BY 4.0, Dictation's high accuracy, Session 115), asked for the same way. Since Session 96 the packager copies the files a project uses (Dictation's too since Session 112) into `speech/` of zip and Windows app packages (the list comes from `/__speech__/packs.json`).
 - **Shipped extensions only (section 105):** the app loads only its built-in extensions, including all 107 gallery extensions (each a chunk of its own; nothing loads from an address since section 110). Projects name extensions by ID only. The integration plan is finished; mechanisms, direct calls and status per extension: `docs/EXTENSION-INTEGRATION.md`. Standard check after engine or compiler changes: `block-eq.mjs auto`.
 - **Engine contacts (section 153):** VM test `desktop_engine_contacts.js` keeps `engine-contacts.json` and fails on any new or removed contact. Shared `runtime.pm*` doors exist for random numbers and the clock, timers, hidden state and the page. What is left, in order: `docs/EXTENSION-INTEGRATION.md` "Hidden state" and "One door to the page".
-- **Editor changes:** 180 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
+- **Editor changes:** 181 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
 - **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80); benchmarks, extension scan, list and hat checks, the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), and putting the galleries into the test app: `docs/PROCEDURES.md`.
 - **Not verified yet:**
   - The updater's window and its downloads from a real release while installing a new offline library or packager Electron (its install steps are checked by the local `updater-check.cjs`, Session 116; an update itself worked end to end in Session 30).
@@ -27,6 +27,14 @@ Kept short on purpose (read at the start of every session). Not read by default,
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 195 — Cheaper script starts when a broadcast reaches many clones (2026-11-01)
+- Asked: make starting scripts cheaper when a broadcast is heard by many clones.
+- Changed: section 181 (VM; `upstream.json`, docs): hats matched once per shared set of blocks, restarts stop searching the thread list from the start, fewer temporary objects per thread. To reverse: `git revert` the merge (fork commit stays).
+- Numbers (36, before → after): work 8.9 → 3.8 ms, GC 54 → 37 ms/s, max FPS 102 → 213; restart by 5,000 clones 7.5 → about 3.2 ms; unheard broadcast 0.11 → 0.013 ms; 25, 26, 32 no slower. "Before" capped run marked UNRELIABLE (CPU 37%).
+- Extension check: the engine's thread start changed but not what it does; `block-eq.mjs auto s195` (everything): new vs guarded 0; new vs interpreted and new vs old differ only in Geolocation's "user allows geolocation?", whose finish frame varied between 1, 2 and 3 across two re-runs (a real permission answer's timing).
+- Verified: `bench\hat-order-check.mjs` on 5,000 clones: order, places in the list (also shuffled, reversed, with gaps), thread map, stacks: 0 failures · Not verified: a real game built on broadcasts.
+- Result after build: assumed working
 
 ### Session 194 — Benchmarks for pen, sound, say bubbles, broadcasts, big project (2026-11-01)
 - Asked: Engine Roadmap item #2.
@@ -41,14 +49,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Changed: section 180 (VM; `upstream.json`, docs): the fallback waits for a vector costume to load instead of keeping a blank mask (a fault from section 178). To reverse: `git revert` the merge (fork commit stays).
 - Extension check: only this block's fallback changed; `block-eq.mjs auto s193`: new vs old 0, new vs interpreted 0, page test 0, 76 + 120 blocks identical in every mode.
 - Verified: `bench\lazy-ext-check2.mjs` on costumes not made yet: Sprite Effects' packaged path (bitmap, vector) and Iris Text's mask (bitmap, vector, file removed on purpose) give the same text and pixels as the old loading · Not verified: a costume whose file really fails in a project.
-- Result after build: assumed working
-
-### Session 192 — Two compiled-vs-interpreted differences fixed (2026-10-31)
-- Asked: are the 3 known differences bugs? Fix those that are.
-- Changed: section 179 (VM; `upstream.json`, docs): Popup Phoenix "show popup and report" waits interpreted too; Hyper-Sense "is scrolled" no longer stores its memory on a reused stack frame. To reverse: `git revert` the merge (fork commit stays).
-- Decided: Temporary Variables' "run in scope" is not a bug (one frame later, nothing else can see it) and stays expected.
-- Extension check: only these two extensions' files changed; `block-eq.mjs auto s192`, with both off the expected list: 0 differences in every mode, block and page test.
-- Verified: direct call: the popup's answer comes only after it closes · Not verified: a person clicking a real popup button; two scripts in a row in a real project using "is scrolled" with a real mouse wheel.
 - Result after build: assumed working
 
 ## Template (keep entries this short)
