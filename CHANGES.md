@@ -15,7 +15,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - **Speech models (Sessions 95, 97):** pinned by `app/speech-models.json`, each pack naming its release: `speech-models-1` (packs `onnxruntime`, `pocket-voices`, `pocket-<language>`), `speech-models-2` (pack `supertonic`, Supertonic 3, OpenRAIL-M), `speech-models-3` (pack `loudkit-turbo` = loudr-1-turbo, Apache-2.0), `speech-models-4` (packs `loudkit-engine` = Loudkit 0.1.1 + onnxruntime-node 1.30.0, `loudkit-natural` = loudr-1, `loudkit-cloning` = the 3 enrollment graphs); Loudkit only for "Make a speech sound", run by the app in its own process `app/loudkit-host.js`; each file its own asset; not in the installer or `win-unpacked.zip`; the app serves `resources/speech-models` at `https://studio.penguinmod.com/__speech__/` and downloads a pack (asking first) when Text To Speech first needs it; `speech-models-5` (packs `moonshine-english` = Moonshine Base English, MIT, and `silero-vad`, MIT) for Dictation (Session 111), `speech-models-6` (pack `whisper-small` = Whisper small, MIT, Dictation's other languages, Session 113), `speech-models-7` (pack `parakeet-v3` = Parakeet TDT 0.6B v3, CC BY 4.0, Dictation's high accuracy, Session 115), asked for the same way. Since Session 96 the packager copies the files a project uses (Dictation's too since Session 112) into `speech/` of zip and Windows app packages (the list comes from `/__speech__/packs.json`).
 - **Shipped extensions only (section 105):** the app loads only its built-in extensions, including all 107 gallery extensions (each a chunk of its own; nothing loads from an address since section 110). Projects name extensions by ID only. The integration plan is finished; mechanisms, direct calls and status per extension: `docs/EXTENSION-INTEGRATION.md`. Standard check after engine or compiler changes: `block-eq.mjs auto`.
 - **Engine contacts (section 153):** VM test `desktop_engine_contacts.js` keeps `engine-contacts.json` and fails on any new or removed contact. Shared `runtime.pm*` doors exist for random numbers and the clock, timers, hidden state and the page. What is left, in order: `docs/EXTENSION-INTEGRATION.md` "Hidden state" and "One door to the page".
-- **Editor changes:** 185 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
+- **Editor changes:** 186 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
 - **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80); benchmarks, extension scan, list and hat checks, the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), and putting the galleries into the test app: `docs/PROCEDURES.md`.
 - **Not verified yet:**
   - The updater's window and its downloads from a real release while installing a new offline library or packager Electron (its install steps are checked by the local `updater-check.cjs`, Session 116; an update itself worked end to end in Session 30).
@@ -27,6 +27,16 @@ Kept short on purpose (read at the start of every session). Not read by default,
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 200 — Compiled x and y position round like the interpreter (2026-11-01)
+- Asked: fix the 21 answers that differ from the interpreter.
+- Changed: section 186 (VM; `upstream.json`, docs): the compiled reporters always use `limitPrecision`; dangerous optimizations (always on) skipped it. To reverse: `git revert` the merge (fork commit stays). Local tools: project 42.
+- Numbers (work ms, before → after): 42 (worst case, only reads) 4.18 → 5.77, about 0.8 ns per read; 4 no real change; 25 reported slower but has no such block, so its code is unchanged (noise).
+- Extension check: only these two compiled reporters' rounding changes, now equal to the interpreter; `block-eq.mjs auto s200` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test differs only in Geolocation's timing, the known permission flake.
+- Verified: `core-eq` 65,560 answers: new vs interpreted 0, also `--no-clamp`; `--expansion` 18,128 answers 0; VM unit tests · Not verified: a real game.
+- Correction: Session 198 said set / change volume and sound effect sometimes wait; `PM_ALWAYS_ON` forces misc limits off, so here they never wait and qualify (not converted yet).
+- Found, not fixed: the other always-on optimized paths (list contents, item of list, contains, sin, cos) may also differ from the interpreter (read in the code, not tested).
+- Result after build: assumed working
 
 ### Session 199 — The last 23 qualifying core blocks off the compatibility layer (2026-11-01)
 - Asked: do the 23 blocks Session 198 left as "not worth doing".
@@ -43,14 +53,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Extension check: these blocks still reach the same engine parts, so extension blocks should not change; `block-eq.mjs auto s198` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test differs only in Geolocation's timing, the known permission flake.
 - Verified: `core-eq` 66 blocks, 43,612 answers, new vs old 0, `newOnly` 0, also `--no-clamp` (85 shared turn-around readouts as before); answers varied (keys, fingers, mouse held at set values); VM unit tests · Not verified: "is sound playing?" while a sound really plays (always false in the test; it calls the same function); a real game.
 - Found, not fixed: "sprite with attribute" never checks the last target (its loop ends one early; reasoned from the code, same on every path).
-- Result after build: assumed working
-
-### Session 197 — Plain extension calls: setup once per run (2026-11-01)
-- Asked: make the setup before each plain extension call cheaper without changing what any block does; table of its readers; prove it.
-- Changed: section 183 (VM; `upstream.json`, docs): only the first plain call of a run does the whole setup; the others write the block ID and check the thread. To reverse: `git revert` the merge (fork commit stays). Local tools: `setupreaders-check`, `setup-state-scan`, `page-eval`. Readers' table: `docs/EXTENSION-INTEGRATION.md` "Setup of plain calls".
-- Numbers (work ms, before → after, marked UNRELIABLE, PC busy): 22 28.98 → 17.83, 24 17.87 → 6.30; 20, 23 no real change.
-- Extension check: what extension blocks and readers see stays the same, shown by the table and checks below; `block-eq.mjs auto s197` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test differs only in Geolocation's timing, the known permission flake.
-- Verified: `setupreaders-check` new = switch on, 272 records; each needed write and rule removed in turn and caught (loop and wait only together with the thread check); audit on all blocks: 2,063 + 944 kept setups, 0 failures; `branchinline`, `datainline`, `directcalls` new = switch on; `hooks-compiler-check` ALL OK; unit tests; `core-eq` new vs old 0 (66 vs interpreted in both, as `old` shows, none only in new) · Not verified: a real game (bench projects only).
 - Result after build: assumed working
 
 ## Template (keep entries this short)

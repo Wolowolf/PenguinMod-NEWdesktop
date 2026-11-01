@@ -151,6 +151,10 @@ Before = `--set pmNoCoreInline`, after = none, same build, 3 runs; **every compa
 - 41 (18 of these blocks in a warp loop), work ms: 376.88 ±275 → 208.62 ±1.7, repeated 432.81 ±313 → 241.12 ±23. bench's verdict is "no real change" because the old path swung so widely between runs (cause not looked into); after is below before in both rounds.
 - 34 (sound) 1.24 → 1.21, 35 (say bubbles) 2.34 → 2.32: no real change, as expected: their own work outweighs the layer. 4, 14, 24, 25: no real change.
 
+## x and y position rounding (Session 200, section 186)
+
+Before = VM `c09e384`, after = the same with section 186, 3 runs, not marked UNRELIABLE. Project 42 does nothing but read x and y (2,000,000 reads per frame): work 4.18 → 5.77 ms, about 0.8 ns per read. Project 4: no real change. Project 25 was called slower (4.51 → 7.39) but has no x or y position block, so its compiled code is unchanged: its work ms varies that much by itself (4.65 to 9.15 this day on the same code).
+
 ## Ranking of the remaining ideas (Session 176; next after Session 179: clone deletion, seen in project 32)
 
 The sizes of costs are measured; every gain below is a guess until built.
