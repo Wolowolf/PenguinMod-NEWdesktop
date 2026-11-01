@@ -4,6 +4,14 @@
 
 ## Change log (newest first)
 ### Session 200 — Compiled x and y position round like the interpreter (2026-11-01)
+### Session 201 — Dangerous optimizations' shortcuts tested and fixed (2026-11-01)
+- Asked: test the remaining shortcuts; keep the fast, equal ones, fix silent bugs.
+- Changed: section 187 (VM; `upstream.json`, docs): item of list (decimal index, random, any), list contents (single letters), sin and cos (input worked out up to 3 times) now answer like the interpreter; the option stays on, contains and the sin/cos table kept. To reverse: `git revert` the merge (fork commit stays). Local tools: project 43; `core-eq` covers these blocks.
+- Numbers (work ms, marked UNRELIABLE, PC busy before the first run): 43 32.47 → 32.57, 27 and 28 no real change.
+- Extension check: these blocks now equal the interpreter; `block-eq.mjs auto s201` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test no differences.
+- Verified: `core-eq` 69,348 answers new vs interpreted 0 (272 before the fix), also `--no-clamp`; `--expansion` 18,800 answers 0; VM unit tests · Not verified: a real game; a project that relied on the old answers now gets the new ones.
+- Result after build: assumed working
+
 - Asked: fix the 21 answers that differ from the interpreter.
 - Changed: section 186 (VM; `upstream.json`, docs): the compiled reporters always use `limitPrecision`; dangerous optimizations (always on) skipped it. To reverse: `git revert` the merge (fork commit stays). Local tools: project 42.
 - Numbers (work ms, before → after): 42 (worst case, only reads) 4.18 → 5.77, about 0.8 ns per read; 4 no real change; 25 reported slower but has no such block, so its code is unchanged (noise).
