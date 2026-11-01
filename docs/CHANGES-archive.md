@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 198 — Inline code for 18 more core blocks (2026-11-01)
+- Asked: sort the core blocks still on the compatibility layer, measure, convert those where it's real.
+- Changed: section 184 (VM; `upstream.json`, docs): 18 blocks used in busy loops get inline code. Full convert/leave list with reasons: `docs/SECTIONS.md` 184. To reverse: `git revert` the merge (fork commit stays). Local tools: projects 39, 40, `core-cost`; `core-eq` extended.
+- Numbers (work ms, switch on → off, same build, not marked UNRELIABLE): 39 40.89 → 25.86, 40 12.16 → 7.60; 4, 14, 24, 25, 34 no real change. Gain follows how many of these blocks a frame runs.
+- Extension check: these blocks still reach the same engine parts, so extension blocks should not change; `block-eq.mjs auto s198` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test differs only in Geolocation's timing, the known permission flake.
+- Verified: `core-eq` 66 blocks, 43,612 answers, new vs old 0, `newOnly` 0, also `--no-clamp` (85 shared turn-around readouts as before); answers varied (keys, fingers, mouse held at set values); VM unit tests · Not verified: "is sound playing?" while a sound really plays (always false in the test; it calls the same function); a real game.
+- Found, not fixed: "sprite with attribute" never checks the last target (its loop ends one early; reasoned from the code, same on every path).
+- Result after build: assumed working
 ### Session 197 — Plain extension calls: setup once per run (2026-11-01)
 - Asked: make the setup before each plain extension call cheaper without changing what any block does; table of its readers; prove it.
 - Changed: section 183 (VM; `upstream.json`, docs): only the first plain call of a run does the whole setup; the others write the block ID and check the thread. To reverse: `git revert` the merge (fork commit stays). Local tools: `setupreaders-check`, `setup-state-scan`, `page-eval`. Readers' table: `docs/EXTENSION-INTEGRATION.md` "Setup of plain calls".
