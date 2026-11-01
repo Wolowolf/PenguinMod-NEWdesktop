@@ -3,6 +3,15 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 200 — Compiled x and y position round like the interpreter (2026-11-01)
+- Asked: fix the 21 answers that differ from the interpreter.
+- Changed: section 186 (VM; `upstream.json`, docs): the compiled reporters always use `limitPrecision`; dangerous optimizations (always on) skipped it. To reverse: `git revert` the merge (fork commit stays). Local tools: project 42.
+- Numbers (work ms, before → after): 42 (worst case, only reads) 4.18 → 5.77, about 0.8 ns per read; 4 no real change; 25 reported slower but has no such block, so its code is unchanged (noise).
+- Extension check: only these two compiled reporters' rounding changes, now equal to the interpreter; `block-eq.mjs auto s200` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test differs only in Geolocation's timing, the known permission flake.
+- Verified: `core-eq` 65,560 answers: new vs interpreted 0, also `--no-clamp`; `--expansion` 18,128 answers 0; VM unit tests · Not verified: a real game.
+- Correction: Session 198 said set / change volume and sound effect sometimes wait; `PM_ALWAYS_ON` forces misc limits off, so here they never wait and qualify (not converted yet).
+- Result after build: assumed working
+
 ### Session 199 — The last 23 qualifying core blocks off the compatibility layer (2026-11-01)
 - Asked: do the 23 blocks Session 198 left as "not worth doing".
 - Changed: section 185 (VM; `upstream.json`, docs): they call their own function directly (drag mode inline). To reverse: `git revert` the merge (fork commit stays). Local tools: project 41; `core-eq` logs say and sound calls.
