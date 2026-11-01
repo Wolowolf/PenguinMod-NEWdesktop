@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 197 — Plain extension calls: setup once per run (2026-11-01)
+- Asked: make the setup before each plain extension call cheaper without changing what any block does; table of its readers; prove it.
+- Changed: section 183 (VM; `upstream.json`, docs): only the first plain call of a run does the whole setup; the others write the block ID and check the thread. To reverse: `git revert` the merge (fork commit stays). Local tools: `setupreaders-check`, `setup-state-scan`, `page-eval`. Readers' table: `docs/EXTENSION-INTEGRATION.md` "Setup of plain calls".
+- Numbers (work ms, before → after, marked UNRELIABLE, PC busy): 22 28.98 → 17.83, 24 17.87 → 6.30; 20, 23 no real change.
+- Extension check: what extension blocks and readers see stays the same, shown by the table and checks below; `block-eq.mjs auto s197` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test differs only in Geolocation's timing, the known permission flake.
+- Verified: `setupreaders-check` new = switch on, 272 records; each needed write and rule removed in turn and caught (loop and wait only together with the thread check); audit on all blocks: 2,063 + 944 kept setups, 0 failures; `branchinline`, `datainline`, `directcalls` new = switch on; `hooks-compiler-check` ALL OK; unit tests; `core-eq` new vs old 0 (66 vs interpreted in both, as `old` shows, none only in new) · Not verified: a real game (bench projects only).
+- Result after build: assumed working
 ### Session 196 — Big projects open faster (2026-11-01)
 - Asked: make big projects load faster, measuring on realistic pictures first.
 - Changed: section 182 (VM; `upstream.json`, docs): PNGs at resolution 1 wait for first use; their doubled file is made when something reads it. To reverse: `git revert` the merge (fork commit stays). Local tools: project 38 (flat pictures), `res1-check`, `res1-save-check`.
