@@ -155,6 +155,10 @@ Before = `--set pmNoCoreInline`, after = none, same build, 3 runs; **every compa
 
 Before = VM `c09e384`, after = the same with section 186, 3 runs, not marked UNRELIABLE. Project 42 does nothing but read x and y (2,000,000 reads per frame): work 4.18 → 5.77 ms, about 0.8 ns per read. Project 4: no real change. Project 25 was called slower (4.51 → 7.39) but has no x or y position block, so its compiled code is unchanged: its work ms varies that much by itself (4.65 to 9.15 this day on the same code).
 
+## Optimized shortcuts (Session 201, section 187)
+
+Before = VM `83f8cd0`, after = with section 187, 3 runs, marked UNRELIABLE (PC busy before the "before" runs). Work ms: 43 (these blocks in a loop) 32.47 → 32.57, 27 1.03 → 1.02, 28 0.30 → 0.33: no real change.
+
 ## Ranking of the remaining ideas (Session 176; next after Session 179: clone deletion, seen in project 32)
 
 The sizes of costs are measured; every gain below is a guess until built.
