@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 195 — Cheaper script starts when a broadcast reaches many clones (2026-11-01)
+- Asked: make starting scripts cheaper when a broadcast is heard by many clones.
+- Changed: section 181 (VM; `upstream.json`, docs): hats matched once per shared set of blocks, restarts stop searching the thread list from the start, fewer temporary objects per thread. To reverse: `git revert` the merge (fork commit stays).
+- Numbers (36, before → after): work 8.9 → 3.8 ms, GC 54 → 37 ms/s, max FPS 102 → 213; restart by 5,000 clones 7.5 → about 3.2 ms; unheard broadcast 0.11 → 0.013 ms; 25, 26, 32 no slower. "Before" capped run marked UNRELIABLE (CPU 37%).
+- Extension check: the engine's thread start changed but not what it does; `block-eq.mjs auto s195` (everything): new vs guarded 0; new vs interpreted and new vs old differ only in Geolocation's "user allows geolocation?", whose finish frame varied between 1, 2 and 3 across two re-runs (a real permission answer's timing).
+- Verified: `bench\hat-order-check.mjs` on 5,000 clones: order, places in the list (also shuffled, reversed, with gaps), thread map, stacks: 0 failures · Not verified: a real game built on broadcasts.
+- Result after build: assumed working
 ### Session 194 — Benchmarks for pen, sound, say bubbles, broadcasts, big project (2026-11-01)
 - Asked: Engine Roadmap item #2.
 - Changed: `docs/BENCH-BASELINE.md` (table, findings), `docs/PROCEDURES.md`. Local tools: projects 33-37, `bench\area-probe.mjs`, `game-bench` sends projects in pieces (a 106 MB one did not fit in one message). To reverse: `git revert` the merge.

@@ -131,6 +131,19 @@ Without the frame limit GC goes up in 36 (92.9 → 114.1 ms/s) because it runs t
 - **Built:** matching once per shared set of blocks (this also gives the gain a broadcast index would have); restart tries the place after the last one first; each target remembers its last thread ID; `thread.variables` made on first read; first stack push without a 17-place array; no event array or `splice` array when not needed.
 - **Left:** `tryCompile` and `stepThread` (each about 6% of the profile, idle included). Reasoned, not measured: most of that is each thread's own compiled function; sharing it would need a change to the compiler's output. Not tried.
 
+## Core blocks, second batch (Session 198, section 184)
+
+Before = `--set pmNoCoreInline`, after = none, same build (VM `6d9cfc4`'s code), 3 runs, not marked UNRELIABLE (CPU 21-22% during runs). Project 39: 22 of these blocks in a warp loop. Project 40: 8,000 clones chasing a player, 4-7 of these per frame next to ordinary blocks (the best realistic case, not a typical game). Raw: `bench\results\2026-11-01_141923_s198old.json`, `2026-11-01_142456_s198new.json`.
+
+| Project | work ms before | after | |
+| --- | --- | --- | --- |
+| 39 loop | 40.89 ±0.63 | 25.86 ±0.25 | -36.8% (24.5 → 38.7 FPS) |
+| 40 chase | 12.16 ±0.92 | 7.60 ±0.48 | -37.5% |
+| 4, 14, 24, 25, 34 (none of these blocks) | | | no real change |
+
+- A loop of one block hides the cost (`bench\core-cost.mjs`): 40-80 ns per call for the layer, since the JavaScript engine optimises that one call. Mixed scripts pay much more: before the change the profile showed `executeInCompatibilityLayer` 19% self in 39 and 7% in 40, plus its generators and garbage.
+- A game with few of these blocks per frame gains in proportion; the 37% is not a general number.
+
 ## Ranking of the remaining ideas (Session 176; next after Session 179: clone deletion, seen in project 32)
 
 The sizes of costs are measured; every gain below is a guess until built.
