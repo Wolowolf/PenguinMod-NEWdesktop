@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 192 — Two compiled-vs-interpreted differences fixed (2026-10-31)
+- Asked: are the 3 known differences bugs? Fix those that are.
+- Changed: section 179 (VM; `upstream.json`, docs): Popup Phoenix "show popup and report" waits interpreted too; Hyper-Sense "is scrolled" no longer stores its memory on a reused stack frame. To reverse: `git revert` the merge (fork commit stays).
+- Decided: Temporary Variables' "run in scope" is not a bug (one frame later, nothing else can see it) and stays expected.
+- Extension check: only these two extensions' files changed; `block-eq.mjs auto s192`, with both off the expected list: 0 differences in every mode, block and page test.
+- Verified: direct call: the popup's answer comes only after it closes · Not verified: a person clicking a real popup button; two scripts in a row in a real project using "is scrolled" with a real mouse wheel.
+- Result after build: assumed working
+
 ### Session 191 — More extensions keep costumes waiting for first use (2026-10-31)
 - Asked: look at the optimisations, include as many extensions as possible, without asking.
 - Changed: section 178 (VM; `upstream.json`, docs): Iris Text, Sprite Effects V2, Turbo Skins, Mouse Cursor, Looks Plus and Video Sprites no longer make every costume at once; costumes given to extension blocks by a reporter are made in idle time. To reverse: `git revert` the merge (fork commit stays).
