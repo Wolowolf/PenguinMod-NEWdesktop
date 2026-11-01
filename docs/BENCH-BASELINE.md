@@ -99,6 +99,21 @@ Work leaves out bubble drawing in 35 at the limit: it seems to be drawn outside 
 - **Broadcasts: the largest cost found.** One broadcast heard by 5,000 clones costs 6.6 ms (1.3 µs per clone: thread start and restart), with 55 ms/s of clean-up. One nobody hears costs 0.08 ms with 5,000 clones. So a broadcast index (name → scripts) saves at most the 1.7 ms of the 20 unheard here; cheaper thread starts are the better idea.
 - **Big project: load is the problem, 6.8 s for 106 MB.** In the profile 2.9 s of 7.3 s is `toDataURL`, the browser encoding pictures back into PNG (bitmaps at resolution 1); noise PNGs are the worst case for this. After loading: 451 MB live, 1 GB heap before a clean-up. Not looked into further: how a real project's pictures compare.
 
+## Big project load (Session 196, section 182)
+
+3 runs each, same options, before = VM `01a9cb4`, after = `0a43cd1`. Project 38 is 37 with flat game-like pictures instead of noise. Raw: `bench\results\game_20261101_011330_s196-before.json`, `game_20261101_012436_s196-after.json`.
+
+| project | load ms, before → after | first frame ms | live MB | heap MB (highest seen) |
+|---|---|---|---|---|
+| 37 noise pictures | 6,683 → 3,715 | 7,001 → 4,069 | 451 → 437 | 825 → 1,242 |
+| 38 flat pictures | 5,068 → 3,279 | 5,360 → 3,541 | 359 → 355 | 672 → 847 |
+
+- Profile before: `toDataURL` 2.8 s of 7.9 s (37), 2.2 s of 6.1 s (38): flat pictures gain too, so the change is worth it on realistic art.
+- **Memory hardly changed;** the highest heap went up (not explained, possibly later clean-up). Not a gain of this change.
+- **The cost moves, it doesn't vanish, for what is used:** first save of 38 8.3 s against 7.6 s (the 200 files are made then). If every sprite's current costume is such a picture, the sprite list asks for all of them: 200 took 2.8 s right after load, about what the load used to spend. Opening the costume tab does the same for that sprite.
+- **Only pictures at resolution 1 gain.** A project saved by this app holds resolution 2 files, which already waited for first use (section 164). JPGs and other formats at resolution 1 still load the old way.
+- What's left in the load: blocks and workspace work, each piece small; nothing cheap and safe stood out, so nothing else was changed.
+
 ## Broadcast heard by many clones (Session 195, section 181)
 
 3 runs each, same options, before = VM `0ce264a`, after = `01a9cb4`. The capped "before" run is marked UNRELIABLE (CPU 37% idle load, 40% in one run). Raw: `bench\results\game_20261101_000112_s195-before.json`, `game_20261101_000803_s195-before-uncapped.json`, `game_20261101_002348_s195-after.json`, `game_20261101_003040_s195-after-uncapped.json`. Causes: `bench\broadcast-probe.mjs`.

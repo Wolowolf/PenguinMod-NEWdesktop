@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 193 — Iris Text's mask fallback fixed (2026-10-31)
+- Asked: test Sprite Effects and Iris Text's fallback on costumes not made yet, then fix what was found.
+- Changed: section 180 (VM; `upstream.json`, docs): the fallback waits for a vector costume to load instead of keeping a blank mask (a fault from section 178). To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only this block's fallback changed; `block-eq.mjs auto s193`: new vs old 0, new vs interpreted 0, page test 0, 76 + 120 blocks identical in every mode.
+- Verified: `bench\lazy-ext-check2.mjs` on costumes not made yet: Sprite Effects' packaged path (bitmap, vector) and Iris Text's mask (bitmap, vector, file removed on purpose) give the same text and pixels as the old loading · Not verified: a costume whose file really fails in a project.
+- Result after build: assumed working
 ### Session 192 — Two compiled-vs-interpreted differences fixed (2026-10-31)
 - Asked: are the 3 known differences bugs? Fix those that are.
 - Changed: section 179 (VM; `upstream.json`, docs): Popup Phoenix "show popup and report" waits interpreted too; Hyper-Sense "is scrolled" no longer stores its memory on a reused stack frame. To reverse: `git revert` the merge (fork commit stays).
