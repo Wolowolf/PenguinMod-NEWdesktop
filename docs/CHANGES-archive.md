@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 199 — The last 23 qualifying core blocks off the compatibility layer (2026-11-01)
+- Asked: do the 23 blocks Session 198 left as "not worth doing".
+- Changed: section 185 (VM; `upstream.json`, docs): they call their own function directly (drag mode inline). To reverse: `git revert` the merge (fork commit stays). Local tools: project 41; `core-eq` logs say and sound calls.
+- Numbers (work ms, switch on → off, all marked UNRELIABLE, PC in use): 41 376.88 ±275 → 208.62, repeated 432.81 ±313 → 241.12 (bench says "no real change": the old path swung too much); 34 and 35 no real change; 4, 14, 24, 25 no real change. Small gain on real use, as Session 198 expected.
+- Extension check: these blocks run their same functions, so extension blocks don't change; `block-eq.mjs auto s199` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test differs only in Geolocation's timing, the known permission flake.
+- Verified: `core-eq` 89 blocks, 65,560 answers, new vs old 0, `newOnly` 0, also `--no-clamp`; the log of 1,182 say and sound-bank calls equal in all modes; VM unit tests · Not verified: real audio from these blocks (the sound bank was replaced by a recorder in the test); touching a clone (no clones in the test, the answer was always false); a real game.
+- Result after build: assumed working
 ### Session 198 — Inline code for 18 more core blocks (2026-11-01)
 - Asked: sort the core blocks still on the compatibility layer, measure, convert those where it's real.
 - Changed: section 184 (VM; `upstream.json`, docs): 18 blocks used in busy loops get inline code. Full convert/leave list with reasons: `docs/SECTIONS.md` 184. To reverse: `git revert` the merge (fork commit stays). Local tools: projects 39, 40, `core-cost`; `core-eq` extended.
