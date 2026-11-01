@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 196 — Big projects open faster (2026-11-01)
+- Asked: make big projects load faster, measuring on realistic pictures first.
+- Changed: section 182 (VM; `upstream.json`, docs): PNGs at resolution 1 wait for first use; their doubled file is made when something reads it. To reverse: `git revert` the merge (fork commit stays). Local tools: project 38 (flat pictures), `res1-check`, `res1-save-check`.
+- Numbers (before → after): load 37 6,683 → 3,715 ms, 38 5,068 → 3,279 ms; live memory 451 → 437, 359 → 355 MB (no real gain); highest heap up, 825 → 1,242, 672 → 847 MB. Costs move to first use: all 200 pictures shown in the sprite list 2.8 s; first save 7.6 → 8.3 s. Only pictures at resolution 1 gain, so a project saved by this app gains no more.
+- Extension check: readers of a costume's file get the same file, only later; `block-eq.mjs auto s196` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test differs only in Geolocation's timing, the known permission flake.
+- Verified: 48 cases (6 PNG kinds, with and without center, 4 orders, also freed and remade): file bytes, md5, fields, stage pixels equal to the old load; saving 38 gives the same 2,401 files; such a costume opens right in the costume editor (seen) · Not verified: painting on it and saving that; a real game's art; packaged games reasoned only.
+- Result after build: assumed working
 ### Session 195 — Cheaper script starts when a broadcast reaches many clones (2026-11-01)
 - Asked: make starting scripts cheaper when a broadcast is heard by many clones.
 - Changed: section 181 (VM; `upstream.json`, docs): hats matched once per shared set of blocks, restarts stop searching the thread list from the start, fewer temporary objects per thread. To reverse: `git revert` the merge (fork commit stays).

@@ -144,6 +144,13 @@ Before = `--set pmNoCoreInline`, after = none, same build (VM `6d9cfc4`'s code),
 - A loop of one block hides the cost (`bench\core-cost.mjs`): 40-80 ns per call for the layer, since the JavaScript engine optimises that one call. Mixed scripts pay much more: before the change the profile showed `executeInCompatibilityLayer` 19% self in 39 and 7% in 40, plus its generators and garbage.
 - A game with few of these blocks per frame gains in proportion; the 37% is not a general number.
 
+## Core blocks, last batch (Session 199, section 185)
+
+Before = `--set pmNoCoreInline`, after = none, same build, 3 runs; **every comparison was marked UNRELIABLE** (CPU 21-29% around the runs, PC in use). Raw: `bench\results\2026-11-01_150928_s199old.json`, `2026-11-01_151548_s199new.json`, `2026-11-01_153554_s199old2.json`, `2026-11-01_153654_s199new2.json`.
+
+- 41 (18 of these blocks in a warp loop), work ms: 376.88 ±275 → 208.62 ±1.7, repeated 432.81 ±313 → 241.12 ±23. bench's verdict is "no real change" because the old path swung so widely between runs (cause not looked into); after is below before in both rounds.
+- 34 (sound) 1.24 → 1.21, 35 (say bubbles) 2.34 → 2.32: no real change, as expected: their own work outweighs the layer. 4, 14, 24, 25: no real change.
+
 ## Ranking of the remaining ideas (Session 176; next after Session 179: clone deletion, seen in project 32)
 
 The sizes of costs are measured; every gain below is a guess until built.

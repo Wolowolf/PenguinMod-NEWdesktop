@@ -15,7 +15,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - **Speech models (Sessions 95, 97):** pinned by `app/speech-models.json`, each pack naming its release: `speech-models-1` (packs `onnxruntime`, `pocket-voices`, `pocket-<language>`), `speech-models-2` (pack `supertonic`, Supertonic 3, OpenRAIL-M), `speech-models-3` (pack `loudkit-turbo` = loudr-1-turbo, Apache-2.0), `speech-models-4` (packs `loudkit-engine` = Loudkit 0.1.1 + onnxruntime-node 1.30.0, `loudkit-natural` = loudr-1, `loudkit-cloning` = the 3 enrollment graphs); Loudkit only for "Make a speech sound", run by the app in its own process `app/loudkit-host.js`; each file its own asset; not in the installer or `win-unpacked.zip`; the app serves `resources/speech-models` at `https://studio.penguinmod.com/__speech__/` and downloads a pack (asking first) when Text To Speech first needs it; `speech-models-5` (packs `moonshine-english` = Moonshine Base English, MIT, and `silero-vad`, MIT) for Dictation (Session 111), `speech-models-6` (pack `whisper-small` = Whisper small, MIT, Dictation's other languages, Session 113), `speech-models-7` (pack `parakeet-v3` = Parakeet TDT 0.6B v3, CC BY 4.0, Dictation's high accuracy, Session 115), asked for the same way. Since Session 96 the packager copies the files a project uses (Dictation's too since Session 112) into `speech/` of zip and Windows app packages (the list comes from `/__speech__/packs.json`).
 - **Shipped extensions only (section 105):** the app loads only its built-in extensions, including all 107 gallery extensions (each a chunk of its own; nothing loads from an address since section 110). Projects name extensions by ID only. The integration plan is finished; mechanisms, direct calls and status per extension: `docs/EXTENSION-INTEGRATION.md`. Standard check after engine or compiler changes: `block-eq.mjs auto`.
 - **Engine contacts (section 153):** VM test `desktop_engine_contacts.js` keeps `engine-contacts.json` and fails on any new or removed contact. Shared `runtime.pm*` doors exist for random numbers and the clock, timers, hidden state and the page. What is left, in order: `docs/EXTENSION-INTEGRATION.md` "Hidden state" and "One door to the page".
-- **Editor changes:** 184 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
+- **Editor changes:** 185 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
 - **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80); benchmarks, extension scan, list and hat checks, the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), and putting the galleries into the test app: `docs/PROCEDURES.md`.
 - **Not verified yet:**
   - The updater's window and its downloads from a real release while installing a new offline library or packager Electron (its install steps are checked by the local `updater-check.cjs`, Session 116; an update itself worked end to end in Session 30).
@@ -27,6 +27,14 @@ Kept short on purpose (read at the start of every session). Not read by default,
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 199 — The last 23 qualifying core blocks off the compatibility layer (2026-11-01)
+- Asked: do the 23 blocks Session 198 left as "not worth doing".
+- Changed: section 185 (VM; `upstream.json`, docs): they call their own function directly (drag mode inline). To reverse: `git revert` the merge (fork commit stays). Local tools: project 41; `core-eq` logs say and sound calls.
+- Numbers (work ms, switch on → off, all marked UNRELIABLE, PC in use): 41 376.88 ±275 → 208.62, repeated 432.81 ±313 → 241.12 (bench says "no real change": the old path swung too much); 34 and 35 no real change; 4, 14, 24, 25 no real change. Small gain on real use, as Session 198 expected.
+- Extension check: these blocks run their same functions, so extension blocks don't change; `block-eq.mjs auto s199` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test differs only in Geolocation's timing, the known permission flake.
+- Verified: `core-eq` 89 blocks, 65,560 answers, new vs old 0, `newOnly` 0, also `--no-clamp`; the log of 1,182 say and sound-bank calls equal in all modes; VM unit tests · Not verified: real audio from these blocks (the sound bank was replaced by a recorder in the test); touching a clone (no clones in the test, the answer was always false); a real game.
+- Result after build: assumed working
 
 ### Session 198 — Inline code for 18 more core blocks (2026-11-01)
 - Asked: sort the core blocks still on the compatibility layer, measure, convert those where it's real.
@@ -43,14 +51,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Numbers (work ms, before → after, marked UNRELIABLE, PC busy): 22 28.98 → 17.83, 24 17.87 → 6.30; 20, 23 no real change.
 - Extension check: what extension blocks and readers see stays the same, shown by the table and checks below; `block-eq.mjs auto s197` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test differs only in Geolocation's timing, the known permission flake.
 - Verified: `setupreaders-check` new = switch on, 272 records; each needed write and rule removed in turn and caught (loop and wait only together with the thread check); audit on all blocks: 2,063 + 944 kept setups, 0 failures; `branchinline`, `datainline`, `directcalls` new = switch on; `hooks-compiler-check` ALL OK; unit tests; `core-eq` new vs old 0 (66 vs interpreted in both, as `old` shows, none only in new) · Not verified: a real game (bench projects only).
-- Result after build: assumed working
-
-### Session 196 — Big projects open faster (2026-11-01)
-- Asked: make big projects load faster, measuring on realistic pictures first.
-- Changed: section 182 (VM; `upstream.json`, docs): PNGs at resolution 1 wait for first use; their doubled file is made when something reads it. To reverse: `git revert` the merge (fork commit stays). Local tools: project 38 (flat pictures), `res1-check`, `res1-save-check`.
-- Numbers (before → after): load 37 6,683 → 3,715 ms, 38 5,068 → 3,279 ms; live memory 451 → 437, 359 → 355 MB (no real gain); highest heap up, 825 → 1,242, 672 → 847 MB. Costs move to first use: all 200 pictures shown in the sprite list 2.8 s; first save 7.6 → 8.3 s. Only pictures at resolution 1 gain, so a project saved by this app gains no more.
-- Extension check: readers of a costume's file get the same file, only later; `block-eq.mjs auto s196` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test differs only in Geolocation's timing, the known permission flake.
-- Verified: 48 cases (6 PNG kinds, with and without center, 4 orders, also freed and remade): file bytes, md5, fields, stage pixels equal to the old load; saving 38 gives the same 2,401 files; such a costume opens right in the costume editor (seen) · Not verified: painting on it and saving that; a real game's art; packaged games reasoned only.
 - Result after build: assumed working
 
 ## Template (keep entries this short)
