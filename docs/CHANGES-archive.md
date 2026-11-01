@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 194 — Benchmarks for pen, sound, say bubbles, broadcasts, big project (2026-11-01)
+- Asked: Engine Roadmap item #2.
+- Changed: `docs/BENCH-BASELINE.md` (table, findings), `docs/PROCEDURES.md`. Local tools: projects 33-37, `bench\area-probe.mjs`, `game-bench` sends projects in pieces (a 106 MB one did not fit in one message). To reverse: `git revert` the merge.
+- Decided: no engine change, this item only measures. Biggest findings: a big project's load (6.8 s for 106 MB, 40% re-encoding pictures) and thread starts of a broadcast heard by many clones (6.6 ms for 5,000); pen and sound are fine; a broadcast index would save little.
+- Extension check: no engine change, so no extension can be affected.
+- Verified: each project does its work (frames advance, sound plays with audio running, bubble text changes, clones hear the broadcast); 3 + 2 runs of each · Not verified: hearing sound (test app muted), real game assets instead of noise pictures; both runs are marked UNRELIABLE.
+- Result after build: nothing builds (`.md` only)
+
 ### Session 193 — Iris Text's mask fallback fixed (2026-10-31)
 - Asked: test Sprite Effects and Iris Text's fallback on costumes not made yet, then fix what was found.
 - Changed: section 180 (VM; `upstream.json`, docs): the fallback waits for a vector costume to load instead of keeping a blank mask (a fault from section 178). To reverse: `git revert` the merge (fork commit stays).
