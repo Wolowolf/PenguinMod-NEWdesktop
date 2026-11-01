@@ -19,6 +19,11 @@ Where the time goes in the engine after sections 36–162, measured to rank the 
 | 35 | say-bubbles | 200 clones whose say text changes every frame |
 | 36 | broadcasts | one broadcast heard by 5,000 hidden clones and 20 nobody hears, every frame |
 | 37 | big-project | 106 MB: 200 sprites, each 10 SVG and 1 256 × 256 PNG costume (resolution 1), a 1 s sound, 40 scripts of 25 blocks; for load and memory |
+| 46 | player-vs-bullets | one Player asking "touching Bullet?" once per frame, 2,000 Bullet clones moving (`gridBullets`) |
+| 47 | swarm | 2,000 bouncing clones, each asking about its own sprite after moving; most overlap a neighbour (`gridSwarm`) |
+| 48 | swarm-sparse | 1,000 small clones on a wide lattice, all moving together, never touching: the case a grid helps most (`gridSparse`; stays apart up to about ×4, reasoned) |
+| 49 | swarm-packed | 1,000 large clones stacked in a 16 × 16 area, nearly all real candidates: the case a grid cannot help (`gridPacked`) |
+| 50 | swarm-churn | about 2,000 clones asking about their own sprite, 20 made per frame and the oldest deleted, so the list keeps changing (added while building the grid) |
 
 ## Words used in the tables (Session 170's own table: raw file above)
 
@@ -167,6 +172,40 @@ Before = `--set pmNoCoreInline`, after = none, same build, 3 runs, not marked UN
 
 Before = `--set pmNoCheapCall`, after = none, same build, not marked UNRELIABLE. Project 45 (10 pure blocks of 8 extensions in a warp loop, 50,000 rounds): work 9.62 ±0.27 → 8.54 ±0.35 ms (-11.2%, 5 runs); an earlier 3 runs 9.22 → 8.67 (-6%, called no real change). 13 and 14: no real change. The switch also turns off section 160, so 22 and 24 say nothing about this change.
 
+## Collision grid (Session 205, section 190)
+
+Question: does a grid help when the candidate set is large? Tools: `bench\game-bench.mjs`, `bench\touch-probe.mjs` (new, CPU profile), `bench\grid-eq.mjs` (new, equality). 3 runs each, RTX 4060. Reliability flags: baseline capped marked UNRELIABLE, uncapped marked UNRELIABLE, scaled marked UNRELIABLE (idle load 25-35%); before/after: off not marked, on marked UNRELIABLE, scaled off marked UNRELIABLE, scaled on marked UNRELIABLE. Gains this large are well above that noise, small differences are not.
+
+Measured, current engine (selection = profiler samples in `_candidatesTouching` or `_cachedCandidatesTouching`, share of the samples in `Runtime._step`):
+
+| Project | FPS capped | Max FPS | Work ms | Selection share | Selection ms |
+|---|---|---|---|---|---|
+| 46 | 62.5 | 414 | 2.1 | 27% | 0.58 |
+| 46 ×8 | | 43 | 21.6 | 30% | 5.79 |
+| 47 | 9.1 | 8.9 | 116 | 77% | 74.0 |
+| 48 | 38.7 | 42 | 23 | 77% | 18.1 |
+| 48 ×2 | | 11 | 90 | 77% | 65.8 |
+| 49 | 21.3 | 21.8 | 45 | 58% | 29.2 |
+
+Reasoned: the true share in 47-49 is higher, since `isTouchingDrawables` itself takes another 13-15% and its only loops there are the `filter` before the full check and the pixel test. The split between functions inside (for example `_touchingBounds` 42% in 48, called once per question) is not to be trusted: the optimiser merges functions. The touching cache does not absorb this: each clone moves before it asks, so the table of sections 39-42 is out of date at each question and the full check runs (`_cachedCandidatesTouching` under 1%, `_candidatesTouching` 58-76%). Project 26's "1.0 ms" could not show this: its list holds one sprite.
+
+Decision: build. Selection is far above 5% in every new project. In 46 (one asker) it is real but small in ms; there the grid stays off, since a single question per frame gains nothing.
+
+Before/after, same build, `--uncapped`, before = `--set pmNoTouchingGrid`:
+
+| Project | Work ms | Max FPS |
+|---|---|---|
+| 47 swarm | 100.7 → 5.2 | 9.9 → 189 |
+| 48 far apart | 22.5 → 1.1 | 44 → 865 |
+| 48 ×2 | 89.4 → 2.1 | 11.2 → 461 |
+| 49 packed | 43.0 → 30.4 | 23.2 → 32.7 |
+| 50 swarm with changing list | 119.8 → 5.8 | 8.3 → 171 |
+| 46, 46 ×8 (grid not used) | 1.7 → 1.9, 20.4 → 21.2 | 533 → 501, 48 → 46: no real change expected (same path) |
+| 26, 32 | 2.1 → 2.2, 2.4 → 2.3 | no real change |
+| 25 (5 runs, repeated) | 5.6 → 5.1 | 176 → 191; the first 3-run try read 6.2 → 7.5 with 72% CPU load during it |
+
+The "off" column still has the cost added to every move (two counters, `_skin` accessor), so it cannot show that cost; 25 against the Session 195 figures is the only hint (not compared, other builds). A first version made 49 worse (50 → 90 ms, every question visited the clones several times and sorted them); it now compares the list directly when the cells near the asker hold more entries than the whole list. 49's gain comes from skipping the `filter` and the preparing, not from the grid. GC in 50 goes from 7 to 12 ms/s (longest pause 5 → 13 ms). Not improved: touching color, "touching point", lists under 64, lists asked fewer than 32 times per frame.
+
 ## Ranking of the remaining ideas (Session 176; next after Session 179: clone deletion, seen in project 32)
 
 The sizes of costs are measured; every gain below is a guess until built.
@@ -178,7 +217,7 @@ The sizes of costs are measured; every gain below is a guess until built.
 | done | Clone deleting and creating (section 171); pool of clone objects not built, see above | project 32 at ×4: 11 → 60 FPS | measured |
 | done | Fewer GC pauses (section 173) | 27: the lost frame at 26.5 s gone; 25: garbage 2.3 → 0.8 MB per frame, GC 3.1 → 1.4 ms/s | measured |
 | done | Faster start (section 174, Session 187) | editor cold start 4.2 → 3.05 s; game 1.83 → about 1.6 s | measured, see "Start-up" |
-| 6 | Collision grid | touching 1.0 ms with 2,000 bullets (now 19% of 26) | measured: small in ms |
+| done | Collision grid (section 190) | project 47: work 100.7 → 5.2 ms; earlier "1.0 ms" evidence could not show it (one candidate) | measured, see "Collision grid" |
 | 7 | Typed variables / number lists (speed) | raycaster scripts 1.1 ms | measured: small |
 | 8 | Custom block inlining | 27,000 calls 0.7 ms | measured: small |
 | 9 | Worker for rendering | at most draw's 2.1 ms in 25 | gain limit measured: small now; large change |
