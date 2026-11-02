@@ -4,6 +4,14 @@
 
 ## Change log (newest first)
 ### Session 200 — Compiled x and y position round like the interpreter (2026-11-01)
+### Session 202 — Volume and sound effect blocks off the compatibility layer (2026-11-01)
+- Asked: convert the 4 blocks Session 200's correction said qualify.
+- Changed: section 188 (VM; `upstream.json`, docs): set / change volume and sound effect call their own function directly; they wait only with misc limits, which `PM_ALWAYS_ON` keeps off (if that ever changes, they must go back: `docs/SECTIONS.md` 188). To reverse: `git revert` the merge (fork commit stays). Local tools: project 44; `core-eq` covers them.
+- Numbers (work ms, switch on → off, not marked UNRELIABLE): 44 8.07 → 4.63; 34 and 4 no real change; 35 2.35 → 2.19 (section 185's say blocks, also behind the switch).
+- Extension check: these blocks run their same functions, so extension blocks don't change; `block-eq.mjs auto s202` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test no differences.
+- Verified: `core-eq` 97 blocks, 77,620 answers, the log of 2,625 say and sound-bank calls equal in all modes, also `--no-clamp`; VM unit tests. Once in 5 runs (first run after the build, first mode) "point of touching sprite" gave no answer for 4 items on the just-duplicated test sprite; 0 in the 4 runs after it, also on a fresh app, cause not confirmed (likely its picture not ready); `core-eq` now waits after duplicating, not run since that edit · Not verified: real audio (the sound bank is a recorder in the test); a real game.
+- Result after build: assumed working
+
 ### Session 201 — Dangerous optimizations' shortcuts tested and fixed (2026-11-01)
 - Asked: test the remaining shortcuts; keep the fast, equal ones, fix silent bugs.
 - Changed: section 187 (VM; `upstream.json`, docs): item of list (decimal index, random, any), list contents (single letters), sin and cos (input worked out up to 3 times) now answer like the interpreter; the option stays on, contains and the sin/cos table kept. To reverse: `git revert` the merge (fork commit stays). Local tools: project 43; `core-eq` covers these blocks.

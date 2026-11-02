@@ -15,7 +15,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - **Speech models (Sessions 95, 97):** pinned by `app/speech-models.json`, each pack naming its release: `speech-models-1` (packs `onnxruntime`, `pocket-voices`, `pocket-<language>`), `speech-models-2` (pack `supertonic`, Supertonic 3, OpenRAIL-M), `speech-models-3` (pack `loudkit-turbo` = loudr-1-turbo, Apache-2.0), `speech-models-4` (packs `loudkit-engine` = Loudkit 0.1.1 + onnxruntime-node 1.30.0, `loudkit-natural` = loudr-1, `loudkit-cloning` = the 3 enrollment graphs); Loudkit only for "Make a speech sound", run by the app in its own process `app/loudkit-host.js`; each file its own asset; not in the installer or `win-unpacked.zip`; the app serves `resources/speech-models` at `https://studio.penguinmod.com/__speech__/` and downloads a pack (asking first) when Text To Speech first needs it; `speech-models-5` (packs `moonshine-english` = Moonshine Base English, MIT, and `silero-vad`, MIT) for Dictation (Session 111), `speech-models-6` (pack `whisper-small` = Whisper small, MIT, Dictation's other languages, Session 113), `speech-models-7` (pack `parakeet-v3` = Parakeet TDT 0.6B v3, CC BY 4.0, Dictation's high accuracy, Session 115), asked for the same way. Since Session 96 the packager copies the files a project uses (Dictation's too since Session 112) into `speech/` of zip and Windows app packages (the list comes from `/__speech__/packs.json`).
 - **Shipped extensions only (section 105):** the app loads only its built-in extensions, including all 107 gallery extensions (each a chunk of its own; nothing loads from an address since section 110). Projects name extensions by ID only. The integration plan is finished; mechanisms, direct calls and status per extension: `docs/EXTENSION-INTEGRATION.md`. Standard check after engine or compiler changes: `block-eq.mjs auto`.
 - **Engine contacts (section 153):** VM test `desktop_engine_contacts.js` keeps `engine-contacts.json` and fails on any new or removed contact. Shared `runtime.pm*` doors exist for random numbers and the clock, timers, hidden state and the page. What is left, in order: `docs/EXTENSION-INTEGRATION.md` "Hidden state" and "One door to the page".
-- **Editor changes:** 190 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
+- **Editor changes:** 191 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
 - **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80); benchmarks, extension scan, list and hat checks, the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), and putting the galleries into the test app: `docs/PROCEDURES.md`.
 - **Not verified yet:**
   - The updater's window and its downloads from a real release while installing a new offline library or packager Electron (its install steps are checked by the local `updater-check.cjs`, Session 116; an update itself worked end to end in Session 30).
@@ -27,6 +27,14 @@ Kept short on purpose (read at the start of every session). Not read by default,
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 206 — Guarded and branch calls: cheaper call (2026-11-02)
+- Asked: give the guarded (section 130) and branch (152) extension calls section 160's cheaper call.
+- Changed: section 191 (VM; `upstream.json`, docs): these blocks call their method at their own place in the compiled script (`jsgen.js`, `jsexecute.js`); switch `runtime.pmNoCheapGuarded`. To reverse: `git revert` the merge (fork commit stays). Local tools: project 51, `oldcall` modes in `branchinline-check.mjs` and `directcalls-check.mjs`.
+- Numbers (work ms, off → on, marked UNRELIABLE, PC at 21-24% idle load, two rounds agree): 51 (9 guarded blocks of 4 extensions) 12.62 → 9.86 and 12.63 → 9.87 (-21.9%); 23 (branch blocks) no real change.
+- Extension check: only how the method is reached changes, same arguments, answers, waits and re-calls; `block-eq.mjs auto s206` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test: only `SPgeolocation_isAvailiable` and `startWatching` (done count), which also differ between its new and guarded modes, where they use the same call, so reasoned as timing.
+- Verified: the above; `branchinline-check` new vs old call 0 differences; `directcalls-check` new vs old call, plain and `--guarded`: logs, variables, lists, WebGL calls equal, only the count of `pmDirect.call` uses differs, as intended; VM block list and engine contacts tests · Not verified: a real game.
+- Result after build: assumed working
 
 ### Session 205 — Touching grid for many candidates (2026-11-02)
 - Asked: roadmap "Collision grid": measure first, build only if worth it.
@@ -42,14 +50,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Numbers (work ms, off → on, not marked UNRELIABLE): 45 (10 pure blocks of 8 extensions) 9.62 → 8.54 (-11%, 5 runs; 9.22 → 8.67 with 3 runs, called no real change); 13 and 14 no real change. A loop of few different blocks gains nothing.
 - Extension check: only how the method is reached changes, same arguments and answers; `block-eq.mjs auto s203` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test no differences.
 - Verified: the above; VM block list test · Not verified: a real game.
-- Result after build: assumed working
-
-### Session 202 — Volume and sound effect blocks off the compatibility layer (2026-11-01)
-- Asked: convert the 4 blocks Session 200's correction said qualify.
-- Changed: section 188 (VM; `upstream.json`, docs): set / change volume and sound effect call their own function directly; they wait only with misc limits, which `PM_ALWAYS_ON` keeps off (if that ever changes, they must go back: `docs/SECTIONS.md` 188). To reverse: `git revert` the merge (fork commit stays). Local tools: project 44; `core-eq` covers them.
-- Numbers (work ms, switch on → off, not marked UNRELIABLE): 44 8.07 → 4.63; 34 and 4 no real change; 35 2.35 → 2.19 (section 185's say blocks, also behind the switch).
-- Extension check: these blocks run their same functions, so extension blocks don't change; `block-eq.mjs auto s202` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test no differences.
-- Verified: `core-eq` 97 blocks, 77,620 answers, the log of 2,625 say and sound-bank calls equal in all modes, also `--no-clamp`; VM unit tests. Once in 5 runs (first run after the build, first mode) "point of touching sprite" gave no answer for 4 items on the just-duplicated test sprite; 0 in the 4 runs after it, also on a fresh app, cause not confirmed (likely its picture not ready); `core-eq` now waits after duplicating, not run since that edit · Not verified: real audio (the sound bank is a recorder in the test); a real game.
 - Result after build: assumed working
 
 ## Template (keep entries this short)
