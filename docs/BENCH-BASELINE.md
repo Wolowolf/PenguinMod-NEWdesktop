@@ -172,6 +172,40 @@ Before = `--set pmNoCoreInline`, after = none, same build, 3 runs, not marked UN
 
 Before = `--set pmNoCheapCall`, after = none, same build, not marked UNRELIABLE. Project 45 (10 pure blocks of 8 extensions in a warp loop, 50,000 rounds): work 9.62 ±0.27 → 8.54 ±0.35 ms (-11.2%, 5 runs); an earlier 3 runs 9.22 → 8.67 (-6%, called no real change). 13 and 14: no real change. The switch also turns off section 160, so 22 and 24 say nothing about this change.
 
+## Answer types re-test (Session 209, on section 193; nothing shipped)
+
+Work ms per frame, same build, switches through `bench.mjs --set`. `compare` marked the final pairs UNRELIABLE (idle load 17-30%); before / before differed by up to 4% (52: 10%), so only steady changes in both rounds count. Parked answer types: VM `71e388f` brought onto `cf156ca` (159 blocks: 77 number, 82 Boolean); first table 3 runs, two rounds averaged, other groups vs that average.
+
+| Option | Blocks | 22 | 24 | 45 | 52 | 54 | 55 | 56 | 57 | 58 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Full parked list vs none | 159 | -3.4% | -11.5% | 0 | -5.4% (noisy) | -0.2% | +0.9% | -0.4% | | +0.2% |
+| Boolean only, vs none (5 runs, 2 rounds; 2 builds) | 82 | -4.3 to -8.2% | -4.4 to -9.4% | ~0 | -2.7 to +0.6% | | ~0 | | | |
+| Number only (Boolean off), vs full list | 77 | | +12% (loses Boolean gain) | | +4.8% | +0.5% | -2.4% | | | |
+| Trust all plain number / Boolean answers, unsafe, vs full list | 295 | -4% | +1% | | -1% | +1% | +1% | | | |
+| Text known (26 plain, 54 pure; own true/false test) | 80 | | | -0.9% | | | | -0.6% | | |
+| Never-NaN numbers | 18 | | | 0 | | 0 | +5.8% (one slow run) | | | -2.9% |
+| Guarded number / Boolean | 10 | | | | | | | | -2.5% (noise) | |
+| Keep variable types across plain calls | | -5% | -1% | | +2% | -1% | -2% | | | -2% |
+| Variable types into "if" | | -1% | | | | -1% | -2% | | | |
+
+Final version, VM `c1848f1` (no list): the true/false test of every plain call's answer written out, and variables of known type passed to block inputs without `normalize`. Before = `pmNoPlainAnswerTest,pmNoTypedVariableArguments`; 5 runs, 2 rounds:
+
+| Project | Round 1 | Round 2 |
+| --- | --- | --- |
+| 22 | 18.79 → 17.74 (-5.6%) | 18.60 → 17.61 (-5.3%) |
+| 24 | 6.46 → 5.90 (-8.6%) | 6.47 → 5.73 (-11.4%) |
+| 45 | 8.51 → 7.74 (-9.0%) | 8.41 → 7.47 (-11.2%) |
+| 52 | 58.53 → 56.18 (-4.0%) | 58.70 → 57.97 (-1.3%) |
+| 54 | 30.82 → 31.18 (+1.2%) | 31.21 → 29.30 (-6.1%) |
+| 55 | 104.80 → 102.09 (-2.6%) | 105.05 → 99.08 (-5.7%) |
+| 58 | 32.30 → 32.00 (-0.9%) | 32.09 → 30.81 (-4.0%) |
+
+Per block (`bench\answer-types-perblock.mjs`, each typed block alone in a loop, about 12 ms per measure, 157 of 159 ran): median gain 0 for both kinds; 6 clearly faster, 3 clearly slower, all within a few ns. Every answer had its declared type with default inputs. So no smaller list exists by block: alone, the JS engine already inlines `toBoolean`; the gain appears in long scripts, and goes to Booleans in conditions, not to numbers. Number conversions gave nothing measurable anywhere.
+
+Scan: of 233 plain `any` blocks the checker proves 0 as number or Boolean (117 can answer another type, 116 need reading by hand; not read). 80 of 280 text blocks provable, gain nil above. Reasoned, not measured: more typed blocks would not beat the written-out test, which already covers every plain call.
+
+Equality of `c1848f1`: `block-eq.mjs auto s209` (everything; interpreted from s204): new vs old 0, new vs interpreted 0 (1 expected); page test: only `SPgeolocation_isAvailiable` (done count 2 | 1, in all modes; seen before). Experiment with all switches: `bench\answer-types-experiment.patch`; projects 54-58 in `make-projects.mjs`.
+
 ## Two more plain blocks (Session 208, section 193)
 
 `bench.mjs --only 53- --runs 5`, before = the build without the change (VM `be819bb`), after = with it; `compare` marks it UNRELIABLE (load differed). Project 53 (Hyper-Sense "is scrolling" × 2 and Pen Papers "create paper" with an existing name, 100,000 rounds per frame in a custom block): work 15.00 ±1.11 → 11.59 ±0.32 ms (-22.7%, "real"; both at the 60 FPS limit). A stress case: a game that asks a few times per frame gains nothing it can feel; "create paper" is normally called once.

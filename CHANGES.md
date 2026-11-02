@@ -23,10 +23,18 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - **Ideas offered, not applied** (offer when relevant):
   - Make the stage's WebGL context after the rest of the first render: at most ~700 ms off the editor's start (`docs/BENCH-BASELINE.md` "Start-up").
   - Loading like a game engine: "load on first use" is done (sections 162, 164, 165). Not chosen so far: scenes, asset groups, sprites on demand, streaming.
-  - Parked (Session 157): answer types of 158 plainly called extension reporters and Booleans (VM commit `71e388f` on fork branch `parked/answer-types`, not in `desktop`); ~1% gain, so not shipped; after section 160 it would be ~2% on its bench project. Offer to test it again when a change makes extension calls much cheaper or uses known types more; how: `docs/EXTENSION-INTEGRATION.md` "Parked: answer types of plain calls".
+  - Parked (Session 209): true/false test of plain answers written out + typed variables into block inputs (VM `c1848f1`, fork branch `parked/plain-answer-test`, not in `desktop`, no block list): 22 -5%, 24 -9 to -11%, 45 -9 to -11%, others ~0 to -5% (marked UNRELIABLE); equality test clean; the owner decides. It replaces the older parked list (VM `71e388f`, 159 blocks): `docs/BENCH-BASELINE.md` "Answer types re-test".
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 209 — Answer types measured again, parked (2026-11-02)
+- Asked: re-test the parked answer types on today's code, with fewer and other blocks; report, don't merge.
+- Changed: docs only. Parked: VM `c1848f1` on fork branch `parked/plain-answer-test`; `desktop` and `upstream.json` unchanged. To reverse: `git revert` the merge (docs). Local tools: projects 54-58, `answer-types-perblock.mjs`, `answer-types-experiment.patch`.
+- Numbers: `docs/BENCH-BASELINE.md` "Answer types re-test" (marked UNRELIABLE).
+- Extension check: same answers and calls, only how the true/false test and input conversion are written; `block-eq.mjs auto s209` new vs old 0, new vs interpreted 0 (1 expected), page test only `SPgeolocation_isAvailiable` (done count).
+- Verified: the above · Not verified: a real game; the 116 `any` blocks not read by hand.
+- Result after build: no build (docs only)
 
 ### Session 208 — Guarded blocks read again: 2 more plain (2026-11-02)
 - Asked: read the guarded extension blocks not marked as waiting and make plain any that qualify.
@@ -42,14 +50,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Numbers (off → on, not marked UNRELIABLE): 52 (plain calls mixed with these blocks) frame 65.04 → 56.68 ms (-12.9%, 5 runs); 20, 22, 24 no real change.
 - Extension check: these blocks read and write nothing the setup writes, only the skipped setup changes; `block-eq.mjs auto s207` (everything) with the audit: new vs old 0, new vs interpreted 0 except the 1 expected, 0 audit failures; page test new vs old and interpreted 0, new vs guarded only `SPgeolocation_isAvailiable` (done count, seen before, reasoned as timing).
 - Verified: the above; `setupreaders-check` new and audit equal to off, each rule broken on purpose is caught; engine contacts test · Not verified: a real game.
-- Result after build: assumed working
-
-### Session 206 — Guarded and branch calls: cheaper call (2026-11-02)
-- Asked: give the guarded (section 130) and branch (152) extension calls section 160's cheaper call.
-- Changed: section 191 (VM; `upstream.json`, docs): these blocks call their method at their own place in the compiled script (`jsgen.js`, `jsexecute.js`); switch `runtime.pmNoCheapGuarded`. To reverse: `git revert` the merge (fork commit stays). Local tools: project 51, `oldcall` modes in `branchinline-check.mjs` and `directcalls-check.mjs`.
-- Numbers (work ms, off → on, marked UNRELIABLE, PC at 21-24% idle load, two rounds agree): 51 (9 guarded blocks of 4 extensions) 12.62 → 9.86 and 12.63 → 9.87 (-21.9%); 23 (branch blocks) no real change.
-- Extension check: only how the method is reached changes, same arguments, answers, waits and re-calls; `block-eq.mjs auto s206` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test: only `SPgeolocation_isAvailiable` and `startWatching` (done count), which also differ between its new and guarded modes, where they use the same call, so reasoned as timing.
-- Verified: the above; `branchinline-check` new vs old call 0 differences; `directcalls-check` new vs old call, plain and `--guarded`: logs, variables, lists, WebGL calls equal, only the count of `pmDirect.call` uses differs, as intended; VM block list and engine contacts tests · Not verified: a real game.
 - Result after build: assumed working
 
 ## Template (keep entries this short)

@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 206 — Guarded and branch calls: cheaper call (2026-11-02)
+- Asked: give the guarded (section 130) and branch (152) extension calls section 160's cheaper call.
+- Changed: section 191 (VM; `upstream.json`, docs): these blocks call their method at their own place in the compiled script (`jsgen.js`, `jsexecute.js`); switch `runtime.pmNoCheapGuarded`. To reverse: `git revert` the merge (fork commit stays). Local tools: project 51, `oldcall` modes in `branchinline-check.mjs` and `directcalls-check.mjs`.
+- Numbers (work ms, off → on, marked UNRELIABLE, PC at 21-24% idle load, two rounds agree): 51 (9 guarded blocks of 4 extensions) 12.62 → 9.86 and 12.63 → 9.87 (-21.9%); 23 (branch blocks) no real change.
+- Extension check: only how the method is reached changes, same arguments, answers, waits and re-calls; `block-eq.mjs auto s206` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test: only `SPgeolocation_isAvailiable` and `startWatching` (done count), which also differ between its new and guarded modes, where they use the same call, so reasoned as timing.
+- Verified: the above; `branchinline-check` new vs old call 0 differences; `directcalls-check` new vs old call, plain and `--guarded`: logs, variables, lists, WebGL calls equal, only the count of `pmDirect.call` uses differs, as intended; VM block list and engine contacts tests · Not verified: a real game.
+- Result after build: assumed working
+
 ### Session 205 — Touching grid for many candidates (2026-11-02)
 - Asked: roadmap "Collision grid": measure first, build only if worth it.
 - Changed: section 190 (Render; `upstream.json`, docs): large lists asked about many times per frame keep a grid, so a touching question compares only nearby clones; switch `renderer.pmNoTouchingGrid`. To reverse: `git revert` the merge (fork commit stays). Local tools: projects 46-50, `touch-probe.mjs`, `grid-eq.mjs`.
