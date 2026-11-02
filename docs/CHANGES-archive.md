@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 214 — Extra Timers: a block's new timer works at once (2026-11-02)
+- Asked: fix the NaN found in Session 212, without the full equality test.
+- Changed: section 197 (VM; `upstream.json`, docs): `get_or_create` answers the timer it made. On the call that remakes a deleted timer, elapsed blocks gave NaN and others stopped the script. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only Extra Timers on that one call; no calculation or optimisation changes for other blocks.
+- Verified: timer deleted while projects 69 and 70 run, new, off and interpreted: script alive, timer remade, no NaN seen; `name-search-check.mjs` 0 of 28 steps differ · Not verified: `block-eq.mjs` (not asked for); the NaN check samples every ms or so, so one brief NaN could be missed (reasoned: the code path no longer gives one).
+- Result after build: assumed working
+
 ### Session 213 — `SPgeolocation_isAvailiable` no longer differs in the page test (2026-11-02)
 - Asked: fix `SPgeolocation_isAvailiable` differing.
 - Changed: only the local test `benchpage-eq-page.js` (outside the repo): `navigator.permissions.query` gets a fixed stand-in that takes no time. No app or engine code. Cause: the test hides "Electron" in the user agent, so the block reached the real query, which crosses to Electron's main process and ended on frame 1, 2 or 3; the answer never differed. `startWatching` had the same cause. To reverse: remove that line.

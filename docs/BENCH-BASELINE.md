@@ -206,6 +206,22 @@ Scan: of 233 plain `any` blocks the checker proves 0 as number or Boolean (117 c
 
 Equality of `c1848f1`: `block-eq.mjs auto s209` (everything; interpreted from s204): new vs old 0, new vs interpreted 0 (1 expected); page test: only `SPgeolocation_isAvailiable` (done count 2 | 1, in all modes; seen before). Experiment with all switches: `bench\answer-types-experiment.patch`; projects 54-58 in `make-projects.mjs`.
 
+## Clones+ variable blocks (Session 217, section 198)
+Projects 92-103 (`cvi-`, one sprite, 10 clones unless noted). Same build, before = `--set pmNoClonesVarInline`, 3 runs, work ms per frame. CPU load 19-21% (above the 20% busy mark in places), so the exact percentages are approximate; "real" is the tool's verdict.
+
+| Project | Rounds | Direct call | Inline | Change | Verdict |
+| --- | --- | --- | --- | --- | --- |
+| 95 get main sprite | 200,000 | 8.04 | 4.74 | -41.0% | real |
+| 96 set main sprite | 200,000 | 11.66 | 8.21 | -29.7% | real |
+| 98 exists, first clone matches | 50,000 | 2.14 | 1.10 | -48.6% | real |
+| 99 exists, last clone matches | 50,000 | 9.61 | 7.29 | -24.2% | real |
+| 100 get of clone, first matches | 50,000 | 2.64 | 1.75 | -33.9% | real |
+| 101 get of clone, last matches | 50,000 | 11.22 ±1.63 | 7.91 | -29.5% | not called real: one slow run; 10.13-10.22 in the two other direct-call results, so about -22% |
+| 102 set of clone, 10 clones | 50,000 | 12.72 | 10.43 | -18.0% | real |
+| 103 set of clone, 1 clone | 50,000 | 3.91 | 2.82 | -27.9% | real |
+
+Loop-only baselines (direct-call build): 92 (200,000 rounds) 0.67 ms, 97 (50,000 rounds) 0.20 ms. Core variable read / write in the same loop: 93 0.75 ms, 94 0.68 ms. All five blocks passed the 5% bar. What remains in main get (about 20 ns per call) is the `hasOwnProperty` lookup; set also turns the number into text. All projects were at the 60 FPS limit, so only work ms shows the change.
+
 ## Blocks that search by name (Session 211, section 195)
 `bench.mjs --only 59-,60-,61-,63-,66- --runs 3`, same build, before = `--set pmNoNameSearchInline`; marked UNRELIABLE (CPU 21% before the "before" run), the large changes are far beyond the spread. Work ms per frame. Projects 59-64 (`make-projects.mjs`): 20,000 rounds per frame in a "run without screen refresh" custom block; 66: 40 clones, each moving, bouncing, asking "touching" and 6 searching blocks per frame (240 calls, generous), 65 the same without them.
 
