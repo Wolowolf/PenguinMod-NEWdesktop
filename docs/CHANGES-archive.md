@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 203 — Pure extension blocks: cheaper call (2026-11-01)
+- Asked: give the 275 pure blocks the cheaper call plain blocks have.
+- Changed: section 189 (VM; `upstream.json`, docs): a pure block calls its method at its own place in the compiled script (`jsgen.js`). To reverse: `git revert` the merge (fork commit stays). Local tools: project 45.
+- Numbers (work ms, off → on, not marked UNRELIABLE): 45 (10 pure blocks of 8 extensions) 9.62 → 8.54 (-11%, 5 runs; 9.22 → 8.67 with 3 runs, called no real change); 13 and 14 no real change. A loop of few different blocks gains nothing.
+- Extension check: only how the method is reached changes, same arguments and answers; `block-eq.mjs auto s203` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test no differences.
+- Verified: the above; VM block list test · Not verified: a real game.
+- Result after build: assumed working
+
 ### Session 200 — Compiled x and y position round like the interpreter (2026-11-01)
 ### Session 202 — Volume and sound effect blocks off the compatibility layer (2026-11-01)
 - Asked: convert the 4 blocks Session 200's correction said qualify.

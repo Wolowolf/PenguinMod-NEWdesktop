@@ -15,7 +15,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - **Speech models (Sessions 95, 97):** pinned by `app/speech-models.json`, each pack naming its release: `speech-models-1` (packs `onnxruntime`, `pocket-voices`, `pocket-<language>`), `speech-models-2` (pack `supertonic`, Supertonic 3, OpenRAIL-M), `speech-models-3` (pack `loudkit-turbo` = loudr-1-turbo, Apache-2.0), `speech-models-4` (packs `loudkit-engine` = Loudkit 0.1.1 + onnxruntime-node 1.30.0, `loudkit-natural` = loudr-1, `loudkit-cloning` = the 3 enrollment graphs); Loudkit only for "Make a speech sound", run by the app in its own process `app/loudkit-host.js`; each file its own asset; not in the installer or `win-unpacked.zip`; the app serves `resources/speech-models` at `https://studio.penguinmod.com/__speech__/` and downloads a pack (asking first) when Text To Speech first needs it; `speech-models-5` (packs `moonshine-english` = Moonshine Base English, MIT, and `silero-vad`, MIT) for Dictation (Session 111), `speech-models-6` (pack `whisper-small` = Whisper small, MIT, Dictation's other languages, Session 113), `speech-models-7` (pack `parakeet-v3` = Parakeet TDT 0.6B v3, CC BY 4.0, Dictation's high accuracy, Session 115), asked for the same way. Since Session 96 the packager copies the files a project uses (Dictation's too since Session 112) into `speech/` of zip and Windows app packages (the list comes from `/__speech__/packs.json`).
 - **Shipped extensions only (section 105):** the app loads only its built-in extensions, including all 107 gallery extensions (each a chunk of its own; nothing loads from an address since section 110). Projects name extensions by ID only. The integration plan is finished; mechanisms, direct calls and status per extension: `docs/EXTENSION-INTEGRATION.md`. Standard check after engine or compiler changes: `block-eq.mjs auto`.
 - **Engine contacts (section 153):** VM test `desktop_engine_contacts.js` keeps `engine-contacts.json` and fails on any new or removed contact. Shared `runtime.pm*` doors exist for random numbers and the clock, timers, hidden state and the page. What is left, in order: `docs/EXTENSION-INTEGRATION.md` "Hidden state" and "One door to the page".
-- **Editor changes:** 191 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
+- **Editor changes:** 192 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
 - **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80); benchmarks, extension scan, list and hat checks, the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), and putting the galleries into the test app: `docs/PROCEDURES.md`.
 - **Not verified yet:**
   - The updater's window and its downloads from a real release while installing a new offline library or packager Electron (its install steps are checked by the local `updater-check.cjs`, Session 116; an update itself worked end to end in Session 30).
@@ -27,6 +27,14 @@ Kept short on purpose (read at the start of every session). Not read by default,
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 207 — More kinds keep a run of plain calls (2026-11-02)
+- Asked: let more kinds of statement keep a run of plain extension calls, so fewer calls need the whole setup.
+- Changed: section 192 (VM; `upstream.json`, docs): motion, looks, pen and list blocks and more reporters keep the run (`jsgen.js`); switch `runtime.pmNoSetupKinds`. Out on purpose: costumes, backdrops, "count of item", "and" / "or" with a plain call in the second input, loops (`docs/EXTENSION-INTEGRATION.md`). To reverse: `git revert` the merge (fork commit stays). Local tools: project 52, `setupreaders-check.mjs` per kind, `SETUP_AUDIT=1` in `block-eq.mjs`.
+- Numbers (off → on, not marked UNRELIABLE): 52 (plain calls mixed with these blocks) frame 65.04 → 56.68 ms (-12.9%, 5 runs); 20, 22, 24 no real change.
+- Extension check: these blocks read and write nothing the setup writes, only the skipped setup changes; `block-eq.mjs auto s207` (everything) with the audit: new vs old 0, new vs interpreted 0 except the 1 expected, 0 audit failures; page test new vs old and interpreted 0, new vs guarded only `SPgeolocation_isAvailiable` (done count, seen before, reasoned as timing).
+- Verified: the above; `setupreaders-check` new and audit equal to off, each rule broken on purpose is caught; engine contacts test · Not verified: a real game.
+- Result after build: assumed working
 
 ### Session 206 — Guarded and branch calls: cheaper call (2026-11-02)
 - Asked: give the guarded (section 130) and branch (152) extension calls section 160's cheaper call.
@@ -42,14 +50,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Numbers (work ms, off → on, some runs marked UNRELIABLE, see `docs/BENCH-BASELINE.md`): choosing candidates was 58-77% of the frame in 47-49. 47 swarm 100.7 → 5.2; 48 far apart 22.5 → 1.1; 49 packed 43.0 → 30.4; 50 with a changing list 119.8 → 5.8; 25, 26, 32, 46 no real change.
 - Extension check: the grid uses the same change signals as the existing touching cache, and direct `_skin` writes are now seen, so no extension should break; `block-eq.mjs auto s204` (everything): differences only in `SPgeolocation_isAvailiable` and `startWatching` (done count; geolocation also differed in the s199 and s200 logs, reasoned as timing, not rerun alone); page test no differences reported.
 - Verified: `grid-eq.mjs` candidates, order and intersections equal to the full check: 370,956 questions in running projects, 119,969 under 14 kinds of change, 0 differences; with the change log broken on purpose it reports 99 · Not verified: a real game; touching color and point blocks are unchanged, not sped up.
-- Result after build: assumed working
-
-### Session 203 — Pure extension blocks: cheaper call (2026-11-01)
-- Asked: give the 275 pure blocks the cheaper call plain blocks have.
-- Changed: section 189 (VM; `upstream.json`, docs): a pure block calls its method at its own place in the compiled script (`jsgen.js`). To reverse: `git revert` the merge (fork commit stays). Local tools: project 45.
-- Numbers (work ms, off → on, not marked UNRELIABLE): 45 (10 pure blocks of 8 extensions) 9.62 → 8.54 (-11%, 5 runs; 9.22 → 8.67 with 3 runs, called no real change); 13 and 14 no real change. A loop of few different blocks gains nothing.
-- Extension check: only how the method is reached changes, same arguments and answers; `block-eq.mjs auto s203` (everything): new vs old 0, new vs interpreted 0 except the 1 expected; page test no differences.
-- Verified: the above; VM block list test · Not verified: a real game.
 - Result after build: assumed working
 
 ## Template (keep entries this short)
