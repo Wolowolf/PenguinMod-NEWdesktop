@@ -172,7 +172,7 @@ Before = `--set pmNoCoreInline`, after = none, same build, 3 runs, not marked UN
 
 Before = `--set pmNoCheapCall`, after = none, same build, not marked UNRELIABLE. Project 45 (10 pure blocks of 8 extensions in a warp loop, 50,000 rounds): work 9.62 ±0.27 → 8.54 ±0.35 ms (-11.2%, 5 runs); an earlier 3 runs 9.22 → 8.67 (-6%, called no real change). 13 and 14: no real change. The switch also turns off section 160, so 22 and 24 say nothing about this change.
 
-## Answer types re-test (Session 209, on section 193; nothing shipped)
+## Answer types re-test (Session 209, on section 193; the final version shipped as section 194, the list dropped)
 
 Work ms per frame, same build, switches through `bench.mjs --set`. `compare` marked the final pairs UNRELIABLE (idle load 17-30%); before / before differed by up to 4% (52: 10%), so only steady changes in both rounds count. Parked answer types: VM `71e388f` brought onto `cf156ca` (159 blocks: 77 number, 82 Boolean); first table 3 runs, two rounds averaged, other groups vs that average.
 
