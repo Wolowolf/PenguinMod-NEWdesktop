@@ -15,7 +15,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - **Speech models (Sessions 95, 97):** pinned by `app/speech-models.json`, each pack naming its release: `speech-models-1` (packs `onnxruntime`, `pocket-voices`, `pocket-<language>`), `speech-models-2` (pack `supertonic`, Supertonic 3, OpenRAIL-M), `speech-models-3` (pack `loudkit-turbo` = loudr-1-turbo, Apache-2.0), `speech-models-4` (packs `loudkit-engine` = Loudkit 0.1.1 + onnxruntime-node 1.30.0, `loudkit-natural` = loudr-1, `loudkit-cloning` = the 3 enrollment graphs); Loudkit only for "Make a speech sound", run by the app in its own process `app/loudkit-host.js`; each file its own asset; not in the installer or `win-unpacked.zip`; the app serves `resources/speech-models` at `https://studio.penguinmod.com/__speech__/` and downloads a pack (asking first) when Text To Speech first needs it; `speech-models-5` (packs `moonshine-english` = Moonshine Base English, MIT, and `silero-vad`, MIT) for Dictation (Session 111), `speech-models-6` (pack `whisper-small` = Whisper small, MIT, Dictation's other languages, Session 113), `speech-models-7` (pack `parakeet-v3` = Parakeet TDT 0.6B v3, CC BY 4.0, Dictation's high accuracy, Session 115), asked for the same way. Since Session 96 the packager copies the files a project uses (Dictation's too since Session 112) into `speech/` of zip and Windows app packages (the list comes from `/__speech__/packs.json`).
 - **Shipped extensions only (section 105):** the app loads only its built-in extensions, including all 107 gallery extensions (each a chunk of its own; nothing loads from an address since section 110). Projects name extensions by ID only. The integration plan is finished; mechanisms, direct calls and status per extension: `docs/EXTENSION-INTEGRATION.md`. Standard check after engine or compiler changes: `block-eq.mjs auto`.
 - **Engine contacts (section 153):** VM test `desktop_engine_contacts.js` keeps `engine-contacts.json` and fails on any new or removed contact. Shared `runtime.pm*` doors exist for random numbers and the clock, timers, hidden state and the page. What is left, in order: `docs/EXTENSION-INTEGRATION.md` "Hidden state" and "One door to the page".
-- **Editor changes:** 196 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
+- **Editor changes:** 197 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
 - **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80); benchmarks, extension scan, list and hat checks, the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), and putting the galleries into the test app: `docs/PROCEDURES.md`.
 - **Not verified yet:**
   - The updater's window and its downloads from a real release while installing a new offline library or packager Electron (its install steps are checked by the local `updater-check.cjs`, Session 116; an update itself worked end to end in Session 30).
@@ -26,6 +26,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 214 — Extra Timers: a block's new timer works at once (2026-11-02)
+- Asked: fix the NaN found in Session 212, without the full equality test.
+- Changed: section 197 (VM; `upstream.json`, docs): `get_or_create` answers the timer it made. On the call that remakes a deleted timer, elapsed blocks gave NaN and others stopped the script. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only Extra Timers on that one call; no calculation or optimisation changes for other blocks.
+- Verified: timer deleted while projects 69 and 70 run, new, off and interpreted: script alive, timer remade, no NaN seen; `name-search-check.mjs` 0 of 28 steps differ · Not verified: `block-eq.mjs` (not asked for); the NaN check samples every ms or so, so one brief NaN could be missed (reasoned: the code path no longer gives one).
+- Result after build: assumed working
 
 ### Session 213 — `SPgeolocation_isAvailiable` no longer differs in the page test (2026-11-02)
 - Asked: fix `SPgeolocation_isAvailiable` differing.
@@ -40,15 +47,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Numbers (work ms, off → on, marked UNRELIABLE): -8% to -99.7%, e.g. 85 55.43 → 0.14, 74 7.31 → 2.51, 90 29.12 → 26.75: `docs/BENCH-BASELINE.md` "Repeated searches and parses".
 - Extension check: can change only these blocks' answers, and they stayed equal: `block-eq.mjs auto s212` new vs old 0, new vs interpreted 0 (1 expected), page test only `SPgeolocation_isAvailiable` (done count); `name-search-check.mjs` new = off = interpreted, 0 of 28 steps differ; engine contacts test passes.
 - Verified: the above · Not verified: a real game or game-shaped project; not every 3D Math block or timer command timed alone (`pause`, `unpause`, `stop`, most 3D blocks: same mechanism, reasoned).
-- Result after build: assumed working
-
-### Session 211 — Blocks that search by a fixed name (2026-11-02)
-- Asked: measure whether inlining the remaining name-searching blocks is worth it; build only if the gain is real.
-- Changed: section 195 (VM; `upstream.json`, docs): 7 blocks of Variables Expanded, Events Expansion and Sensing+ remember the search; switch `runtime.pmNoNameSearchInline`. Sprite-only and sound searches left alone (no real gain). To reverse: `git revert` the merge (fork commit stays). Local tools: projects 59-66, `name-search-scan.cjs`, `name-search-memo.js`, `name-search-check.mjs`, `BENCH_PRE`.
-- Numbers (work ms, off → on, marked UNRELIABLE): 61 140.93 → 0.40, 63 53.07 → 0.18, 59 17.62 → 5.82, game-shaped 66 0.37 → 0.14 (0.23 ms of a 16.7 ms frame): `docs/BENCH-BASELINE.md` "Blocks that search by name".
-- Extension check: can change only these 7 blocks' answers, and they stayed equal: `block-eq.mjs auto s211` new vs old 0, new vs interpreted 0 (1 expected), page test only `SPgeolocation_isAvailiable` (done count); `name-search-check.mjs` (variables, messages, lists, sprites made, renamed and deleted while running, clones): new = off = interpreted, 0 of 18 steps differ; engine contacts test passes.
-- Session 211's report of a message-menu bug was wrong: it came from a test project whose menu had no message ID; with the ID, new = off = interpreted (`MENU=1 name-search-check.mjs`). No code change.
-- Verified: the above · Not verified: a real game; the scan's other 346 hits read only in part (the likely loop blocks were read, the rest judged by the scan).
 - Result after build: assumed working
 
 ## Template (keep entries this short)

@@ -185,6 +185,7 @@ Commits: GUI 1 `f74b561`, 2 `f122c22`, 3 `3c4c322`, 4 `2b25f8c`, 5 `06a077e`, 6 
 - 194 Plain answers' true/false test written out, typed variables passed to blocks unconverted (VM)
 - 195 Blocks that search by a fixed name remember the search: Variables Expanded, Events Expansion, Sensing+ lists (VM)
 - 196 More blocks remember a search, fixed JSON text is parsed once: Variables Expanded, Extra Timers, Keys+, 3D Math and others (VM)
+- 197 Extra Timers: a timer made by a block is used on that call (VM)
 
 ## Details
 
@@ -515,4 +516,5 @@ Commits: GUI 1 `f74b561`, 2 `f122c22`, 3 `3c4c322`, 4 `2b25f8c`, 5 `06a077e`, 6 
 - 194 (VM `55f73dc`): `jsgen.js`: `PlainAnswerInput` (a plain call's answer as a condition: `=== true`, `!== false`, else `toBoolean`), variables of known type go to block inputs without `normalize`. Switches (tests only): `runtime.pmNoPlainAnswerTest`, `runtime.pmNoTypedVariableArguments`. Numbers: `docs/BENCH-BASELINE.md` "Answer types re-test".
 - 195 (VM `c8e33b2`): `irgen.js` `descendNameSearchInline`, `jsgen.js` `search.*`, `jsexecute.js` `pms…`: 7 blocks with the name fixed in the block. Switch (tests only): `runtime.pmNoNameSearchInline`. Details: `docs/EXTENSION-INTEGRATION.md` "Inline code for extension blocks"; numbers: `docs/BENCH-BASELINE.md` "Blocks that search by name". No files added.
 - 196 (VM `f3c66b7`): `irgen.js` `descendSearchParseInline`, `fixedJsonInputs`, `jsgen.js` `search.*`, `jsexecute.js` `pms…`, and one line in each of 6 extensions. Switch (tests only): `runtime.pmNoSearchParseInline`. Details: `docs/EXTENSION-INTEGRATION.md` "Inline code for extension blocks"; numbers: `docs/BENCH-BASELINE.md` "Repeated searches and parses". No files added.
+- 197 (VM `41e2c72`): `timers.js` `get_or_create` answers the timer it made (`createVariable` answers nothing: the elapsed blocks gave NaN and other blocks an error that stopped the script, on that one call). `pmsTimerGet` no longer needs its case for this. No switch, no files added.
 - 192 (VM `be819bb`): `jsgen.js` `KEEPS_PLAIN_SETUP_MORE`, `hasPlainCall`, `keepsPlainSetup(node, more)`: more node kinds keep a run of plain calls; "and" / "or" only without a plain call in the second input; switch `runtime.pmNoSetupKinds`. Rules and what stays out: `docs/EXTENSION-INTEGRATION.md` "Setup of plain calls". No files added.
