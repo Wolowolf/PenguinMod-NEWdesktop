@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 208 — Guarded blocks read again: 2 more plain (2026-11-02)
+- Asked: read the guarded extension blocks not marked as waiting and make plain any that qualify.
+- Changed: section 193 (VM; `upstream.json`, docs): all 59 read; Hyper-Sense "is scrolling" and Pen Papers "create paper" are plain; 57 stay guarded, each reason in `docs/EXTENSION-INTEGRATION.md` (pen: inline code already, no gain; the rest start hats, stop threads, read stack frames or return promises). To reverse: `git revert` the merge (fork commit stays). Local tools: project 53.
+- Numbers (work ms, before build → after build, marked UNRELIABLE): 53 (a stress loop of these blocks) 15.00 → 11.59 (-22.7%, 5 runs each). A game asking a few times per frame gains nothing it can feel.
+- Extension check: only these 2 blocks' call changes, and they read and write nothing the check protects; `block-eq.mjs auto s208 s207` (the 2 extensions; s207 as base, since `auto`'s own base would rerun everything): recheck new vs old and interpreted 0, page test 0.
+- Verified: the above; own scroll test (`isScrolled` in 2 scripts over changing distances, 20 true answers) new = guarded = interpreted; `directcalls-check` new vs `--guarded`: all logs equal; `setupreaders-check` new vs off 0, audit fails 0; VM block list test; scan gives the same 61 blocks · Not verified: a real game, a real mouse wheel; "bench before" was run once.
+- Result after build: assumed working
+
 ### Session 207 — More kinds keep a run of plain calls (2026-11-02)
 - Asked: let more kinds of statement keep a run of plain extension calls, so fewer calls need the whole setup.
 - Changed: section 192 (VM; `upstream.json`, docs): motion, looks, pen and list blocks and more reporters keep the run (`jsgen.js`); switch `runtime.pmNoSetupKinds`. Out on purpose: costumes, backdrops, "count of item", "and" / "or" with a plain call in the second input, loops (`docs/EXTENSION-INTEGRATION.md`). To reverse: `git revert` the merge (fork commit stays). Local tools: project 52, `setupreaders-check.mjs` per kind, `SETUP_AUDIT=1` in `block-eq.mjs`.

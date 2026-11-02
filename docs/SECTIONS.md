@@ -183,6 +183,7 @@ Commits: GUI 1 `f74b561`, 2 `f122c22`, 3 `3c4c322`, 4 `2b25f8c`, 5 `06a077e`, 6 
 - 192 More kinds of statement keep a run of plain extension calls (VM)
 - 193 Hyper-Sense "is scrolling" and Pen Papers "create paper" are plain calls (VM)
 - 194 Plain answers' true/false test written out, typed variables passed to blocks unconverted (VM)
+- 195 Blocks that search by a fixed name remember the search: Variables Expanded, Events Expansion, Sensing+ lists (VM)
 
 ## Details
 
@@ -511,4 +512,5 @@ Commits: GUI 1 `f74b561`, 2 `f122c22`, 3 `3c4c322`, 4 `2b25f8c`, 5 `06a077e`, 6 
 - 191 (VM `7873fd5`): `jsgen.js` `generateDirectExtensionCall` and the direct branch call use the new `generateGuardedCallHere`: `(extensionInputs = <setup>, extensionAnswer = <object>["<method>"](extensionInputs, globalState.blockUtility, <block info>), guardedExtensionCallCheck(thread, …))`; `jsexecute.js` adds `guardedExtensionCallSetup`, `guardedExtensionCallCheck`, `guardedExtensionCallBranchSetup`. Same setup, same check, `finishExtensionCall` unchanged. `runtime.pmNoCheapGuarded = true` (these calls only) or `pmNoCheapCall` puts the old form back (tests only). Details: `docs/EXTENSION-INTEGRATION.md` "Cheaper plain calls". To reverse: `git revert` this commit. (Session 206)
 - 193 (VM `cf156ca`): `block-inventory.json` `direct` on `HyperSense2SP.isScrolled` and `SPpenPapers.createPaper`, `direct-blocks.json` made again. The 57 other guarded blocks without `waits` stay guarded, each with its reason: `docs/EXTENSION-INTEGRATION.md` "Guarded blocks not marked as waiting". No files added.
 - 194 (VM `55f73dc`): `jsgen.js`: `PlainAnswerInput` (a plain call's answer as a condition: `=== true`, `!== false`, else `toBoolean`), variables of known type go to block inputs without `normalize`. Switches (tests only): `runtime.pmNoPlainAnswerTest`, `runtime.pmNoTypedVariableArguments`. Numbers: `docs/BENCH-BASELINE.md` "Answer types re-test".
+- 195 (VM `c8e33b2`): `irgen.js` `descendNameSearchInline`, `jsgen.js` `search.*`, `jsexecute.js` `pms…`: 7 blocks with the name fixed in the block. Switch (tests only): `runtime.pmNoNameSearchInline`. Details: `docs/EXTENSION-INTEGRATION.md` "Inline code for extension blocks"; numbers: `docs/BENCH-BASELINE.md` "Blocks that search by name". No files added.
 - 192 (VM `be819bb`): `jsgen.js` `KEEPS_PLAIN_SETUP_MORE`, `hasPlainCall`, `keepsPlainSetup(node, more)`: more node kinds keep a run of plain calls; "and" / "or" only without a plain call in the second input; switch `runtime.pmNoSetupKinds`. Rules and what stays out: `docs/EXTENSION-INTEGRATION.md` "Setup of plain calls". No files added.

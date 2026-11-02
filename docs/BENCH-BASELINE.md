@@ -206,6 +206,22 @@ Scan: of 233 plain `any` blocks the checker proves 0 as number or Boolean (117 c
 
 Equality of `c1848f1`: `block-eq.mjs auto s209` (everything; interpreted from s204): new vs old 0, new vs interpreted 0 (1 expected); page test: only `SPgeolocation_isAvailiable` (done count 2 | 1, in all modes; seen before). Experiment with all switches: `bench\answer-types-experiment.patch`; projects 54-58 in `make-projects.mjs`.
 
+## Blocks that search by name (Session 211, section 195)
+`bench.mjs --only 59-,60-,61-,63-,66- --runs 3`, same build, before = `--set pmNoNameSearchInline`; marked UNRELIABLE (CPU 21% before the "before" run), the large changes are far beyond the spread. Work ms per frame. Projects 59-64 (`make-projects.mjs`): 20,000 rounds per frame in a "run without screen refresh" custom block; 66: 40 clones, each moving, bouncing, asking "touching" and 6 searching blocks per frame (240 calls, generous), 65 the same without them.
+
+| Project | Remove all searches (first build, `name-search-memo.js`) | Section 195: off → on |
+| --- | --- | --- |
+| 59 Sensing+ list blocks (4 per round) | 17.86 → 2.93 | 17.62 → 5.82 (-67%; 55.4 → 60 FPS, the limit) |
+| 60 sprite search (5 per round, not inlined) | 7.76 → 2.58 | 7.73 → 7.52 (no real change, as expected) |
+| 61 Variables Expanded (3 per round) | 141.45 → 5.25 | 140.93 → 0.40 (-99.7%; 7.0 → 60 FPS) |
+| 62 Sound Expanded (2 per round, not inlined) | 1.28 → 3.13 (remembering costs more) | not run |
+| 63 is message received (2 per round) | 53.00 → 0.90 | 53.07 → 0.18 (-99.7%; 18.6 → 60 FPS) |
+| 64 loop only | 0.12 | not run |
+| 65 game without them | 0.12 | not run |
+| 66 game with them | 0.37 → 0.14 | 0.37 → 0.14 (-63%) |
+
+A game gains 0.23 ms in a 16.7 ms frame at this generous call count (66 stays at the 60 FPS limit either way, about 1.4% of the frame): it would not notice. A script calling these blocks thousands of times per frame would. Per call: Variables Expanded about 2.3 µs, messages 1.3 µs, list blocks 0.2 µs, sprite search 50 ns.
+
 ## Two more plain blocks (Session 208, section 193)
 
 `bench.mjs --only 53- --runs 5`, before = the build without the change (VM `be819bb`), after = with it; `compare` marks it UNRELIABLE (load differed). Project 53 (Hyper-Sense "is scrolling" × 2 and Pen Papers "create paper" with an existing name, 100,000 rounds per frame in a custom block): work 15.00 ±1.11 → 11.59 ±0.32 ms (-22.7%, "real"; both at the 60 FPS limit). A stress case: a game that asks a few times per frame gains nothing it can feel; "create paper" is normally called once.
