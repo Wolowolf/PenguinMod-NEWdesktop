@@ -32,7 +32,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Changed: section 195 (VM; `upstream.json`, docs): 7 blocks of Variables Expanded, Events Expansion and Sensing+ remember the search; switch `runtime.pmNoNameSearchInline`. Sprite-only and sound searches left alone (no real gain). To reverse: `git revert` the merge (fork commit stays). Local tools: projects 59-66, `name-search-scan.cjs`, `name-search-memo.js`, `name-search-check.mjs`, `BENCH_PRE`.
 - Numbers (work ms, off → on, marked UNRELIABLE): 61 140.93 → 0.40, 63 53.07 → 0.18, 59 17.62 → 5.82, game-shaped 66 0.37 → 0.14 (0.23 ms of a 16.7 ms frame): `docs/BENCH-BASELINE.md` "Blocks that search by name".
 - Extension check: can change only these 7 blocks' answers, and they stayed equal: `block-eq.mjs auto s211` new vs old 0, new vs interpreted 0 (1 expected), page test only `SPgeolocation_isAvailiable` (done count); `name-search-check.mjs` (variables, messages, lists, sprites made, renamed and deleted while running, clones): new = off = interpreted, 0 of 18 steps differ; engine contacts test passes.
-- Found, not changed: compiled "is message received" with a menu inside a sprite always answers false (`docs/EXTENSION-INTEGRATION.md`).
+- Session 211's report of a message-menu bug was wrong: it came from a test project whose menu had no message ID; with the ID, new = off = interpreted (`MENU=1 name-search-check.mjs`). No code change.
 - Verified: the above · Not verified: a real game; the scan's other 346 hits read only in part (the likely loop blocks were read, the rest judged by the scan).
 - Result after build: assumed working
 
