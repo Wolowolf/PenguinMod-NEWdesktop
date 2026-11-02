@@ -172,6 +172,10 @@ Before = `--set pmNoCoreInline`, after = none, same build, 3 runs, not marked UN
 
 Before = `--set pmNoCheapCall`, after = none, same build, not marked UNRELIABLE. Project 45 (10 pure blocks of 8 extensions in a warp loop, 50,000 rounds): work 9.62 ±0.27 → 8.54 ±0.35 ms (-11.2%, 5 runs); an earlier 3 runs 9.22 → 8.67 (-6%, called no real change). 13 and 14: no real change. The switch also turns off section 160, so 22 and 24 say nothing about this change.
 
+## Guarded and branch calls (Session 206, section 191)
+
+Before = `--set pmNoCheapGuarded` (only these calls), after = none, same build; `compare` marks both rounds UNRELIABLE (idle CPU 21-24% before the runs), but the two rounds agree. New project 51 (9 guarded blocks of 4 extensions, pen, Motion Expansion, Tween, Sharktilities, in a warp loop, 50,000 rounds; at the 60 FPS limit, so work ms): 12.62 ±0.39 → 9.86 ±0.08 (-21.9%, 3 runs), then in reverse order 12.63 ±0.09 → 9.87 ±0.08 (-21.9%, 5 runs). Project 23 (branch blocks): 5.75 ±0.10 → 5.03 ±0.53 (-12.4%, 3 runs), 5.67 ±0.24 → 5.60 ±0.28 (-1.1%, 5 runs): no real change.
+
 ## Collision grid (Session 205, section 190)
 
 Question: does a grid help when the candidate set is large? Tools: `bench\game-bench.mjs`, `bench\touch-probe.mjs` (new, CPU profile), `bench\grid-eq.mjs` (new, equality). 3 runs each, RTX 4060. Reliability flags: baseline capped marked UNRELIABLE, uncapped marked UNRELIABLE, scaled marked UNRELIABLE (idle load 25-35%); before/after: off not marked, on marked UNRELIABLE, scaled off marked UNRELIABLE, scaled on marked UNRELIABLE. Gains this large are well above that noise, small differences are not.
