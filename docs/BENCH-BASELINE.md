@@ -172,6 +172,10 @@ Before = `--set pmNoCoreInline`, after = none, same build, 3 runs, not marked UN
 
 Before = `--set pmNoCheapCall`, after = none, same build, not marked UNRELIABLE. Project 45 (10 pure blocks of 8 extensions in a warp loop, 50,000 rounds): work 9.62 ±0.27 → 8.54 ±0.35 ms (-11.2%, 5 runs); an earlier 3 runs 9.22 → 8.67 (-6%, called no real change). 13 and 14: no real change. The switch also turns off section 160, so 22 and 24 say nothing about this change.
 
+## Two more plain blocks (Session 208, section 193)
+
+`bench.mjs --only 53- --runs 5`, before = the build without the change (VM `be819bb`), after = with it; `compare` marks it UNRELIABLE (load differed). Project 53 (Hyper-Sense "is scrolling" × 2 and Pen Papers "create paper" with an existing name, 100,000 rounds per frame in a custom block): work 15.00 ±1.11 → 11.59 ±0.32 ms (-22.7%, "real"; both at the 60 FPS limit). A stress case: a game that asks a few times per frame gains nothing it can feel; "create paper" is normally called once.
+
 ## More kinds keep a run of plain calls (Session 207, section 192)
 
 `bench.mjs` on one build, before = `--set pmNoSetupKinds`, not marked UNRELIABLE (CPU 16-19%). Project 52 (plain calls mixed with motion, looks, list and "and"; `52-plain-mixed-loop`), frame ms, 5 runs: 65.04 → 56.68 (-12.9%, real); first round, 3 runs: 66.54 ±6.90 → 56.57 (-15%, too noisy to count). 3 runs, no real change: 20 work 11.49 → 11.35, 22 frame 18.20 → 18.25, 24 work 6.24 → 6.22.
