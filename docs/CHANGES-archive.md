@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 207 — More kinds keep a run of plain calls (2026-11-02)
+- Asked: let more kinds of statement keep a run of plain extension calls, so fewer calls need the whole setup.
+- Changed: section 192 (VM; `upstream.json`, docs): motion, looks, pen and list blocks and more reporters keep the run (`jsgen.js`); switch `runtime.pmNoSetupKinds`. Out on purpose: costumes, backdrops, "count of item", "and" / "or" with a plain call in the second input, loops (`docs/EXTENSION-INTEGRATION.md`). To reverse: `git revert` the merge (fork commit stays). Local tools: project 52, `setupreaders-check.mjs` per kind, `SETUP_AUDIT=1` in `block-eq.mjs`.
+- Numbers (off → on, not marked UNRELIABLE): 52 (plain calls mixed with these blocks) frame 65.04 → 56.68 ms (-12.9%, 5 runs); 20, 22, 24 no real change.
+- Extension check: these blocks read and write nothing the setup writes, only the skipped setup changes; `block-eq.mjs auto s207` (everything) with the audit: new vs old 0, new vs interpreted 0 except the 1 expected, 0 audit failures; page test new vs old and interpreted 0, new vs guarded only `SPgeolocation_isAvailiable` (done count, seen before, reasoned as timing).
+- Verified: the above; `setupreaders-check` new and audit equal to off, each rule broken on purpose is caught; engine contacts test · Not verified: a real game.
+- Result after build: assumed working
+
 ### Session 206 — Guarded and branch calls: cheaper call (2026-11-02)
 - Asked: give the guarded (section 130) and branch (152) extension calls section 160's cheaper call.
 - Changed: section 191 (VM; `upstream.json`, docs): these blocks call their method at their own place in the compiled script (`jsgen.js`, `jsexecute.js`); switch `runtime.pmNoCheapGuarded`. To reverse: `git revert` the merge (fork commit stays). Local tools: project 51, `oldcall` modes in `branchinline-check.mjs` and `directcalls-check.mjs`.
