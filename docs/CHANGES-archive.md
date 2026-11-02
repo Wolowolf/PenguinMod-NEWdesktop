@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 210 — True/false test of plain answers written out (2026-11-02)
+- Asked: ship the parked version and delete the old list.
+- Changed: section 194 (VM; `upstream.json`, docs): `jsgen.js`, no block list; switches `runtime.pmNoPlainAnswerTest`, `pmNoTypedVariableArguments`. Fork branch `parked/answer-types` deleted (asked), its docs removed. To reverse: `git revert` the merge (fork commit stays).
+- Numbers (work ms, off → on, marked UNRELIABLE, 2 rounds): 22 -5%, 24 -9 to -11%, 45 -9 to -11%, others ~0 to -6%: `docs/BENCH-BASELINE.md` "Answer types re-test".
+- Extension check: same answers and calls, only how the test and input conversion are written; Session 209's `block-eq.mjs auto s209` on this code: new vs old 0, new vs interpreted 0 (1 expected), page test only `SPgeolocation_isAvailiable` (done count).
+- Verified: the above · Not verified: a real game.
+- Result after build: assumed working
+
 ### Session 209 — Answer types measured again, parked (2026-11-02)
 - Asked: re-test the parked answer types on today's code, with fewer and other blocks; report, don't merge.
 - Changed: docs only. Parked: VM `c1848f1` on fork branch `parked/plain-answer-test`; `desktop` and `upstream.json` unchanged. To reverse: `git revert` the merge (docs). Local tools: projects 54-58, `answer-types-perblock.mjs`, `answer-types-experiment.patch`.
