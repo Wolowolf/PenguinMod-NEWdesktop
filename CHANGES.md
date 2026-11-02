@@ -27,6 +27,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 215 — No menu bar; the update question appears at start (2026-11-02)
+- Asked: remove the band with the "System" button; show the update pop-up when the app starts or a project is double-clicked, once loaded.
+- Changed: `app/electron-main.js` — no menu bar (so "Check for Updates" and "Reload" are gone). 3 s after the editor page has loaded (a double-clicked project starts the app, so this covers both) a quiet update check runs: it shows only "An update is available" (Install update / Cancel); no update, up to date or no network show nothing. The offline-library offer follows it. To reverse: `git revert` the merge.
+- Extension check: main process only; no calculation or optimisation changes.
+- Verified: syntax check; test app builds and starts, editor loads, no new error in `app-err.log` · Not verified: the pop-up itself (the test app is not installed, so the check stays silent there), that the band is gone (the test window shows only the page), a real double-click.
+- Result after build: assumed working
+
 ### Session 214 — Extra Timers: a block's new timer works at once (2026-11-02)
 - Asked: fix the NaN found in Session 212, without the full equality test.
 - Changed: section 197 (VM; `upstream.json`, docs): `get_or_create` answers the timer it made. On the call that remakes a deleted timer, elapsed blocks gave NaN and others stopped the script. To reverse: `git revert` the merge (fork commit stays).
@@ -40,14 +47,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Extension check: no engine change, so no extension block can change; only Geolocation uses this query.
 - Verified: `PAGE=1 ONLY=^SPgeolocation_` 4 runs each: before 2 jobs differed in every pair compared; after 0, new vs interpreted 0 · Not verified: the full page test or the guarded and old modes (other extensions don't use the query).
 - Result after build: no build (`.md`-only)
-
-### Session 212 — More blocks remember a search or parse (2026-11-02)
-- Asked: find out whether more blocks repeating a search or parse are worth inlining; build only where the stress loop gains at least 5%.
-- Changed: section 196 (VM; `upstream.json`, docs): Variables Expanded (6 blocks), Extra Timers (9), Keys+ (3), 3D Math (fixed vectors), Utilities, Translation, Sharktilities, Shovel Utils, List Tools; switch `runtime.pmNoSearchParseInline`. To reverse: `git revert` the merge (fork commit stays). Local tools: projects 67-91, `search-parse-memo.js`, `name-search-check.mjs` extended.
-- Numbers (work ms, off → on, marked UNRELIABLE): -8% to -99.7%, e.g. 85 55.43 → 0.14, 74 7.31 → 2.51, 90 29.12 → 26.75: `docs/BENCH-BASELINE.md` "Repeated searches and parses".
-- Extension check: can change only these blocks' answers, and they stayed equal: `block-eq.mjs auto s212` new vs old 0, new vs interpreted 0 (1 expected), page test only `SPgeolocation_isAvailiable` (done count); `name-search-check.mjs` new = off = interpreted, 0 of 28 steps differ; engine contacts test passes.
-- Verified: the above · Not verified: a real game or game-shaped project; not every 3D Math block or timer command timed alone (`pause`, `unpause`, `stop`, most 3D blocks: same mechanism, reasoned).
-- Result after build: assumed working
 
 ## Template (keep entries this short)
 

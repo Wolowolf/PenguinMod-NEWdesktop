@@ -124,10 +124,12 @@ function sendUpdateProgress(phase, percent, text) {
   } catch { }
 }
 
-async function runUpdateCheck(win) {
+// quiet = the check made at start: only the "An update is available" question is shown, everything else stays silent.
+async function runUpdateCheck(win, quiet) {
   if (updateInProgress) return;
-  const say = (type, message, detail) =>
-    dialog.showMessageBoxSync(win, { type, buttons: ["OK"], message, detail, noLink: true });
+  const say = (type, message, detail) => {
+    if (!quiet) dialog.showMessageBoxSync(win, { type, buttons: ["OK"], message, detail, noLink: true });
+  };
 
   const installDir = getInstallDir();
   if (!installDir) {
@@ -153,6 +155,7 @@ async function runUpdateCheck(win) {
     const { release, asset } = found;
     const current = readBuildInfo();
     if (current && current.tag === release.tag_name) {
+      if (quiet) return;
       const offeredLibrary = await offerLibrary(win, installDir);
       const offeredElectron = await offerElectron(win, installDir);
       if (offeredLibrary || offeredElectron) return;
@@ -409,19 +412,9 @@ async function offerLibraryAtStart(win) {
   }
 }
 
-function setupAppMenu(win) {
-  const isMac = process.platform === 'darwin';
-  const template = [
-    ...(isMac ? [{ label: app.name, submenu: [{ role: 'quit' }] }] : []),
-    {
-      label: 'System',
-      submenu: [
-        { label: 'Check for Updates', click: () => runUpdateCheck(win) },
-        { label: 'Reload', click: () => win.webContents.reloadIgnoringCache() }
-      ]
-    }
-  ];
-  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+// No menu bar: the update question is asked at start instead (createWindow).
+function setupAppMenu() {
+  Menu.setApplicationMenu(null);
 }
 
 // shitty patch because for some reason using data uris in project_url param errors here
@@ -909,7 +902,11 @@ function createWindow(fileToOpen) {
   }
   mainWindow.loadURL(startUrl.length > 0 ? startUrl : "https://studio.penguinmod.com/editor.html");
   const win = mainWindow;
-  win.webContents.once("did-finish-load", () => setTimeout(() => offerLibraryAtStart(win), 2000));
+  // Once the editor (and a project given on the command line) has loaded: the update question first, then the offline library offer.
+  win.webContents.once("did-finish-load", () => setTimeout(async () => {
+    await runUpdateCheck(win, true);
+    if (!win.isDestroyed()) offerLibraryAtStart(win);
+  }, 3000));
 
   mainWindow.webContents.on("console-message", ({ level, message, lineNumber, sourceId, frame }) => {
     const prefix = `[renderer:${sourceId}:${lineNumber}]`;
