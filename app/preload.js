@@ -86,6 +86,29 @@ window.addEventListener("DOMContentLoaded", async () => {
     fill.style.width = msg.percent >= 0 ? msg.percent + "%" : "100%";
   });
 
+  // The window has no title bar: minimise, full screen and close sit at the far right of the editor's blue menu bar,
+  // and the bar itself drags the window.
+  const barStyle = document.createElement("style");
+  barStyle.textContent =
+    '[class*="menu-bar_menu-bar_"]{-webkit-app-region:drag}' +
+    '[class*="menu-bar_menu-bar_"] :is(button,a,input,select,textarea,label,[role=button],[class*="menu-bar_menu-bar-item"],[class*="button"],[class*="menu"]){-webkit-app-region:no-drag}' +
+    "#pm-window-controls{position:fixed;top:0;right:0;height:3rem;display:flex;z-index:2147483646;-webkit-app-region:no-drag}" +
+    "#pm-window-controls button{width:46px;height:100%;border:0;background:transparent;color:#fff;font:16px sans-serif;cursor:pointer}" +
+    "#pm-window-controls button:hover{background:rgba(255,255,255,0.2)}" +
+    "#pm-window-controls button.pm-close:hover{background:#e81123}";
+  document.head.appendChild(barStyle);
+  const controls = document.createElement("div");
+  controls.id = "pm-window-controls";
+  for (const [action, text, title, cls] of [["minimize", "\u2013", "Minimize", ""], ["fullscreen", "\u26F6", "Full screen", ""], ["close", "\u2715", "Exit", "pm-close"]]) {
+    const b = document.createElement("button");
+    b.textContent = text;
+    b.title = title;
+    if (cls) b.className = cls;
+    b.addEventListener("click", () => ipcRenderer.send("pm-window-control", action));
+    controls.appendChild(b);
+  }
+  document.body.appendChild(controls);
+
   enforceSelfTarget();
   new MutationObserver(enforceSelfTarget).observe(document.body, {
     childList: true,

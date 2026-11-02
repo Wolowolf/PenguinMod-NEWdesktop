@@ -502,6 +502,14 @@ ipcMain.handle("pm-login-cancel", () => {
 
 // Only these pages (where the library keys are made) can be opened in the user's own browser.
 const KEY_PAGES = ["pixabay.com", "pro.europeana.eu", "www.europeana.eu", "api.openverse.org", "docs.openverse.org"];
+ipcMain.on("pm-window-control", (event, action) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win || win.isDestroyed()) return;
+  if (action === "minimize") win.minimize();
+  else if (action === "fullscreen") win.setFullScreen(!win.isFullScreen());
+  else if (action === "close") win.close();
+});
+
 ipcMain.handle("pm-open-external", async (_event, url) => {
   try {
     const u = new URL(url);
@@ -878,6 +886,8 @@ function createWindow(fileToOpen) {
   mainWindow = new BrowserWindow({
     width: 1100,
     height: 800,
+    // No title bar: the editor's blue menu bar carries minimise / full screen / close (see preload.js).
+    frame: false,
     webPreferences: {
       nodeIntegration: getNodeJSSetting(),
       contextIsolation: !getNodeJSSetting(),

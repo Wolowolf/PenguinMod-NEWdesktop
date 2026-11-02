@@ -27,6 +27,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 216 — No title bar; window buttons on the blue bar (2026-11-02)
+- Asked: remove the window's top strip; minimise, full screen and exit go to the far right of the blue editor bar.
+- Changed: `app/electron-main.js` (`frame: false`; `pm-window-control` message: minimise, full screen on/off, close) and `app/preload.js` (three buttons fixed at the right end of the bar; the bar drags the window, its own buttons and menus don't). To reverse: `git revert` the merge.
+- Extension check: main process and page chrome only; no calculation or optimisation changes.
+- Verified: syntax check; test app builds and starts; bar is a drag area; the full-screen button toggles full screen and back · Not verified: dragging by hand, minimise and exit clicks, how the title bar's absence looks (the test screenshot shows only the page), resizing from the window edges.
+- Result after build: assumed working
+
 ### Session 215 — No menu bar; the update question appears at start (2026-11-02)
 - Asked: remove the band with the "System" button; show the update pop-up when the app starts or a project is double-clicked, once loaded.
 - Changed: `app/electron-main.js` — no menu bar (so "Check for Updates" and "Reload" are gone). 3 s after the editor page has loaded (a double-clicked project starts the app, so this covers both) a quiet update check runs: it shows only "An update is available" (Install update / Cancel); no update, up to date or no network show nothing. The offline-library offer follows it. To reverse: `git revert` the merge.
@@ -40,13 +47,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Extension check: only Extra Timers on that one call; no calculation or optimisation changes for other blocks.
 - Verified: timer deleted while projects 69 and 70 run, new, off and interpreted: script alive, timer remade, no NaN seen; `name-search-check.mjs` 0 of 28 steps differ · Not verified: `block-eq.mjs` (not asked for); the NaN check samples every ms or so, so one brief NaN could be missed (reasoned: the code path no longer gives one).
 - Result after build: assumed working
-
-### Session 213 — `SPgeolocation_isAvailiable` no longer differs in the page test (2026-11-02)
-- Asked: fix `SPgeolocation_isAvailiable` differing.
-- Changed: only the local test `benchpage-eq-page.js` (outside the repo): `navigator.permissions.query` gets a fixed stand-in that takes no time. No app or engine code. Cause: the test hides "Electron" in the user agent, so the block reached the real query, which crosses to Electron's main process and ended on frame 1, 2 or 3; the answer never differed. `startWatching` had the same cause. To reverse: remove that line.
-- Extension check: no engine change, so no extension block can change; only Geolocation uses this query.
-- Verified: `PAGE=1 ONLY=^SPgeolocation_` 4 runs each: before 2 jobs differed in every pair compared; after 0, new vs interpreted 0 · Not verified: the full page test or the guarded and old modes (other extensions don't use the query).
-- Result after build: no build (`.md`-only)
 
 ## Template (keep entries this short)
 
