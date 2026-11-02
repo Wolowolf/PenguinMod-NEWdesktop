@@ -15,7 +15,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - **Speech models (Sessions 95, 97):** pinned by `app/speech-models.json`, each pack naming its release: `speech-models-1` (packs `onnxruntime`, `pocket-voices`, `pocket-<language>`), `speech-models-2` (pack `supertonic`, Supertonic 3, OpenRAIL-M), `speech-models-3` (pack `loudkit-turbo` = loudr-1-turbo, Apache-2.0), `speech-models-4` (packs `loudkit-engine` = Loudkit 0.1.1 + onnxruntime-node 1.30.0, `loudkit-natural` = loudr-1, `loudkit-cloning` = the 3 enrollment graphs); Loudkit only for "Make a speech sound", run by the app in its own process `app/loudkit-host.js`; each file its own asset; not in the installer or `win-unpacked.zip`; the app serves `resources/speech-models` at `https://studio.penguinmod.com/__speech__/` and downloads a pack (asking first) when Text To Speech first needs it; `speech-models-5` (packs `moonshine-english` = Moonshine Base English, MIT, and `silero-vad`, MIT) for Dictation (Session 111), `speech-models-6` (pack `whisper-small` = Whisper small, MIT, Dictation's other languages, Session 113), `speech-models-7` (pack `parakeet-v3` = Parakeet TDT 0.6B v3, CC BY 4.0, Dictation's high accuracy, Session 115), asked for the same way. Since Session 96 the packager copies the files a project uses (Dictation's too since Session 112) into `speech/` of zip and Windows app packages (the list comes from `/__speech__/packs.json`).
 - **Shipped extensions only (section 105):** the app loads only its built-in extensions, including all 107 gallery extensions (each a chunk of its own; nothing loads from an address since section 110). Projects name extensions by ID only. The integration plan is finished; mechanisms, direct calls and status per extension: `docs/EXTENSION-INTEGRATION.md`. Standard check after engine or compiler changes: `block-eq.mjs auto`.
 - **Engine contacts (section 153):** VM test `desktop_engine_contacts.js` keeps `engine-contacts.json` and fails on any new or removed contact. Shared `runtime.pm*` doors exist for random numbers and the clock, timers, hidden state and the page. What is left, in order: `docs/EXTENSION-INTEGRATION.md` "Hidden state" and "One door to the page".
-- **Editor changes:** 194 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
+- **Editor changes:** 195 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
 - **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80); benchmarks, extension scan, list and hat checks, the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), and putting the galleries into the test app: `docs/PROCEDURES.md`.
 - **Not verified yet:**
   - The updater's window and its downloads from a real release while installing a new offline library or packager Electron (its install steps are checked by the local `updater-check.cjs`, Session 116; an update itself worked end to end in Session 30).
@@ -26,6 +26,15 @@ Kept short on purpose (read at the start of every session). Not read by default,
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 211 — Blocks that search by a fixed name (2026-11-02)
+- Asked: measure whether inlining the remaining name-searching blocks is worth it; build only if the gain is real.
+- Changed: section 195 (VM; `upstream.json`, docs): 7 blocks of Variables Expanded, Events Expansion and Sensing+ remember the search; switch `runtime.pmNoNameSearchInline`. Sprite-only and sound searches left alone (no real gain). To reverse: `git revert` the merge (fork commit stays). Local tools: projects 59-66, `name-search-scan.cjs`, `name-search-memo.js`, `name-search-check.mjs`, `BENCH_PRE`.
+- Numbers (work ms, off → on, marked UNRELIABLE): 61 140.93 → 0.40, 63 53.07 → 0.18, 59 17.62 → 5.82, game-shaped 66 0.37 → 0.14 (0.23 ms of a 16.7 ms frame): `docs/BENCH-BASELINE.md` "Blocks that search by name".
+- Extension check: can change only these 7 blocks' answers, and they stayed equal: `block-eq.mjs auto s211` new vs old 0, new vs interpreted 0 (1 expected), page test only `SPgeolocation_isAvailiable` (done count); `name-search-check.mjs` (variables, messages, lists, sprites made, renamed and deleted while running, clones): new = off = interpreted, 0 of 18 steps differ; engine contacts test passes.
+- Found, not changed: compiled "is message received" with a menu inside a sprite always answers false (`docs/EXTENSION-INTEGRATION.md`).
+- Verified: the above · Not verified: a real game; the scan's other 346 hits read only in part (the likely loop blocks were read, the rest judged by the scan).
+- Result after build: assumed working
 
 ### Session 210 — True/false test of plain answers written out (2026-11-02)
 - Asked: ship the parked version and delete the old list.
@@ -42,14 +51,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Extension check: same answers and calls, only how the true/false test and input conversion are written; `block-eq.mjs auto s209` new vs old 0, new vs interpreted 0 (1 expected), page test only `SPgeolocation_isAvailiable` (done count).
 - Verified: the above · Not verified: a real game; the 116 `any` blocks not read by hand.
 - Result after build: no build (docs only)
-
-### Session 208 — Guarded blocks read again: 2 more plain (2026-11-02)
-- Asked: read the guarded extension blocks not marked as waiting and make plain any that qualify.
-- Changed: section 193 (VM; `upstream.json`, docs): all 59 read; Hyper-Sense "is scrolling" and Pen Papers "create paper" are plain; 57 stay guarded, each reason in `docs/EXTENSION-INTEGRATION.md` (pen: inline code already, no gain; the rest start hats, stop threads, read stack frames or return promises). To reverse: `git revert` the merge (fork commit stays). Local tools: project 53.
-- Numbers (work ms, before build → after build, marked UNRELIABLE): 53 (a stress loop of these blocks) 15.00 → 11.59 (-22.7%, 5 runs each). A game asking a few times per frame gains nothing it can feel.
-- Extension check: only these 2 blocks' call changes, and they read and write nothing the check protects; `block-eq.mjs auto s208 s207` (the 2 extensions; s207 as base, since `auto`'s own base would rerun everything): recheck new vs old and interpreted 0, page test 0.
-- Verified: the above; own scroll test (`isScrolled` in 2 scripts over changing distances, 20 true answers) new = guarded = interpreted; `directcalls-check` new vs `--guarded`: all logs equal; `setupreaders-check` new vs off 0, audit fails 0; VM block list test; scan gives the same 61 blocks · Not verified: a real game, a real mouse wheel; "bench before" was run once.
-- Result after build: assumed working
 
 ## Template (keep entries this short)
 
