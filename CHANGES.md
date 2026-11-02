@@ -27,6 +27,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 213 — `SPgeolocation_isAvailiable` no longer differs in the page test (2026-11-02)
+- Asked: fix `SPgeolocation_isAvailiable` differing.
+- Changed: only the local test `benchpage-eq-page.js` (outside the repo): `navigator.permissions.query` gets a fixed stand-in that takes no time. No app or engine code. Cause: the test hides "Electron" in the user agent, so the block reached the real query, which crosses to Electron's main process and ended on frame 1, 2 or 3; the answer never differed. `startWatching` had the same cause. To reverse: remove that line.
+- Extension check: no engine change, so no extension block can change; only Geolocation uses this query.
+- Verified: `PAGE=1 ONLY=^SPgeolocation_` 4 runs each: before 2 jobs differed in every pair compared; after 0, new vs interpreted 0 · Not verified: the full page test or the guarded and old modes (other extensions don't use the query).
+- Result after build: no build (`.md`-only)
+
 ### Session 212 — More blocks remember a search or parse (2026-11-02)
 - Asked: find out whether more blocks repeating a search or parse are worth inlining; build only where the stress loop gains at least 5%.
 - Changed: section 196 (VM; `upstream.json`, docs): Variables Expanded (6 blocks), Extra Timers (9), Keys+ (3), 3D Math (fixed vectors), Utilities, Translation, Sharktilities, Shovel Utils, List Tools; switch `runtime.pmNoSearchParseInline`. To reverse: `git revert` the merge (fork commit stays). Local tools: projects 67-91, `search-parse-memo.js`, `name-search-check.mjs` extended.
@@ -42,14 +49,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Extension check: can change only these 7 blocks' answers, and they stayed equal: `block-eq.mjs auto s211` new vs old 0, new vs interpreted 0 (1 expected), page test only `SPgeolocation_isAvailiable` (done count); `name-search-check.mjs` (variables, messages, lists, sprites made, renamed and deleted while running, clones): new = off = interpreted, 0 of 18 steps differ; engine contacts test passes.
 - Session 211's report of a message-menu bug was wrong: it came from a test project whose menu had no message ID; with the ID, new = off = interpreted (`MENU=1 name-search-check.mjs`). No code change.
 - Verified: the above · Not verified: a real game; the scan's other 346 hits read only in part (the likely loop blocks were read, the rest judged by the scan).
-- Result after build: assumed working
-
-### Session 210 — True/false test of plain answers written out (2026-11-02)
-- Asked: ship the parked version and delete the old list.
-- Changed: section 194 (VM; `upstream.json`, docs): `jsgen.js`, no block list; switches `runtime.pmNoPlainAnswerTest`, `pmNoTypedVariableArguments`. Fork branch `parked/answer-types` deleted (asked), its docs removed. To reverse: `git revert` the merge (fork commit stays).
-- Numbers (work ms, off → on, marked UNRELIABLE, 2 rounds): 22 -5%, 24 -9 to -11%, 45 -9 to -11%, others ~0 to -6%: `docs/BENCH-BASELINE.md` "Answer types re-test".
-- Extension check: same answers and calls, only how the test and input conversion are written; Session 209's `block-eq.mjs auto s209` on this code: new vs old 0, new vs interpreted 0 (1 expected), page test only `SPgeolocation_isAvailiable` (done count).
-- Verified: the above · Not verified: a real game.
 - Result after build: assumed working
 
 ## Template (keep entries this short)
