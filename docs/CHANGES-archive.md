@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 209 — Answer types measured again, parked (2026-11-02)
+- Asked: re-test the parked answer types on today's code, with fewer and other blocks; report, don't merge.
+- Changed: docs only. Parked: VM `c1848f1` on fork branch `parked/plain-answer-test`; `desktop` and `upstream.json` unchanged. To reverse: `git revert` the merge (docs). Local tools: projects 54-58, `answer-types-perblock.mjs`, `answer-types-experiment.patch`.
+- Numbers: `docs/BENCH-BASELINE.md` "Answer types re-test" (marked UNRELIABLE).
+- Extension check: same answers and calls, only how the true/false test and input conversion are written; `block-eq.mjs auto s209` new vs old 0, new vs interpreted 0 (1 expected), page test only `SPgeolocation_isAvailiable` (done count).
+- Verified: the above · Not verified: a real game; the 116 `any` blocks not read by hand.
+- Result after build: no build (docs only)
+
 ### Session 208 — Guarded blocks read again: 2 more plain (2026-11-02)
 - Asked: read the guarded extension blocks not marked as waiting and make plain any that qualify.
 - Changed: section 193 (VM; `upstream.json`, docs): all 59 read; Hyper-Sense "is scrolling" and Pen Papers "create paper" are plain; 57 stay guarded, each reason in `docs/EXTENSION-INTEGRATION.md` (pen: inline code already, no gain; the rest start hats, stop threads, read stack frames or return promises). To reverse: `git revert` the merge (fork commit stays). Local tools: project 53.

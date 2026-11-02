@@ -222,6 +222,32 @@ Equality of `c1848f1`: `block-eq.mjs auto s209` (everything; interpreted from s2
 
 A game gains 0.23 ms in a 16.7 ms frame at this generous call count (66 stays at the 60 FPS limit either way, about 1.4% of the frame): it would not notice. A script calling these blocks thousands of times per frame would. Per call: Variables Expanded about 2.3 µs, messages 1.3 µs, list blocks 0.2 µs, sprite search 50 ns.
 
+## Repeated searches and parses (Session 212, section 196)
+`bench.mjs --only <projects> --runs 3`, same build, before = `--set pmNoSearchParseInline`. Work ms per frame; marked UNRELIABLE when the PC was busy before a run (all three rounds were or may have been), the changes are far beyond the spread. Projects 67-91 (`make-projects.mjs`): 20,000 rounds per frame in a "run without screen refresh" custom block. Project 80, the loop alone: 0.11.
+
+| Project | Off → on |
+| --- | --- |
+| 82 Variables Expanded set | 29.34 → 0.21 (-99%; 33.4 → 60 FPS, the limit) |
+| 83 set color | 29.25 → 0.15 (-99%) |
+| 84 swap | 31.57 → 0.17 (-99%) |
+| 85 is showing | 55.43 → 0.14 (-99.7%; 17.8 → 60 FPS) |
+| 86 slider min/max | 55.32 → 0.15 (-99.7%) |
+| 87 is button pressed | 61.57 → 0.16 (-99.7%; one slow "off" run) |
+| 69 Timers read (3 blocks) | 4.24 → 2.04 (-52%) |
+| 70 Timers commands (4 calls) | 5.42 → 4.10 (-24%) |
+| 74 Keys+ are keys pressed (2) | 7.31 → 2.51 (-66%) |
+| 75 Keys+ time of keys | 5.35 → 3.09 (-42%) |
+| 91 Keys+ keys hit | 5.89 → 3.35 (-43%) |
+| 76 3D Math add, dot, length | 7.44 → 2.45 (-67%) |
+| 88 3D Math normalize, rotate, set sprite position | 11.87 → 8.86 (-25%, on-spread ±0.78) |
+| 77 shuffle (sort) | 3.34 → 2.04 (-39%) |
+| 78 translation with data | 6.40 → 4.68 (-27%) |
+| 81 parseJSON, fixed text, path from a reporter | 17.47 → 7.34 (-58%; 55.8 → 60 FPS) |
+| 89 List Tools set list to array | 1.61 → 0.38 (-76%) |
+| 90 Shovel Utils set list | 29.12 → 26.75 (-8%) |
+
+Already at the empty loop's cost with fixed text, so not changed (constant folding): 71 parseJSON with a fixed path 0.12, 72 Color Master 0.13, 73 graph 0.12. Keeping the timers with a `Map` instead (first look, `search-parse-memo.js`) made them slower: 69 4.25 → 5.73, 70 5.31 → 10.40. No game-shaped project was measured for these blocks; section 195's game gained 1.4% of a frame at a generous count, so expect a stress loop to notice this, not an ordinary game.
+
 ## Two more plain blocks (Session 208, section 193)
 
 `bench.mjs --only 53- --runs 5`, before = the build without the change (VM `be819bb`), after = with it; `compare` marks it UNRELIABLE (load differed). Project 53 (Hyper-Sense "is scrolling" × 2 and Pen Papers "create paper" with an existing name, 100,000 rounds per frame in a custom block): work 15.00 ±1.11 → 11.59 ±0.32 ms (-22.7%, "real"; both at the 60 FPS limit). A stress case: a game that asks a few times per frame gains nothing it can feel; "create paper" is normally called once.
