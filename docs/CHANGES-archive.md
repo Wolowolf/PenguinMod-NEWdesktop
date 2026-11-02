@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 213 — `SPgeolocation_isAvailiable` no longer differs in the page test (2026-11-02)
+- Asked: fix `SPgeolocation_isAvailiable` differing.
+- Changed: only the local test `benchpage-eq-page.js` (outside the repo): `navigator.permissions.query` gets a fixed stand-in that takes no time. No app or engine code. Cause: the test hides "Electron" in the user agent, so the block reached the real query, which crosses to Electron's main process and ended on frame 1, 2 or 3; the answer never differed. `startWatching` had the same cause. To reverse: remove that line.
+- Extension check: no engine change, so no extension block can change; only Geolocation uses this query.
+- Verified: `PAGE=1 ONLY=^SPgeolocation_` 4 runs each: before 2 jobs differed in every pair compared; after 0, new vs interpreted 0 · Not verified: the full page test or the guarded and old modes (other extensions don't use the query).
+- Result after build: no build (`.md`-only)
 ### Session 212 — More blocks remember a search or parse (2026-11-02)
 - Asked: find out whether more blocks repeating a search or parse are worth inlining; build only where the stress loop gains at least 5%.
 - Changed: section 196 (VM; `upstream.json`, docs): Variables Expanded (6 blocks), Extra Timers (9), Keys+ (3), 3D Math (fixed vectors), Utilities, Translation, Sharktilities, Shovel Utils, List Tools; switch `runtime.pmNoSearchParseInline`. To reverse: `git revert` the merge (fork commit stays). Local tools: projects 67-91, `search-parse-memo.js`, `name-search-check.mjs` extended.
