@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 205 — Touching grid for many candidates (2026-11-02)
+- Asked: roadmap "Collision grid": measure first, build only if worth it.
+- Changed: section 190 (Render; `upstream.json`, docs): large lists asked about many times per frame keep a grid, so a touching question compares only nearby clones; switch `renderer.pmNoTouchingGrid`. To reverse: `git revert` the merge (fork commit stays). Local tools: projects 46-50, `touch-probe.mjs`, `grid-eq.mjs`.
+- Numbers (work ms, off → on, some runs marked UNRELIABLE, see `docs/BENCH-BASELINE.md`): choosing candidates was 58-77% of the frame in 47-49. 47 swarm 100.7 → 5.2; 48 far apart 22.5 → 1.1; 49 packed 43.0 → 30.4; 50 with a changing list 119.8 → 5.8; 25, 26, 32, 46 no real change.
+- Extension check: the grid uses the same change signals as the existing touching cache, and direct `_skin` writes are now seen, so no extension should break; `block-eq.mjs auto s204` (everything): differences only in `SPgeolocation_isAvailiable` and `startWatching` (done count; geolocation also differed in the s199 and s200 logs, reasoned as timing, not rerun alone); page test no differences reported.
+- Verified: `grid-eq.mjs` candidates, order and intersections equal to the full check: 370,956 questions in running projects, 119,969 under 14 kinds of change, 0 differences; with the change log broken on purpose it reports 99 · Not verified: a real game; touching color and point blocks are unchanged, not sped up.
+- Result after build: assumed working
+
 ### Session 203 — Pure extension blocks: cheaper call (2026-11-01)
 - Asked: give the 275 pure blocks the cheaper call plain blocks have.
 - Changed: section 189 (VM; `upstream.json`, docs): a pure block calls its method at its own place in the compiled script (`jsgen.js`). To reverse: `git revert` the merge (fork commit stays). Local tools: project 45.
