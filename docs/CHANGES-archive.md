@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 212 — More blocks remember a search or parse (2026-11-02)
+- Asked: find out whether more blocks repeating a search or parse are worth inlining; build only where the stress loop gains at least 5%.
+- Changed: section 196 (VM; `upstream.json`, docs): Variables Expanded (6 blocks), Extra Timers (9), Keys+ (3), 3D Math (fixed vectors), Utilities, Translation, Sharktilities, Shovel Utils, List Tools; switch `runtime.pmNoSearchParseInline`. To reverse: `git revert` the merge (fork commit stays). Local tools: projects 67-91, `search-parse-memo.js`, `name-search-check.mjs` extended.
+- Numbers (work ms, off → on, marked UNRELIABLE): -8% to -99.7%, e.g. 85 55.43 → 0.14, 74 7.31 → 2.51, 90 29.12 → 26.75: `docs/BENCH-BASELINE.md` "Repeated searches and parses".
+- Extension check: can change only these blocks' answers, and they stayed equal: `block-eq.mjs auto s212` new vs old 0, new vs interpreted 0 (1 expected), page test only `SPgeolocation_isAvailiable` (done count); `name-search-check.mjs` new = off = interpreted, 0 of 28 steps differ; engine contacts test passes.
+- Verified: the above · Not verified: a real game or game-shaped project; not every 3D Math block or timer command timed alone (`pause`, `unpause`, `stop`, most 3D blocks: same mechanism, reasoned).
+- Result after build: assumed working
+
 ### Session 211 — Blocks that search by a fixed name (2026-11-02)
 - Asked: measure whether inlining the remaining name-searching blocks is worth it; build only if the gain is real.
 - Changed: section 195 (VM; `upstream.json`, docs): 7 blocks of Variables Expanded, Events Expansion and Sensing+ remember the search; switch `runtime.pmNoNameSearchInline`. Sprite-only and sound searches left alone (no real gain). To reverse: `git revert` the merge (fork commit stays). Local tools: projects 59-66, `name-search-scan.cjs`, `name-search-memo.js`, `name-search-check.mjs`, `BENCH_PRE`.
