@@ -222,6 +222,21 @@ Projects 92-103 (`cvi-`, one sprite, 10 clones unless noted). Same build, before
 
 Loop-only baselines (direct-call build): 92 (200,000 rounds) 0.67 ms, 97 (50,000 rounds) 0.20 ms. Core variable read / write in the same loop: 93 0.75 ms, 94 0.68 ms. All five blocks passed the 5% bar. What remains in main get (about 20 ns per call) is the `hasOwnProperty` lookup; set also turns the number into text. All projects were at the 60 FPS limit, so only work ms shows the change.
 
+Remembered lookups (Session 218, section 199), same build, before = `--set pmNoClonesVarRemember`, 3 runs, work ms per frame; the tool marks the comparison unreliable (CPU 17-21%), but every change is far beyond the spread:
+
+| Project | Lookup every call | Remembered | Change |
+| --- | --- | --- | --- |
+| 95 get main sprite | 4.67 | 1.34 | -71.2% |
+| 96 set main sprite | 8.21 | 4.81 | -41.4% |
+| 98 exists, first clone matches | 1.10 | 0.52 | -53.3% |
+| 99 exists, last clone matches | 7.33 | 2.03 | -72.3% |
+| 100 get of clone, first matches | 1.80 | 0.64 | -64.5% |
+| 101 get of clone, last matches | 8.06 | 2.15 | -73.3% |
+| 102 set of clone, 10 clones | 10.53 | 4.17 | -60.4% |
+| 103 set of clone, 1 clone | 3.01 | 1.74 | -42.2% |
+
+The lookup was the main remaining cost, so the "about 20 ns" estimate above was right. Set main sprite costs about 3.5 ms more than get: not profiled, presumably the required number-to-text step. Not measured: projects that keep creating variables, where the counter moves and lookups are redone.
+
 ## Blocks that search by name (Session 211, section 195)
 `bench.mjs --only 59-,60-,61-,63-,66- --runs 3`, same build, before = `--set pmNoNameSearchInline`; marked UNRELIABLE (CPU 21% before the "before" run), the large changes are far beyond the spread. Work ms per frame. Projects 59-64 (`make-projects.mjs`): 20,000 rounds per frame in a "run without screen refresh" custom block; 66: 40 clones, each moving, bouncing, asking "touching" and 6 searching blocks per frame (240 calls, generous), 65 the same without them.
 
