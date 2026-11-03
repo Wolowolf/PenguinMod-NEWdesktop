@@ -27,6 +27,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 219 — Why "set main sprite" still costs more than "get" (2026-11-03)
+- Asked: find the cause of that cost and fix it if that is safe.
+- Changed: docs only (`docs/BENCH-BASELINE.md` "Clones+ variable blocks"); local bench projects 104-107. No code: the cost is the JS engine turning a new number into text, which the block must do to store what the extension stores. To reverse: `git revert` the merge.
+- Extension check: no engine or extension code changed.
+- Verified: `bench.mjs` on section 199's build: set with fixed text = get (1.39 ms), changing number 4.82 ms, the conversion alone 4.18 ms against a 0.69 ms loop · Not verified: a faster number-to-text (not tried).
+- Result after build: no build (docs only)
+
 ### Session 218 — Clones+'s variable blocks remember their lookups (2026-11-03)
 - Asked: dig into the cost left after section 198 and optimize it safely.
 - Changed: section 199 (VM; `upstream.json`, docs): which variable object an ID gives is remembered per target while `pmVarNamesVersion` is unchanged; values are always read again. `runtime.pmNoClonesVarRemember` = old path (tests). Local: `clones-var-check.mjs` extended, `block-eq` old mode. To reverse: `git revert` the merge (fork commit stays).
@@ -39,13 +46,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Changed: section 198 (VM; `upstream.json`, docs): all five blocks passed (-18% to -49%) and got inline code; direct call kept as fallback; `runtime.pmNoClonesVarInline` = old path (tests). Local: bench projects 92-103, `bench\clones-var-check.mjs`, `block-eq` old mode. To reverse: `git revert` the merge (fork commit stays).
 - Extension check: only these five Clones+ blocks' compiled form changes; same variables read and written, confirmed by the tests below.
 - Verified: `bench.mjs` same build on/off (`docs/BENCH-BASELINE.md`; CPU 19-21%, percentages approximate); `clones-var-check.mjs` new = off in all 11 steps, new vs interpreted only as off vs interpreted (core "set" stores a number when compiled; a thrown error ends the script only when compiled); `block-eq.mjs auto s217` (everything, compiler changed): new vs old 0, new vs interpreted 0 (1 expected), 1,658 identical; page test 0 in all; engine contacts test passes · Not verified: real projects by hand.
-- Result after build: assumed working
-
-### Session 216 — No title bar; window buttons on the blue bar (2026-11-02)
-- Asked: remove the window's top strip; minimise, full screen and exit go to the far right of the blue editor bar.
-- Changed: `app/electron-main.js` (`frame: false`; `pm-window-control` message: minimise, full screen on/off, close) and `app/preload.js` (three buttons fixed at the right end of the bar; the bar drags the window, its own buttons and menus don't). To reverse: `git revert` the merge.
-- Extension check: main process and page chrome only; no calculation or optimisation changes.
-- Verified: syntax check; test app builds and starts; bar is a drag area; the full-screen button toggles full screen and back · Not verified: dragging by hand, minimise and exit clicks, how the title bar's absence looks (the test screenshot shows only the page), resizing from the window edges.
 - Result after build: assumed working
 
 ## Template (keep entries this short)

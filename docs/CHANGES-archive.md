@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 216 — No title bar; window buttons on the blue bar (2026-11-02)
+- Asked: remove the window's top strip; minimise, full screen and exit go to the far right of the blue editor bar.
+- Changed: `app/electron-main.js` (`frame: false`; `pm-window-control` message: minimise, full screen on/off, close) and `app/preload.js` (three buttons fixed at the right end of the bar; the bar drags the window, its own buttons and menus don't). To reverse: `git revert` the merge.
+- Extension check: main process and page chrome only; no calculation or optimisation changes.
+- Verified: syntax check; test app builds and starts; bar is a drag area; the full-screen button toggles full screen and back · Not verified: dragging by hand, minimise and exit clicks, how the title bar's absence looks (the test screenshot shows only the page), resizing from the window edges.
+- Result after build: assumed working
+
 ### Session 215 — No menu bar; the update question appears at start (2026-11-02)
 - Asked: remove the band with the "System" button; show the update pop-up when the app starts or a project is double-clicked, once loaded.
 - Changed: `app/electron-main.js` — no menu bar (so "Check for Updates" and "Reload" are gone). 3 s after the editor page has loaded (a double-clicked project starts the app, so this covers both) a quiet update check runs: it shows only "An update is available" (Install update / Cancel); no update, up to date or no network show nothing. The offline-library offer follows it. To reverse: `git revert` the merge.
