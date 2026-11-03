@@ -235,7 +235,10 @@ Remembered lookups (Session 218, section 199), same build, before = `--set pmNoC
 | 102 set of clone, 10 clones | 10.53 | 4.17 | -60.4% |
 | 103 set of clone, 1 clone | 3.01 | 1.74 | -42.2% |
 
-The lookup was the main remaining cost, so the "about 20 ns" estimate above was right. Set main sprite costs about 3.5 ms more than get: not profiled, presumably the required number-to-text step. Not measured: projects that keep creating variables, where the counter moves and lookups are redone.
+The lookup was the main remaining cost, so the "about 20 ns" estimate above was right. Not measured: projects that keep creating variables, where the counter moves and lookups are redone.
+
+What "set main sprite" costs (Session 219, projects 104-107, 200,000 rounds, same build, work ms per frame, 3 runs): loop only 0.69; get 1.39; set, fixed text 1.39; set, a variable holding text 1.85; set, a variable holding one number that stays the same 2.17; set, a number that changes every round 4.82; no Clones+ block, core "set" of "join i and nothing" 4.18. So the whole extra cost (4.82 - 1.39 = 3.43 ms, about 17 ns per call) is turning a new number into text inside the JS engine: the conversion alone costs the same without the block (4.18 - 0.69 = 3.49 ms), and a repeated number is much cheaper (the engine remembers recent conversions).
+Left as it is: the block must store text, and a stored number is not the same (`-0` and `NaN` give other answers, as do blocks and saved files that see the type). A faster number-to-text written here was not tried: it must match the engine's text for every number, for at most 17 ns per call and only when the number changes on every call. The 0.46 ms of text input (about 2 ns per call) would need a change to `exactString`, which every inline block shares: not worth it.
 
 ## Blocks that search by name (Session 211, section 195)
 `bench.mjs --only 59-,60-,61-,63-,66- --runs 3`, same build, before = `--set pmNoNameSearchInline`; marked UNRELIABLE (CPU 21% before the "before" run), the large changes are far beyond the spread. Work ms per frame. Projects 59-64 (`make-projects.mjs`): 20,000 rounds per frame in a "run without screen refresh" custom block; 66: 40 clones, each moving, bouncing, asking "touching" and 6 searching blocks per frame (240 calls, generous), 65 the same without them.
