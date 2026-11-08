@@ -27,6 +27,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 221 — Dragging the bar out of full screen (2026-11-08)
+- Asked: dragging the window while full screen should leave full screen and carry the window at its earlier size, like a normal Windows window.
+- Changed: `app/electron-main.js` (`pm-window-drag`: leaves full screen, then moves the window with the cursor until the button is released; tells the page about full screen) and `app/preload.js` (in full screen the bar is no native drag area; a press on its empty part starts that drag). To reverse: `git revert` the merge.
+- Extension check: window handling only; no calculation or optimisation changes.
+- Verified: in the test app a press-and-move on the bar in full screen leaves full screen and the window is back at its earlier size (1100×802 — 2 px taller than 800, a scaling rounding; seen once) · Not verified: that the window follows a real mouse (the hidden test desktop has no real cursor), that the grabbed spot stays under the cursor, dragging a maximised window.
+- Result after build: assumed working
+
 ### Session 220 — The blue bar drags the window everywhere (2026-11-08)
 - Asked: the empty blue space of the bar didn't drag the window.
 - Cause: my no-drag rule in Session 216 also matched every element whose class contains "menu" — including the bar's own containers (`menu-bar_main-menu_…`), so nearly the whole bar was a no-drag area (measured: only the bar's bare edge was drag).
@@ -41,13 +48,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Extension check: no engine or extension code changed.
 - Verified: `bench.mjs` on section 199's build: set with fixed text = get (1.39 ms), changing number 4.82 ms, the conversion alone 4.18 ms against a 0.69 ms loop · Not verified: a faster number-to-text (not tried).
 - Result after build: no build (docs only)
-
-### Session 218 — Clones+'s variable blocks remember their lookups (2026-11-03)
-- Asked: dig into the cost left after section 198 and optimize it safely.
-- Changed: section 199 (VM; `upstream.json`, docs): which variable object an ID gives is remembered per target while `pmVarNamesVersion` is unchanged; values are always read again. `runtime.pmNoClonesVarRemember` = old path (tests). Local: `clones-var-check.mjs` extended, `block-eq` old mode. To reverse: `git revert` the merge (fork commit stays).
-- Extension check: only these five Clones+ blocks change; same variables read and written, confirmed by the tests below.
-- Verified: `bench.mjs` same build on/off: -41% to -73% (`docs/BENCH-BASELINE.md`; marked unreliable, CPU 17-21%, far beyond the spread); `clones-var-check.mjs` new = plain = off in all 21 steps (variables shadowed, deleted and renamed, clones made, deleted and reordered); `block-eq.mjs auto s218`: new vs old 0, new vs interpreted 0 (1 expected, taken from s217), 1,658 identical; page test 0 in all; engine contacts test passes · Not verified: real projects by hand, projects that keep creating variables (reasoned: lookups are redone, as before).
-- Result after build: assumed working
 
 ## Template (keep entries this short)
 

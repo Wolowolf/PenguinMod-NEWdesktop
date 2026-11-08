@@ -96,7 +96,20 @@ window.addEventListener("DOMContentLoaded", async () => {
     "#pm-window-controls button{width:46px;height:100%;border:0;background:transparent;color:#fff;font:16px sans-serif;cursor:pointer}" +
     "#pm-window-controls button:hover{background:rgba(255,255,255,0.2)}" +
     "#pm-window-controls button.pm-close:hover{background:#e81123}";
+  // Full screen: no native drag (it would not leave full screen); the main process does the drag instead.
+  barStyle.textContent += 'html.pm-fullscreen [class*="menu-bar_menu-bar_"]{-webkit-app-region:no-drag}';
   document.head.appendChild(barStyle);
+  const NO_DRAG = 'button,a,input,select,textarea,label,[role=button],[class*="menu-bar_menu-bar-item"]:not([class*="growable"]),[class*="menu-bar_menu-bar-menu"],[class*="button"],#pm-window-controls';
+  ipcRenderer.on("pm-fullscreen", (_event, on) => document.documentElement.classList.toggle("pm-fullscreen", !!on));
+  const endBarDrag = () => ipcRenderer.send("pm-window-drag", "end");
+  window.addEventListener("mousedown", e => {
+    if (e.button !== 0 || !document.documentElement.classList.contains("pm-fullscreen")) return;
+    const t = e.target instanceof Element ? e.target : null;
+    if (!t || !t.closest('[class*="menu-bar_menu-bar_"]') || t.closest(NO_DRAG)) return;
+    ipcRenderer.send("pm-window-drag", "start");
+  }, true);
+  window.addEventListener("mouseup", endBarDrag, true);
+  window.addEventListener("blur", endBarDrag);
   const controls = document.createElement("div");
   controls.id = "pm-window-controls";
   for (const [action, text, title, cls] of [["minimize", "\u2013", "Minimize", ""], ["fullscreen", "\u26F6", "Full screen", ""], ["close", "\u2715", "Exit", "pm-close"]]) {

@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 218 — Clones+'s variable blocks remember their lookups (2026-11-03)
+- Asked: dig into the cost left after section 198 and optimize it safely.
+- Changed: section 199 (VM; `upstream.json`, docs): which variable object an ID gives is remembered per target while `pmVarNamesVersion` is unchanged; values are always read again. `runtime.pmNoClonesVarRemember` = old path (tests). Local: `clones-var-check.mjs` extended, `block-eq` old mode. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only these five Clones+ blocks change; same variables read and written, confirmed by the tests below.
+- Verified: `bench.mjs` same build on/off: -41% to -73% (`docs/BENCH-BASELINE.md`; marked unreliable, CPU 17-21%, far beyond the spread); `clones-var-check.mjs` new = plain = off in all 21 steps (variables shadowed, deleted and renamed, clones made, deleted and reordered); `block-eq.mjs auto s218`: new vs old 0, new vs interpreted 0 (1 expected, taken from s217), 1,658 identical; page test 0 in all; engine contacts test passes · Not verified: real projects by hand, projects that keep creating variables (reasoned: lookups are redone, as before).
+- Result after build: assumed working
 ### Session 217 — Inline code for Clones+'s variable blocks (2026-11-03)
 - Asked: find out whether inlining Clones+'s small variable blocks is worth it; build only those whose stress loop falls by at least 5%.
 - Changed: section 198 (VM; `upstream.json`, docs): all five blocks passed (-18% to -49%) and got inline code; direct call kept as fallback; `runtime.pmNoClonesVarInline` = old path (tests). Local: bench projects 92-103, `bench\clones-var-check.mjs`, `block-eq` old mode. To reverse: `git revert` the merge (fork commit stays).
