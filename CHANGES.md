@@ -27,6 +27,14 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 217 — The blue bar drags the window everywhere (2026-11-08)
+- Asked: the empty blue space of the bar didn't drag the window.
+- Cause: my no-drag rule in Session 216 also matched every element whose class contains "menu" — including the bar's own containers (`menu-bar_main-menu_…`), so nearly the whole bar was a no-drag area (measured: only the bar's bare edge was drag).
+- Changed: `app/preload.js` — no-drag only for buttons, inputs, selects, links, the bar's items (not the wide title strip around the title box) and their menus. To reverse: `git revert` the merge.
+- Extension check: page chrome only; no calculation or optimisation changes.
+- Verified: in the test app the drag/no-drag state at 7 points of the bar: gaps and the title strip drag; language button, File/Edit items, title box, window buttons don't · Not verified: an actual mouse drag (CDP can't do window drags), minimise and exit clicks.
+- Result after build: assumed working
+
 ### Session 219 — Why "set main sprite" still costs more than "get" (2026-11-03)
 - Asked: find the cause of that cost and fix it if that is safe.
 - Changed: docs only (`docs/BENCH-BASELINE.md` "Clones+ variable blocks"); local bench projects 104-107. No code: the cost is the JS engine turning a new number into text, which the block must do to store what the extension stores. To reverse: `git revert` the merge.
@@ -39,13 +47,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Changed: section 199 (VM; `upstream.json`, docs): which variable object an ID gives is remembered per target while `pmVarNamesVersion` is unchanged; values are always read again. `runtime.pmNoClonesVarRemember` = old path (tests). Local: `clones-var-check.mjs` extended, `block-eq` old mode. To reverse: `git revert` the merge (fork commit stays).
 - Extension check: only these five Clones+ blocks change; same variables read and written, confirmed by the tests below.
 - Verified: `bench.mjs` same build on/off: -41% to -73% (`docs/BENCH-BASELINE.md`; marked unreliable, CPU 17-21%, far beyond the spread); `clones-var-check.mjs` new = plain = off in all 21 steps (variables shadowed, deleted and renamed, clones made, deleted and reordered); `block-eq.mjs auto s218`: new vs old 0, new vs interpreted 0 (1 expected, taken from s217), 1,658 identical; page test 0 in all; engine contacts test passes · Not verified: real projects by hand, projects that keep creating variables (reasoned: lookups are redone, as before).
-- Result after build: assumed working
-
-### Session 217 — Inline code for Clones+'s variable blocks (2026-11-03)
-- Asked: find out whether inlining Clones+'s small variable blocks is worth it; build only those whose stress loop falls by at least 5%.
-- Changed: section 198 (VM; `upstream.json`, docs): all five blocks passed (-18% to -49%) and got inline code; direct call kept as fallback; `runtime.pmNoClonesVarInline` = old path (tests). Local: bench projects 92-103, `bench\clones-var-check.mjs`, `block-eq` old mode. To reverse: `git revert` the merge (fork commit stays).
-- Extension check: only these five Clones+ blocks' compiled form changes; same variables read and written, confirmed by the tests below.
-- Verified: `bench.mjs` same build on/off (`docs/BENCH-BASELINE.md`; CPU 19-21%, percentages approximate); `clones-var-check.mjs` new = off in all 11 steps, new vs interpreted only as off vs interpreted (core "set" stores a number when compiled; a thrown error ends the script only when compiled); `block-eq.mjs auto s217` (everything, compiler changed): new vs old 0, new vs interpreted 0 (1 expected), 1,658 identical; page test 0 in all; engine contacts test passes · Not verified: real projects by hand.
 - Result after build: assumed working
 
 ## Template (keep entries this short)

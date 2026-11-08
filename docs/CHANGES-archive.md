@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 217 — Inline code for Clones+'s variable blocks (2026-11-03)
+- Asked: find out whether inlining Clones+'s small variable blocks is worth it; build only those whose stress loop falls by at least 5%.
+- Changed: section 198 (VM; `upstream.json`, docs): all five blocks passed (-18% to -49%) and got inline code; direct call kept as fallback; `runtime.pmNoClonesVarInline` = old path (tests). Local: bench projects 92-103, `bench\clones-var-check.mjs`, `block-eq` old mode. To reverse: `git revert` the merge (fork commit stays).
+- Extension check: only these five Clones+ blocks' compiled form changes; same variables read and written, confirmed by the tests below.
+- Verified: `bench.mjs` same build on/off (`docs/BENCH-BASELINE.md`; CPU 19-21%, percentages approximate); `clones-var-check.mjs` new = off in all 11 steps, new vs interpreted only as off vs interpreted (core "set" stores a number when compiled; a thrown error ends the script only when compiled); `block-eq.mjs auto s217` (everything, compiler changed): new vs old 0, new vs interpreted 0 (1 expected), 1,658 identical; page test 0 in all; engine contacts test passes · Not verified: real projects by hand.
+- Result after build: assumed working
 ### Session 216 — No title bar; window buttons on the blue bar (2026-11-02)
 - Asked: remove the window's top strip; minimise, full screen and exit go to the far right of the blue editor bar.
 - Changed: `app/electron-main.js` (`frame: false`; `pm-window-control` message: minimise, full screen on/off, close) and `app/preload.js` (three buttons fixed at the right end of the bar; the bar drags the window, its own buttons and menus don't). To reverse: `git revert` the merge.
