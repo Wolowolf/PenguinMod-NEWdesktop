@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 227 — No translucent rings or frames around editor items (2026-11-08)
+- Asked: remove the semi-transparent border effect everywhere (selected sprite and its delete button, settings dialog, choose-a-sprite / backdrop buttons and every other place), in the code, with the items enlarged to take its place.
+- Changed: section 204 (GUI `6fc09f8`, Paint `ce762ee`, Blocks `e196860`, `upstream.json`): every translucent ring or thick translucent frame removed (found by scanning all loaded style sheets plus the source of GUI, addons, Paint, Blocks); items that always had one are drawn larger by the ring's width in the same place; hover/focus-only rings just removed. List in `docs/SECTIONS.md`. Kept: thin (1–2.5px) translucent edges that are an item's own border. To reverse: `git revert` the merge.
+- Extension check: styles and two class names only; no calculation, compiler, timing or rendering change, so extension blocks can't be affected.
+- Verified in the test app: style-sheet scan finds no translucent ring or ≥3px translucent frame left; selected sprite tile 72 px over its 64 px slot (no shift of other tiles), selected costume tile 72 × 88 in its 80 px column, delete button 32 px with the same centre, add sprite/backdrop buttons 52 px over their 44 px place, settings dialog 758 px wide with no frame (was 750 + 2 × 4), paint slider handles 34 px, active gradient swatch 39.4 px, Blocks slider thumb rule 34 px · Not verified: the wide-window costume tile size, right-to-left languages, the light theme, dialogs other than Settings, the confirm dialog, tutorial cards, the Blocks colour slider on screen.
+- Result after build: assumed working
+
 ### Session 226 — Number-like text from variables converted for extension blocks; Scenes' contacts list (2026-11-08)
 - Asked: fix the two problems found in Session 225.
 - Cause 1: the direct extension calls (pure, plain, guarded) skipped the extension manager's number conversion for a variable whose last compiled "set" was text that reads as a number (" 7 ", "1e3"): `isAlwaysNumberOrNaN()` is true for such a variable although it holds the text. Shown by `pure-inline-eq.mjs`: Graphics 2D "line length" 31 interpreted, NaN compiled; Bitwise "to binary" of " 7 " " 7 " instead of "111".
