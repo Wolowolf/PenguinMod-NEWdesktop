@@ -27,7 +27,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
-### Session 217 — The blue bar drags the window everywhere (2026-11-08)
+### Session 220 — The blue bar drags the window everywhere (2026-11-08)
 - Asked: the empty blue space of the bar didn't drag the window.
 - Cause: my no-drag rule in Session 216 also matched every element whose class contains "menu" — including the bar's own containers (`menu-bar_main-menu_…`), so nearly the whole bar was a no-drag area (measured: only the bar's bare edge was drag).
 - Changed: `app/preload.js` — no-drag only for buttons, inputs, selects, links, the bar's items (not the wide title strip around the title box) and their menus. To reverse: `git revert` the merge.
