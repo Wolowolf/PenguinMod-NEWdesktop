@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 219 — Why "set main sprite" still costs more than "get" (2026-11-03)
+- Asked: find the cause of that cost and fix it if that is safe.
+- Changed: docs only (`docs/BENCH-BASELINE.md` "Clones+ variable blocks"); local bench projects 104-107. No code: the cost is the JS engine turning a new number into text, which the block must do to store what the extension stores. To reverse: `git revert` the merge.
+- Extension check: no engine or extension code changed.
+- Verified: `bench.mjs` on section 199's build: set with fixed text = get (1.39 ms), changing number 4.82 ms, the conversion alone 4.18 ms against a 0.69 ms loop · Not verified: a faster number-to-text (not tried).
+- Result after build: no build (docs only)
+
 ### Session 218 — Clones+'s variable blocks remember their lookups (2026-11-03)
 - Asked: dig into the cost left after section 198 and optimize it safely.
 - Changed: section 199 (VM; `upstream.json`, docs): which variable object an ID gives is remembered per target while `pmVarNamesVersion` is unchanged; values are always read again. `runtime.pmNoClonesVarRemember` = old path (tests). Local: `clones-var-check.mjs` extended, `block-eq` old mode. To reverse: `git revert` the merge (fork commit stays).
