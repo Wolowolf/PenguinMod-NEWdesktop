@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 222 — No "New" group in the addon settings (2026-11-08)
+- Asked: remove the "New" section of the addons tab and put its addons in their themed place in the normal list.
+- Changed: section 200 (GUI `60c370e`, `upstream.json`): no "New" group; Block Pinning, Editor Tweaks and Reshape Tool Tweaks already had a place in section 82's order (block palette, editor layout, costume editor), App font is added after Editor Tweaks. The "New" badge on cards stays. To reverse: `git revert` the merge.
+- Extension check: addon settings page only; no calculation or optimisation changes.
+- Verified: in the test app's addons page: no "New" group, App font between Editor Tweaks and Editor Animations, Block Pinning in the palette part, Reshape Tool Tweaks after Costume Tool Panel · Not verified: the page in other languages (group labels unchanged).
+- Result after build: assumed working
+
 ### Session 221 — Dragging the bar out of full screen (2026-11-08)
 - Asked: dragging the window while full screen should leave full screen and carry the window at its earlier size, like a normal Windows window.
 - Changed: `app/electron-main.js` (`pm-window-drag`: leaves full screen, then moves the window with the cursor until the button is released; tells the page about full screen) and `app/preload.js` (in full screen the bar is no native drag area; a press on its empty part starts that drag). To reverse: `git revert` the merge.

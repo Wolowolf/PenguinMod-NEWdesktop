@@ -172,6 +172,27 @@ Before = `--set pmNoCoreInline`, after = none, same build, 3 runs, not marked UN
 
 Before = `--set pmNoCheapCall`, after = none, same build, not marked UNRELIABLE. Project 45 (10 pure blocks of 8 extensions in a warp loop, 50,000 rounds): work 9.62 ±0.27 → 8.54 ±0.35 ms (-11.2%, 5 runs); an earlier 3 runs 9.22 → 8.67 (-6%, called no real change). 13 and 14: no real change. The switch also turns off section 160, so 22 and 24 say nothing about this change.
 
+## Small pure blocks as inline code (Session 225, section 202)
+Projects 108-119 (`make-projects.mjs`, `pmi-`): one extension's small pure blocks, inputs from variables (nothing folded), each answer stored in a variable, 20,000 rounds per frame in a "run without screen refresh" custom block. Work ms per frame. Every comparison was marked UNRELIABLE (PC in use, CPU 18-36%).
+
+With the direct call (step 1, 3 runs): 108 loop only 0.22; 109 loop with 10 "set" blocks 0.36 (one set about 0.7 ns); per call beyond loop and set: 110 Bitwise (12 blocks) 4.93 ms, about 19 ns; 111 True Fantom Math (29) 22.98, 39 ns; 112 Lily's utils (23) 20.70, 44 ns; 113 Utilities (8) 2.78, 15 ns; 114 Text (13) 38.09, 146 ns; 115 Number Utilities (8) 5.99, 36 ns; 116 Graphics 2D (7) 2.93, 19 ns; 117 Text case (4) 9.88, 120 ns; 118 Box2D points (4) 5.40, 63 ns; 119 other maths (geolocation distance, brightness, tween, resolution, smoothing, base, Perlin noise: 13 blocks) 246.55, about 950 ns (Perlin noise's work).
+
+Direct call → inline, same build (`--set pmNoPureInline` for the direct call), each line one pair of results:
+
+| Project | 3 runs | 5 runs | 5 runs | 5 runs |
+| --- | --- | --- | --- | --- |
+| 111 True Fantom Math | 20.49 → 16.73 (-18.3%) | 22.45 → 16.20 (-27.9%) | | |
+| 112 Lily's utils | 18.91 → 16.32 (-13.7%, spread ±1.12) | 20.01 → 16.49 (-17.6%) | | |
+| 113 Utilities | 2.47 → 2.10 (-15.1%) | 2.67 → 2.16 (-19.1%) | | 2.76 → 2.28 (-17.4%) |
+| 116 Graphics 2D | 3.41 → 2.46 (-27.9%) | 3.72 → 2.61 (-29.8%) | | |
+| 115 Number Utilities | | | 5.96 → 5.38 (-9.6%) | |
+| 13 Bitwise (and, xor, shift, "is binary", section 118's loop) | 4.63 → 4.11 (-11.3%) | 5.07 → 4.27 (-15.8%) | | 5.32 → 4.49 (-15.6%) |
+| 110 Bitwise, all 12 | 4.68 → 5.03 (+7.5%, not real) | 5.66 → 4.97 (-12.2%, spread ±0.94) | 4.82 → 4.81 (-0.2%) | 5.44 → 5.19 (-4.6%, not real) |
+| 118 Box2D points | | | 5.34 → 5.73 (+7.3%, one slow run) | 5.84 → 5.94 (+1.8%) |
+| 45 eight extensions mixed | 7.78 → 7.32 (-5.9%, not real) | | | |
+
+Kept: True Fantom Math, Lily's utils, Utilities, Graphics 2D, Number Utilities (real in every run, 10-30%), and Bitwise as a judgement call: its operator blocks gain 11-16% (project 13, real three times), while project 110 is dominated by its three text and regex blocks ("to binary", "to number", "is binary"). Dropped: Box2D's point blocks. Saved per inlined call: about 2-7 ns (the call, the arguments object and the extension manager's conversion). Not built, estimated from that: Text (13 blocks, 146 ns each) at most about 5%, Text case about 5%, project 119 under 1%. All projects were at or near the 60 FPS limit, so only work ms shows the change; a game calling these blocks a few hundred times per frame would not notice.
+
 ## Answer types re-test (Session 209, on section 193; the final version shipped as section 194, the list dropped)
 
 Work ms per frame, same build, switches through `bench.mjs --set`. `compare` marked the final pairs UNRELIABLE (idle load 17-30%); before / before differed by up to 4% (52: 10%), so only steady changes in both rounds count. Parked answer types: VM `71e388f` brought onto `cf156ca` (159 blocks: 77 number, 82 Boolean); first table 3 runs, two rounds averaged, other groups vs that average.
