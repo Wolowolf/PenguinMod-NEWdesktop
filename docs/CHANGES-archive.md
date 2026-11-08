@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 220 — The blue bar drags the window everywhere (2026-11-08)
+- Asked: the empty blue space of the bar didn't drag the window.
+- Cause: my no-drag rule in Session 216 also matched every element whose class contains "menu" — including the bar's own containers (`menu-bar_main-menu_…`), so nearly the whole bar was a no-drag area (measured: only the bar's bare edge was drag).
+- Changed: `app/preload.js` — no-drag only for buttons, inputs, selects, links, the bar's items (not the wide title strip around the title box) and their menus. To reverse: `git revert` the merge.
+- Extension check: page chrome only; no calculation or optimisation changes.
+- Verified: in the test app the drag/no-drag state at 7 points of the bar: gaps and the title strip drag; language button, File/Edit items, title box, window buttons don't · Not verified: an actual mouse drag (CDP can't do window drags), minimise and exit clicks.
+- Result after build: assumed working
 ### Session 219 — Why "set main sprite" still costs more than "get" (2026-11-03)
 - Asked: find the cause of that cost and fix it if that is safe.
 - Changed: docs only (`docs/BENCH-BASELINE.md` "Clones+ variable blocks"); local bench projects 104-107. No code: the cost is the JS engine turning a new number into text, which the block must do to store what the extension stores. To reverse: `git revert` the merge.
