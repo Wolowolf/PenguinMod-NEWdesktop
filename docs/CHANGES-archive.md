@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 224 — Tidier editor: ADD button, even category gaps, fixed tabs, no gaps around the stage (2026-11-08)
+- Asked: an "ADD" add-extension button the size of an unselected category box; find and fix the uneven gaps between category boxes; no "+" or right-click delete for the editor tabs, an extension tab (Scenes) added and removed with its extension and looking like the others; no bars above the backpack, under/right of the stage, between sprite and stage panels; the stage resize handle a thin draggable line.
+- Cause of the uneven gaps: the boxes are 19.2 px tall with 2 px margins; at 140% Windows scaling a margin is 2.8 screen pixels and was drawn as 2 or 3 depending on where the box fell (your screenshot: the gap above Pointer Lock was 2, the others 3).
+- Changed: section 201 (GUI `03dac83`, VM `8443e60`, `upstream.json`), details in `docs/SECTIONS.md`. The stored tab list (`pm:taborder`) is no longer read. Local helper `cdp.mjs`: mouse moves while the button is held name the left button (with "none" Chromium ended pointer capture, so drags of the stage handle did nothing). To reverse: `git revert` the merge.
+- Extension check: editor layout and the Scenes tab only; no calculation or optimisation changes. Equality test: Scenes blocks only (`ONLY=^SPscenes_ block-eq.mjs auto`: 7 blocks and 3 page blocks identical in every mode; plain `auto` wanted the full run because of compiler changes since the last full run s217, not this change).
+- Verified in the test app: every category gap 3 screen pixels with Motion, Pointer Lock or Audio Engine selected; ADD box 68 × 19.2 px at the same left edge as the categories, opens the extension library; tabs have no right-click menu; Scenes tab has the same height as the others and shows its name when selected; removing Scenes while its tab was open removes the tab and returns to Code, loading it again brings it back; dragging the stage line 100 px left and back resizes the stage · Not verified: right-to-left languages, the light theme, other Windows scaling than 140%, a category menu long enough to scroll.
+- Result after build: assumed working
+
 ### Session 223 — Dragging out of full screen taken out again (2026-11-08)
 - Asked: remove the last change (Session 221).
 - Changed: `app/electron-main.js`, `app/preload.js` — reverted the merge of Session 221; the blue bar drags the window natively again (and does not leave full screen). To get it back: revert this merge.
