@@ -8,6 +8,7 @@ const {
   net,
   Menu,
   shell,
+  screen,
   utilityProcess,
 } = require("electron");
 const path = require("path");
@@ -510,6 +511,38 @@ ipcMain.on("pm-window-control", (event, action) => {
   else if (action === "close") win.close();
 });
 
+// Dragging the bar while full screen: leave full screen and carry the window (at its size from before) under the cursor, like a normal Windows window.
+let barDragTimer = null;
+function stopBarDrag() {
+  if (barDragTimer) clearInterval(barDragTimer);
+  barDragTimer = null;
+}
+ipcMain.on("pm-window-drag", (event, state) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  stopBarDrag();
+  if (state !== "start" || !win || win.isDestroyed() || !win.isFullScreen()) return;
+  const cursor = screen.getCursorScreenPoint();
+  const full = win.getBounds();
+  const ratio = full.width > 0 ? (cursor.x - full.x) / full.width : 0.5;
+  const barOffsetY = Math.max(0, cursor.y - full.y);
+  const begin = () => setTimeout(() => {
+    if (win.isDestroyed()) return;
+    // By now the window has its size from before full screen; keep that size fixed while moving
+    // (setPosition alone lets the size creep on a scaled screen).
+    const b = win.getBounds();
+    const offX = Math.round(b.width * ratio);
+    const offY = Math.min(barOffsetY, 24);
+    const place = p => win.setBounds({ x: p.x - offX, y: p.y - offY, width: b.width, height: b.height });
+    place(cursor);
+    barDragTimer = setInterval(() => {
+      if (win.isDestroyed()) return stopBarDrag();
+      place(screen.getCursorScreenPoint());
+    }, 8);
+  }, 100);
+  win.once("leave-full-screen", begin);
+  win.setFullScreen(false);
+});
+
 ipcMain.handle("pm-open-external", async (_event, url) => {
   try {
     const u = new URL(url);
@@ -912,6 +945,10 @@ function createWindow(fileToOpen) {
   }
   mainWindow.loadURL(startUrl.length > 0 ? startUrl : "https://studio.penguinmod.com/editor.html");
   const win = mainWindow;
+  // The page needs to know (the bar drags natively only when not full screen).
+  for (const [ev, on] of [["enter-full-screen", true], ["leave-full-screen", false]]) {
+    win.on(ev, () => { if (!win.isDestroyed()) win.webContents.send("pm-fullscreen", on); });
+  }
   // Once the editor (and a project given on the command line) has loaded: the update question first, then the offline library offer.
   win.webContents.once("did-finish-load", () => setTimeout(async () => {
     await runUpdateCheck(win, true);
