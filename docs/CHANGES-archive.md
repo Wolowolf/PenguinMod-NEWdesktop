@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 223 — Dragging out of full screen taken out again (2026-11-08)
+- Asked: remove the last change (Session 221).
+- Changed: `app/electron-main.js`, `app/preload.js` — reverted the merge of Session 221; the blue bar drags the window natively again (and does not leave full screen). To get it back: revert this merge.
+- Extension check: window handling only; no calculation or optimisation changes.
+- Verified: syntax check; the files are back to their Session 220 content · Not verified: the app was not started (code returns to a state tested in Session 220).
+- Result after build: assumed working
+
 ### Session 222 — No "New" group in the addon settings (2026-11-08)
 - Asked: remove the "New" section of the addons tab and put its addons in their themed place in the normal list.
 - Changed: section 200 (GUI `60c370e`, `upstream.json`): no "New" group; Block Pinning, Editor Tweaks and Reshape Tool Tweaks already had a place in section 82's order (block palette, editor layout, costume editor), App font is added after Editor Tweaks. The "New" badge on cards stays. To reverse: `git revert` the merge.
