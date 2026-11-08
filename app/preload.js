@@ -91,7 +91,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   const barStyle = document.createElement("style");
   barStyle.textContent =
     '[class*="menu-bar_menu-bar_"]{-webkit-app-region:drag}' +
-    '[class*="menu-bar_menu-bar_"] :is(button,a,input,select,textarea,label,[role=button],[class*="menu-bar_menu-bar-item"],[class*="button"],[class*="menu"]){-webkit-app-region:no-drag}' +
+    '[class*="menu-bar_menu-bar_"] :is(button,a,input,select,textarea,label,[role=button],[class*="menu-bar_menu-bar-item"]:not([class*="growable"]),[class*="menu-bar_menu-bar-menu"],[class*="button"]){-webkit-app-region:no-drag}' +
     "#pm-window-controls{position:fixed;top:0;right:0;height:3rem;display:flex;z-index:2147483646;-webkit-app-region:no-drag}" +
     "#pm-window-controls button{width:46px;height:100%;border:0;background:transparent;color:#fff;font:16px sans-serif;cursor:pointer}" +
     "#pm-window-controls button:hover{background:rgba(255,255,255,0.2)}" +
