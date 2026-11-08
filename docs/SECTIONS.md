@@ -188,6 +188,7 @@ Commits: GUI 1 `f74b561`, 2 `f122c22`, 3 `3c4c322`, 4 `2b25f8c`, 5 `06a077e`, 6 
 - 197 Extra Timers: a timer made by a block is used on that call (VM)
 - 198 Inline code for Clones+'s variable blocks (VM)
 - 199 Clones+'s variable blocks remember which variable an ID gives (VM)
+- 200 addon settings without the "New" group (GUI)
 
 ## Details
 
@@ -521,4 +522,5 @@ Commits: GUI 1 `f74b561`, 2 `f122c22`, 3 `3c4c322`, 4 `2b25f8c`, 5 `06a077e`, 6 
 - 197 (VM `41e2c72`): `timers.js` `get_or_create` answers the timer it made (`createVariable` answers nothing: the elapsed blocks gave NaN and other blocks an error that stopped the script, on that one call). `pmsTimerGet` no longer needs its case for this. No switch, no files added.
 - 198 (VM `3e1daec`): `irgen.js` `descendClonesVarInline`, `jsgen.js` `clones.*`, `jsexecute.js` `pmc…`. Switch (tests only): `runtime.pmNoClonesVarInline`. Details: `docs/EXTENSION-INTEGRATION.md` "Inline code for extension blocks"; numbers: `docs/BENCH-BASELINE.md` "Clones+ variable blocks". No files added.
 - 199 (VM `4254af6`): `jsexecute.js` `pmcOneSite`, `pmcManySite` (and `pmcPlainOne`, `pmcPlainMany` for the switch), `jsgen.js` `clonesOneSite`, `clonesManySite`, `irgen.js` `node.forget`. Switch (tests only): `runtime.pmNoClonesVarRemember`. Details: `docs/EXTENSION-INTEGRATION.md` "Inline code for extension blocks"; numbers: `docs/BENCH-BASELINE.md` "Clones+ variable blocks". No files added.
+- 200 (GUI `60c370e`): `src/addons/settings/settings.jsx` `groupAddons` has no `new` group; addons tagged `new` go to Others/Dangerous like the rest, placed by section 82's `addonOrder`, where `pm-app-font` is added after `editor-tweaks`. The card's "New" badge stays. (Session 222)
 - 192 (VM `be819bb`): `jsgen.js` `KEEPS_PLAIN_SETUP_MORE`, `hasPlainCall`, `keepsPlainSetup(node, more)`: more node kinds keep a run of plain calls; "and" / "or" only without a plain call in the second input; switch `runtime.pmNoSetupKinds`. Rules and what stays out: `docs/EXTENSION-INTEGRATION.md` "Setup of plain calls". No files added.
