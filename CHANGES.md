@@ -27,6 +27,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 223 — Dragging out of full screen taken out again (2026-11-08)
+- Asked: remove the last change (Session 221).
+- Changed: `app/electron-main.js`, `app/preload.js` — reverted the merge of Session 221; the blue bar drags the window natively again (and does not leave full screen). To get it back: revert this merge.
+- Extension check: window handling only; no calculation or optimisation changes.
+- Verified: syntax check; the files are back to their Session 220 content · Not verified: the app was not started (code returns to a state tested in Session 220).
+- Result after build: assumed working
+
 ### Session 222 — No "New" group in the addon settings (2026-11-08)
 - Asked: remove the "New" section of the addons tab and put its addons in their themed place in the normal list.
 - Changed: section 200 (GUI `60c370e`, `upstream.json`): no "New" group; Block Pinning, Editor Tweaks and Reshape Tool Tweaks already had a place in section 82's order (block palette, editor layout, costume editor), App font is added after Editor Tweaks. The "New" badge on cards stays. To reverse: `git revert` the merge.
@@ -39,14 +46,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Changed: `app/electron-main.js` (`pm-window-drag`: leaves full screen, then moves the window with the cursor until the button is released; tells the page about full screen) and `app/preload.js` (in full screen the bar is no native drag area; a press on its empty part starts that drag). To reverse: `git revert` the merge.
 - Extension check: window handling only; no calculation or optimisation changes.
 - Verified: in the test app a press-and-move on the bar in full screen leaves full screen and the window is back at its earlier size (1100×802 — 2 px taller than 800, a scaling rounding; seen once) · Not verified: that the window follows a real mouse (the hidden test desktop has no real cursor), that the grabbed spot stays under the cursor, dragging a maximised window.
-- Result after build: assumed working
-
-### Session 220 — The blue bar drags the window everywhere (2026-11-08)
-- Asked: the empty blue space of the bar didn't drag the window.
-- Cause: my no-drag rule in Session 216 also matched every element whose class contains "menu" — including the bar's own containers (`menu-bar_main-menu_…`), so nearly the whole bar was a no-drag area (measured: only the bar's bare edge was drag).
-- Changed: `app/preload.js` — no-drag only for buttons, inputs, selects, links, the bar's items (not the wide title strip around the title box) and their menus. To reverse: `git revert` the merge.
-- Extension check: page chrome only; no calculation or optimisation changes.
-- Verified: in the test app the drag/no-drag state at 7 points of the bar: gaps and the title strip drag; language button, File/Edit items, title box, window buttons don't · Not verified: an actual mouse drag (CDP can't do window drags), minimise and exit clicks.
 - Result after build: assumed working
 
 ## Template (keep entries this short)
