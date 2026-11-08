@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 228 — Solid edge colours instead of translucent ones (2026-11-08)
+- Asked: screenshots of the thin translucent edges kept in Session 227, then: make them a solid colour with no transparency at all.
+- Changed: section 205 (GUI `93b67d1`, Paint `08a7ee3`, Blocks `9e22753`, `upstream.json`): every border and outline colour with transparency (159 in 59 files) is solid: light `#c6cdd6`, dark `#404040` (what the old 15% edges looked like on the panel colour); the library's blue edges light `#a6eaff`, dark `#14586d`. Also the paint editor's confirm dialog ring missed in section 204. Details in `docs/SECTIONS.md`. To reverse: `git revert` the merge.
+- Extension check: border colours only; no calculation, compiler, timing or rendering change.
+- Verified in the test app: a scan of every element's computed border finds 0 translucent edges on the code tab, costumes tab (paint editor), extension library and settings dialog (dark theme) and on the code tab in the light theme; close-ups of the sprite pane in both themes show solid edges · Not verified: the paint confirm dialog on screen, other dialogs, addon panels (gradient maker, tool panel).
+- Result after build: assumed working
+
 ### Session 227 — No translucent rings or frames around editor items (2026-11-08)
 - Asked: remove the semi-transparent border effect everywhere (selected sprite and its delete button, settings dialog, choose-a-sprite / backdrop buttons and every other place), in the code, with the items enlarged to take its place.
 - Changed: section 204 (GUI `6fc09f8`, Paint `ce762ee`, Blocks `e196860`, `upstream.json`): every translucent ring or thick translucent frame removed (found by scanning all loaded style sheets plus the source of GUI, addons, Paint, Blocks); items that always had one are drawn larger by the ring's width in the same place; hover/focus-only rings just removed. List in `docs/SECTIONS.md`. Kept: thin (1–2.5px) translucent edges that are an item's own border. To reverse: `git revert` the merge.

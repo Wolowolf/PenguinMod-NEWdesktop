@@ -15,7 +15,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - **Speech models (Sessions 95, 97):** pinned by `app/speech-models.json`, each pack naming its release: `speech-models-1` (packs `onnxruntime`, `pocket-voices`, `pocket-<language>`), `speech-models-2` (pack `supertonic`, Supertonic 3, OpenRAIL-M), `speech-models-3` (pack `loudkit-turbo` = loudr-1-turbo, Apache-2.0), `speech-models-4` (packs `loudkit-engine` = Loudkit 0.1.1 + onnxruntime-node 1.30.0, `loudkit-natural` = loudr-1, `loudkit-cloning` = the 3 enrollment graphs); Loudkit only for "Make a speech sound", run by the app in its own process `app/loudkit-host.js`; each file its own asset; not in the installer or `win-unpacked.zip`; the app serves `resources/speech-models` at `https://studio.penguinmod.com/__speech__/` and downloads a pack (asking first) when Text To Speech first needs it; `speech-models-5` (packs `moonshine-english` = Moonshine Base English, MIT, and `silero-vad`, MIT) for Dictation (Session 111), `speech-models-6` (pack `whisper-small` = Whisper small, MIT, Dictation's other languages, Session 113), `speech-models-7` (pack `parakeet-v3` = Parakeet TDT 0.6B v3, CC BY 4.0, Dictation's high accuracy, Session 115), asked for the same way. Since Session 96 the packager copies the files a project uses (Dictation's too since Session 112) into `speech/` of zip and Windows app packages (the list comes from `/__speech__/packs.json`).
 - **Shipped extensions only (section 105):** the app loads only its built-in extensions, including all 107 gallery extensions (each a chunk of its own; nothing loads from an address since section 110). Projects name extensions by ID only. The integration plan is finished; mechanisms, direct calls and status per extension: `docs/EXTENSION-INTEGRATION.md`. Standard check after engine or compiler changes: `block-eq.mjs auto`.
 - **Engine contacts (section 153):** VM test `desktop_engine_contacts.js` keeps `engine-contacts.json` and fails on any new or removed contact. Shared `runtime.pm*` doors exist for random numbers and the clock, timers, hidden state and the page. What is left, in order: `docs/EXTENSION-INTEGRATION.md` "Hidden state" and "One door to the page".
-- **Editor changes:** 207 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
+- **Editor changes:** 208 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
 - **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80); benchmarks, extension scan, list and hat checks, the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), and putting the galleries into the test app: `docs/PROCEDURES.md`.
 - **Not verified yet:**
   - The updater's window and its downloads from a real release while installing a new offline library or packager Electron (its install steps are checked by the local `updater-check.cjs`, Session 116; an update itself worked end to end in Session 30).
@@ -26,6 +26,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 231 — Consistent flag, pause and stop buttons (2026-11-09)
+- Asked: how the three run buttons decide their look, then: make them consistent (without changing what counts as "running").
+- Changed: section 208 (GUI `42d6bd2`, `upstream.json`): nothing running → pause and stop dimmed with no hover, pause clicks ignored; running → flag blue; paused → flag not blue, pause (play icon) blue, stop solid. Details in `docs/SECTIONS.md`. To reverse: `git revert` the merge.
+- Extension check: only the buttons' look and the pause button's idle click change; scripts, timing and calculations don't, so extension blocks can't be affected.
+- Verified in the test app: classes, opacity and background of all three buttons when idle, after clicking pause and stop while idle (nothing paused), running, paused (screenshot), resumed, flag while paused (restarts, unpaused), stop while paused (back to idle) · Not verified: player-only mode and full screen (same component), light theme on screen.
+- Result after build: assumed working
 
 ### Session 230 — Unused style code removed (2026-11-08)
 - Asked: find and remove every unused code, only when absolutely certain nothing (extension, addon, setting, blocks, other code) uses it; report what stays unsure.
@@ -40,13 +47,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Changed: section 206 (GUI `e5fd1b6`, Blocks `54782c5`, `upstream.json`): empty rules (addon settings page, Blocks dropdown), a box-shadow transition, the add button's duplicate size rule, redundant `border: none` lines; details in `docs/SECTIONS.md`. Found by listing colour-variable uses, empty rules and transitions in the touched files. Not removed (unused before these changes): `$pen-transparent`, `$extensions-light`, the settings dialog's `custom-stage-size-button` rules, 16 older empty rules. To reverse: `git revert` the merge.
 - Extension check: styles only, no visible change; can't affect extension blocks.
 - Verified in the test app: add sprite button 52 px at -4 px, no transition (removing the empty `transition: transform` alone had given it a 0.2 s colour fade, so it is now `transition: none`); settings dialog 758 px with no border; extension library dialog no border; Blocks dropdown button rules without the removed parts · Not verified: the addon settings page, Editor Animations' press effect.
-- Result after build: assumed working
-
-### Session 228 — Solid edge colours instead of translucent ones (2026-11-08)
-- Asked: screenshots of the thin translucent edges kept in Session 227, then: make them a solid colour with no transparency at all.
-- Changed: section 205 (GUI `93b67d1`, Paint `08a7ee3`, Blocks `9e22753`, `upstream.json`): every border and outline colour with transparency (159 in 59 files) is solid: light `#c6cdd6`, dark `#404040` (what the old 15% edges looked like on the panel colour); the library's blue edges light `#a6eaff`, dark `#14586d`. Also the paint editor's confirm dialog ring missed in section 204. Details in `docs/SECTIONS.md`. To reverse: `git revert` the merge.
-- Extension check: border colours only; no calculation, compiler, timing or rendering change.
-- Verified in the test app: a scan of every element's computed border finds 0 translucent edges on the code tab, costumes tab (paint editor), extension library and settings dialog (dark theme) and on the code tab in the light theme; close-ups of the sprite pane in both themes show solid edges · Not verified: the paint confirm dialog on screen, other dialogs, addon panels (gradient maker, tool panel).
 - Result after build: assumed working
 
 ## Template (keep entries this short)
