@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 229 — Code left unused by the ring and edge changes removed (2026-11-08)
+- Asked: remove every line of code left unused (after sections 204 and 205).
+- Changed: section 206 (GUI `e5fd1b6`, Blocks `54782c5`, `upstream.json`): empty rules (addon settings page, Blocks dropdown), a box-shadow transition, the add button's duplicate size rule, redundant `border: none` lines; details in `docs/SECTIONS.md`. Found by listing colour-variable uses, empty rules and transitions in the touched files. Not removed (unused before these changes): `$pen-transparent`, `$extensions-light`, the settings dialog's `custom-stage-size-button` rules, 16 older empty rules. To reverse: `git revert` the merge.
+- Extension check: styles only, no visible change; can't affect extension blocks.
+- Verified in the test app: add sprite button 52 px at -4 px, no transition (removing the empty `transition: transform` alone had given it a 0.2 s colour fade, so it is now `transition: none`); settings dialog 758 px with no border; extension library dialog no border; Blocks dropdown button rules without the removed parts · Not verified: the addon settings page, Editor Animations' press effect.
+- Result after build: assumed working
 ### Session 228 — Solid edge colours instead of translucent ones (2026-11-08)
 - Asked: screenshots of the thin translucent edges kept in Session 227, then: make them a solid colour with no transparency at all.
 - Changed: section 205 (GUI `93b67d1`, Paint `08a7ee3`, Blocks `9e22753`, `upstream.json`): every border and outline colour with transparency (159 in 59 files) is solid: light `#c6cdd6`, dark `#404040` (what the old 15% edges looked like on the panel colour); the library's blue edges light `#a6eaff`, dark `#14586d`. Also the paint editor's confirm dialog ring missed in section 204. Details in `docs/SECTIONS.md`. To reverse: `git revert` the merge.
