@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 221 — Dragging the bar out of full screen (2026-11-08)
+- Asked: dragging the window while full screen should leave full screen and carry the window at its earlier size, like a normal Windows window.
+- Changed: `app/electron-main.js` (`pm-window-drag`: leaves full screen, then moves the window with the cursor until the button is released; tells the page about full screen) and `app/preload.js` (in full screen the bar is no native drag area; a press on its empty part starts that drag). To reverse: `git revert` the merge.
+- Extension check: window handling only; no calculation or optimisation changes.
+- Verified: in the test app a press-and-move on the bar in full screen leaves full screen and the window is back at its earlier size (1100×802 — 2 px taller than 800, a scaling rounding; seen once) · Not verified: that the window follows a real mouse (the hidden test desktop has no real cursor), that the grabbed spot stays under the cursor, dragging a maximised window.
+- Result after build: assumed working
+
 ### Session 220 — The blue bar drags the window everywhere (2026-11-08)
 - Asked: the empty blue space of the bar didn't drag the window.
 - Cause: my no-drag rule in Session 216 also matched every element whose class contains "menu" — including the bar's own containers (`menu-bar_main-menu_…`), so nearly the whole bar was a no-drag area (measured: only the bar's bare edge was drag).
