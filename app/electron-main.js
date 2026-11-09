@@ -330,7 +330,7 @@ async function installSpeechPacksOnRequest(names) {
   const pin = (() => {
     try { return JSON.parse(fs.readFileSync(path.join(__dirname, "speech-models.json"), "utf8")); } catch { return null; }
   })();
-  if (!pin || !pin.packs || names.some((name) => !pin.packs[name])) return { ok: false, reason: "unknown" };
+  if (!pin || !pin.packs || names.some((name) => !Object.hasOwn(pin.packs, name))) return { ok: false, reason: "unknown" };
   const missing = names.filter((name) => updater.speechPackNeeded(SPEECH_DIR, name, pin.packs[name]));
   if (!missing.length) return { ok: true };
   if (updateInProgress) return { ok: false, reason: "busy" };
@@ -547,7 +547,11 @@ ipcMain.handle("pm-fetch-bytes", (_event, url, range) => new Promise((resolve) =
     resolve({ ok: false, status: 0 });
     return;
   }
-  if (!assetSession) assetSession = session.fromPartition("pm-asset-downloads");
+  if (!assetSession) {
+    assetSession = session.fromPartition("pm-asset-downloads");
+    // The upstream servers are refused here too (also when a download is redirected to one).
+    assetSession.webRequest.onBeforeRequest((details, callback) => callback({ cancel: isUpstreamUrl(details.url) }));
+  }
   const req = net.request({ url: u.href, session: assetSession });
   if (part) req.setHeader("Range", range);
   const timer = setTimeout(() => finish({ ok: false, status: 408 }), ASSET_TIMEOUT);
@@ -1100,11 +1104,23 @@ function setupDialogs() {
     </script>
     </body></html>`;
 
-    ipcMain.once("electron-prompt-done-sync", (ev, val) => {
+    // The page waits (synchronous message) until it gets an answer. Closing the prompt another way (Alt+F4, its parent
+    // closing) answers null like Cancel; before, the page waited forever. Only this prompt's own window can answer it.
+    let answered = false;
+    const answer = (val) => {
+      if (answered) return;
+      answered = true;
+      ipcMain.removeListener("electron-prompt-done-sync", onDone);
       result = val;
+      try { event.returnValue = result; } catch { }
       try { promptWindow.destroy(); } catch { }
-      event.returnValue = result;
-    });
+    };
+    const promptContentsId = promptWindow.webContents.id;
+    const onDone = (ev, val) => {
+      if (ev.sender && ev.sender.id === promptContentsId) answer(val);
+    };
+    ipcMain.on("electron-prompt-done-sync", onDone);
+    promptWindow.on("closed", () => answer(null));
 
     promptWindow.loadURL("data:text/html;charset=utf-8," + encodeURIComponent(html));
     promptWindow.once("ready-to-show", () => promptWindow.show());
