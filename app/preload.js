@@ -93,9 +93,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     '[class*="menu-bar_menu-bar_"]{-webkit-app-region:drag}' +
     '[class*="menu-bar_menu-bar_"] :is(button,a,input,select,textarea,label,[role=button],[class*="menu-bar_menu-bar-item"]:not([class*="growable"]),[class*="menu-bar_menu-bar-menu"],[class*="button"]){-webkit-app-region:no-drag}' +
     "#pm-window-controls{position:fixed;top:0;right:0;height:3rem;display:flex;z-index:2147483646;-webkit-app-region:no-drag}" +
-    "#pm-window-controls button{width:46px;height:100%;border:0;background:transparent;color:#fff;font:16px sans-serif;cursor:pointer}" +
-    "#pm-window-controls button:hover{background:rgba(255,255,255,0.2)}" +
-    "#pm-window-controls button.pm-close:hover{background:#e81123}";
+    "#pm-window-controls button{width:46px;height:100%;border:0;background:transparent;color:var(--text-on-menu-bar,#fff);font:16px sans-serif;cursor:pointer}" +
+    "#pm-window-controls button:hover{background:color-mix(in srgb,var(--text-on-menu-bar,#fff) 20%,transparent)}" +
+    "#pm-window-controls button.pm-close:hover{background:#e81123;color:#fff}";
   document.head.appendChild(barStyle);
   const controls = document.createElement("div");
   controls.id = "pm-window-controls";

@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 236 — Editor header row, sprite grid, no save status or FPS toggle (2026-11-09)
+- Asked: small UI tweaks: no trash button on sprite tiles; gapless sprite grid; no save messages in the menu bar; no right-click FPS switch or FPS label; tabs, find bar and stage buttons on one 32 px row, find bar centred over the code area, tabs not growing when selected; square scrollbars.
+- Changed: section 216 (GUI `281bf0f`, `upstream.json`). Menu-bar messages removed: Save to your computer / Save as <file>, Saving project…, Saved to your computer., Project saved., Creating restore point…, Access restore points in "File", Could not create restore point. To reverse: `git revert` the merge.
+- Extension check: layout and buttons only; the frame rate still comes from the project, no calculation or timing changes.
+- Verified in the test app: one row at 48–80 px (tabs, find input, run and stage buttons all 32 px high), find bar centred over the code area and kept inside it at 400–500 px widths, 7 sprites in a gapless 84 px square grid (1 column below 128 px, 4 at 260 px), no trash button or FPS label, right-click / alt+click on the flag keep 60 FPS, code-area and palette scrollbars square, costume tab unaffected · Not verified: fullscreen stage size with the shorter header.
+- Result after build: assumed working
 ### Session 235 — One app process; a failing script stops only itself (2026-11-09)
 - Asked: yes to both open decisions of Session 234, and continue the tests.
 - Changed: `app/electron-main.js`: one app process (`requestSingleInstanceLock`): a file opened while the app runs opens in a new window (next to the current one, sharing its settings), a start without a file shows the open window; `createWindow` makes a new window each time (handlers per window, `setupDialogs` / `setupAppMenu` once, update question only for the first window, update progress to every window). Section 215 (VM `79bac0d`): an error in an interpreted script is logged, shown on the script and stops only that script, like compiled scripts. `upstream.json`. To reverse: `git revert` the merge.
