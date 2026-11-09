@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 233 — Simple flag and stop icons in blocks (2026-11-09)
+- Asked: the old icons were still used in blocks and extension blocks.
+- Changed: section 210 (Blocks `8329d93`, VM `81ad4fb`, GUI `5da6e3c`, `upstream.json`): the flag icons in blocks (when flag clicked, run) and in Runtime Options, Advanced Control and Tune Shark V3 blocks are a filled green triangle, the stop icons (when stop clicked, Tune Shark) a filled red square, like the run buttons; the big flag over the stage too. Found by scanning every image in the VM's extensions and the Blocks media files. To reverse: `git revert` the merge.
+- Extension check: only images change; block IDs, arguments and behaviour don't, so extension blocks can't be affected.
+- Verified in the test app: Events palette (when ▶ clicked, when ■ clicked) and Advanced Control's "run ▶ and continue" on screen; image data of all flag/stop images in the palette with the three extensions loaded (3 extension flags, 1 extension stop, new shapes) · Not verified: the flag over the stage in player mode, Tune Shark's block on screen.
+- Result after build: assumed working
+
 ### Session 232 — Simple flag, pause and stop shapes (2026-11-09)
 - Asked: remove the blue translucent backgrounds and the dimmed look of the run buttons; flag = filled triangle (green running, grey idle/paused), pause = two bars (grey idle, yellow running) and a hollow yellow triangle when paused, stop = filled square (grey idle, red running/paused).
 - Changed: section 209 (GUI `ac9aefc`, `upstream.json`): the three buttons are inline SVG shapes coloured by CSS; backgrounds, rounded corners, dimming and the 3 unused icon files removed. Details in `docs/SECTIONS.md`. To reverse: `git revert` the merge.
