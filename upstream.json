@@ -18,7 +18,7 @@
   "PenguinMod-Render": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Render.git",
     "branch": "desktop",
-    "commit": "847fb3b859f90864280fa592c2cfd926cedf665a"
+    "commit": "ecf0e366dc3169120fcd1cae85413c871deb6ec3"
   },
   "PenguinMod-Paint": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Paint.git",
