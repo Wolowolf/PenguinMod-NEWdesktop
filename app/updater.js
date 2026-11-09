@@ -97,8 +97,11 @@ function pickRelease(releases, repo, assetName) {
 // Download
 // ---------------------------------------------------------------------------------------------
 
+// A download that sends no data for this long fails (a connection that stalls without closing would wait forever).
+const STALL_MS = 60000;
+
 // fetchFn is Electron's net.fetch (or any fetch). Checks the size, and the SHA-256 when GitHub gives one.
-async function downloadFile(fetchFn, url, destPath, { expectedSize = 0, expectedDigest = "", onProgress = noop } = {}) {
+async function downloadFile(fetchFn, url, destPath, { expectedSize = 0, expectedDigest = "", onProgress = noop, stallMs = STALL_MS } = {}) {
   const res = await fetchFn(url, { headers: { Accept: "application/octet-stream" } });
   if (!res.ok) throw new Error(`Download failed: HTTP ${res.status}`);
 
@@ -109,9 +112,28 @@ async function downloadFile(fetchFn, url, destPath, { expectedSize = 0, expected
   let received = 0;
 
   await new Promise((resolve, reject) => {
-    fileStream.on("error", reject);
+    // A download that sends nothing for stallMs fails instead of waiting forever behind the progress overlay (which
+    // covers the editor). On failure the file is closed before the error is passed on.
+    let stallTimer = null;
+    let failed = false;
+    const fail = (err) => {
+      if (failed) return;
+      failed = true;
+      clearTimeout(stallTimer);
+      reader.cancel().catch(noop);
+      if (fileStream.closed) reject(err);
+      else {
+        fileStream.once("close", () => reject(err));
+        fileStream.destroy();
+      }
+    };
+    fileStream.on("error", fail);
     function pump() {
+      clearTimeout(stallTimer);
+      stallTimer = setTimeout(() => fail(new Error(`The download stopped (no data for ${stallMs / 1000} s).`)), stallMs);
       reader.read().then(({ done, value }) => {
+        clearTimeout(stallTimer);
+        if (failed) return;
         if (done) { fileStream.end(resolve); return; }
         received += value.length;
         hash.update(value);
@@ -121,8 +143,8 @@ async function downloadFile(fetchFn, url, destPath, { expectedSize = 0, expected
         } else {
           onProgress("download", -1, `Downloading… ${mb} MB`);
         }
-        fileStream.write(Buffer.from(value), (err) => (err ? reject(err) : pump()));
-      }).catch(reject);
+        fileStream.write(Buffer.from(value), (err) => (err ? fail(err) : pump()));
+      }).catch(fail);
     }
     pump();
   });
