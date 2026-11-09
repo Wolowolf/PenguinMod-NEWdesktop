@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 232 — Simple flag, pause and stop shapes (2026-11-09)
+- Asked: remove the blue translucent backgrounds and the dimmed look of the run buttons; flag = filled triangle (green running, grey idle/paused), pause = two bars (grey idle, yellow running) and a hollow yellow triangle when paused, stop = filled square (grey idle, red running/paused).
+- Changed: section 209 (GUI `ac9aefc`, `upstream.json`): the three buttons are inline SVG shapes coloured by CSS; backgrounds, rounded corners, dimming and the 3 unused icon files removed. Details in `docs/SECTIONS.md`. To reverse: `git revert` the merge.
+- Extension check: only the buttons' drawing changes; scripts, timing and calculations don't, so extension blocks can't be affected.
+- Verified in the test app: fill/stroke, classes and background of all three buttons idle, after clicking pause while idle (stays idle), running, paused, resumed, stop while paused, flag while paused (restarts unpaused); screenshots of idle, running and paused; tooltips Go/Pause/Stop · Not verified: player-only mode and full screen (same component), light theme on screen, mute-project addon's ctrl+click on the flag.
+- Result after build: assumed working
+
 ### Session 231 — Consistent flag, pause and stop buttons (2026-11-09)
 - Asked: how the three run buttons decide their look, then: make them consistent (without changing what counts as "running").
 - Changed: section 208 (GUI `42d6bd2`, `upstream.json`): nothing running → pause and stop dimmed with no hover, pause clicks ignored; running → flag blue; paused → flag not blue, pause (play icon) blue, stop solid. Details in `docs/SECTIONS.md`. To reverse: `git revert` the merge.

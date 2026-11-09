@@ -117,11 +117,11 @@ function readBuildInfo() {
 }
 
 function sendUpdateProgress(phase, percent, text) {
-  try {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send("update-progress", { phase, percent, text });
-    }
-  } catch { }
+  for (const win of editorWindows) {
+    try {
+      if (!win.isDestroyed()) win.webContents.send("update-progress", { phase, percent, text });
+    } catch { }
+  }
 }
 
 // quiet = the check made at start: only the "An update is available" question is shown, everything else stays silent.
@@ -419,10 +419,11 @@ function setupAppMenu() {
 
 // shitty patch because for some reason using data uris in project_url param errors here
 const pendingLocalFiles = new Map();
+let localFileCount = 0;
 
 function storeLocalFile(filePath) {
   const buf = fs.readFileSync(filePath);
-  const id = `localfile-${Date.now()}`;
+  const id = `localfile-${Date.now()}-${localFileCount++}`;
   pendingLocalFiles.set(id, buf);
   return `https://studio.penguinmod.com/__localfile__/${id}`;
 }
@@ -839,13 +840,48 @@ app.commandLine.appendSwitch('disable-renderer-backgrounding');
 // No clean-up just to give memory back, which paused a project that makes little garbage for 16-20 ms about 26 s after it started. Normal clean-ups still run when memory fills up.
 app.commandLine.appendSwitch('js-flags', '--no-memory-reducer');
 
+// One app process (Session 235): opening a project file while the app is open (double-clicking a .pmp) started a
+// second copy, which couldn't use the first one's stored settings (their folder is locked by the first copy) and lost
+// its own. Now the running app opens the file in a new window; starting the app again without a file shows its window.
+const editorWindows = new Set();
+let windowsMade = 0;
+// The project file of a command line: the first argument that is an existing file (switches, and the app folder of an
+// unpackaged start, are skipped).
+function projectFileFromArgs(args, cwd) {
+  for (const arg of args) {
+    if (!arg || arg.startsWith("-")) continue;
+    const full = path.resolve(cwd || process.cwd(), arg);
+    if (fs.statSync(full, { throwIfNoEntry: false })?.isFile()) return full;
+  }
+  return null;
+}
+const hasInstanceLock = app.requestSingleInstanceLock({ file: projectFileFromArgs(process.argv.slice(1)) });
+if (!hasInstanceLock) {
+  app.quit();
+} else {
+  app.on("second-instance", (_event, argv, workingDirectory, additionalData) => {
+    const file = (additionalData && additionalData.file) || projectFileFromArgs(argv.slice(1), workingDirectory);
+    app.whenReady().then(() => {
+      const win = mainWindow;
+      if (!file && win && !win.isDestroyed()) {
+        if (win.isMinimized()) win.restore();
+        win.focus();
+      } else {
+        createWindow(file);
+      }
+    });
+  });
+}
+
 app.whenReady().then(() => {
+  if (!hasInstanceLock) return;
   cleanupOldUpdateFiles();
   setupProtocol();
   setupUpstreamBlock();
   setupHeaderSpoofing();
-  const fileToOpen = process.argv.length >= 2 ? process.argv[1] : null;
-  createWindow(fileToOpen);
+  setupDialogs();
+  setupAppMenu();
+  createWindow(projectFileFromArgs(process.argv.slice(1)));
 });
 
 // This build is for packaged projects, not for the PenguinMod sharing website: links to the
@@ -869,13 +905,11 @@ app.on("web-contents-created", (_event, contents) => {
   });
 });
 
+// A new editor window, with a project file or the default project. The first one also asks about updates.
 function createWindow(fileToOpen) {
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    try { mainWindow.destroy(); } catch { }
-    mainWindow = null;
-  }
-  if (getNodeJSSetting()) {
-    const choice = dialog.showMessageBoxSync(mainWindow, {
+  const first = windowsMade++ === 0;
+  if (first && getNodeJSSetting()) {
+    const choice = dialog.showMessageBoxSync({
       type: "question",
       buttons: ["OK", "Cancel"],
       defaultId: 0,
@@ -887,9 +921,13 @@ function createWindow(fileToOpen) {
     if (!choice) app.quit();
   }
 
-  mainWindow = new BrowserWindow({
+  // A later window opens a little below and to the right of the current one, so both can be seen.
+  const near = BrowserWindow.getFocusedWindow() || mainWindow;
+  const nearPosition = !first && near && !near.isDestroyed() && !near.isMaximized() && !near.isFullScreen() ? near.getPosition() : null;
+  const win = new BrowserWindow({
     width: 1100,
     height: 800,
+    ...(nearPosition ? { x: nearPosition[0] + 32, y: nearPosition[1] + 32 } : {}),
     // No title bar: the editor's blue menu bar carries minimise / full screen / close (see preload.js).
     frame: false,
     webPreferences: {
@@ -903,6 +941,8 @@ function createWindow(fileToOpen) {
       backgroundThrottling: false,
     },
   });
+  editorWindows.add(win);
+  if (!mainWindow) mainWindow = win;
 
   let startUrl = "";
   // Only an existing file is opened as a project (an unpackaged app started as "electron ." gets the folder ".").
@@ -914,22 +954,23 @@ function createWindow(fileToOpen) {
       console.error("[main] Failed to load local project file:", err);
     }
   }
-  mainWindow.loadURL(startUrl.length > 0 ? startUrl : "https://studio.penguinmod.com/editor.html");
-  const win = mainWindow;
-  // Once the editor (and a project given on the command line) has loaded: the update question first, then the offline library offer.
-  win.webContents.once("did-finish-load", () => setTimeout(async () => {
-    await runUpdateCheck(win, true);
-    if (!win.isDestroyed()) offerLibraryAtStart(win);
-  }, 3000));
+  win.loadURL(startUrl.length > 0 ? startUrl : "https://studio.penguinmod.com/editor.html");
+  // Once the first editor (and a project given on the command line) has loaded: the update question first, then the offline library offer.
+  if (first) {
+    win.webContents.once("did-finish-load", () => setTimeout(async () => {
+      await runUpdateCheck(win, true);
+      if (!win.isDestroyed()) offerLibraryAtStart(win);
+    }, 3000));
+  }
 
-  mainWindow.webContents.on("console-message", ({ level, message, lineNumber, sourceId, frame }) => {
+  win.webContents.on("console-message", ({ level, message, lineNumber, sourceId, frame }) => {
     const prefix = `[renderer:${sourceId}:${lineNumber}]`;
     // Electron 44 gives the level as a word ("info", "warning", "error", "debug"), older versions as 0-3.
     if (level === "warning" || level === "error" || level >= 2) console.error(prefix, message);
     else console.log(prefix, message);
   });
 
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+  win.webContents.setWindowOpenHandler(({ url }) => {
     if (isBlockedWebsite(url)) return { action: "deny" };
     return {
       action: "allow",
@@ -945,23 +986,23 @@ function createWindow(fileToOpen) {
     };
   });
 
-  setupDialogs();
-  setupAppMenu(mainWindow);
-
-  mainWindow.on("closed", () => (mainWindow = null));
-  mainWindow.webContents.on('before-input-event', (event, input) => { // allow devtools with ctrl shift i, something breaks that here
+  win.on("closed", () => {
+    editorWindows.delete(win);
+    if (mainWindow === win) mainWindow = editorWindows.values().next().value || null;
+  });
+  win.webContents.on('before-input-event', (event, input) => { // allow devtools with ctrl shift i, something breaks that here
     if (input.control && input.shift && input.key.toLowerCase() === 'i') {
-      mainWindow.webContents.toggleDevTools();
+      win.webContents.toggleDevTools();
       event.preventDefault();
     }
   });
 
   let isUnloadDialogOpen = false;
-  mainWindow.webContents.on("will-prevent-unload", (event) => {
+  win.webContents.on("will-prevent-unload", (event) => {
     if (isUnloadDialogOpen) return;
     isUnloadDialogOpen = true;
 
-    const choice = dialog.showMessageBoxSync(mainWindow, {
+    const choice = dialog.showMessageBoxSync(win, {
       type: "warning",
       buttons: ["Leave", "Cancel"],
       defaultId: 0,
@@ -973,33 +1014,21 @@ function createWindow(fileToOpen) {
     isUnloadDialogOpen = false;
     if (choice === 0) event.preventDefault();
   });
-
-  //mainWindow.webContents.on("render-process-gone", () => createWindow());
-  //mainWindow.webContents.on("crashed", () => createWindow());
-
-  // reload on window unresponsiveness
-  /*mainWindow.on("unresponsive", () => {
-      try { mainWindow.webContents.reloadIgnoringCache(); } catch { }
-      setTimeout(() => {
-          if (mainWindow && !mainWindow.isDestroyed()) {
-              try { mainWindow.destroy(); } catch { }
-              createWindow();
-          }
-      }, 1500);
-  });*/
+  return win;
 }
 
 app.on("before-quit", () => {
   isQuitting = true;
-  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.destroy();
+  for (const win of editorWindows) {
+    if (!win.isDestroyed()) win.destroy();
+  }
 });
 
 app.on("activate", () => {
   if (mainWindow) {
     mainWindow.show();
-  } else {
-    const fileToOpen = process.argv.length >= 2 ? process.argv[1] : null;
-    createWindow(fileToOpen);
+  } else if (hasInstanceLock) {
+    createWindow(null);
   }
 });
 
