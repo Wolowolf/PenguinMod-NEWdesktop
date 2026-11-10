@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 245 — Last fixed-colour icons linked: palette checkbox, drop-down lists, addon page (2026-11-10)
+- Asked: link the icons that stayed blue or white whatever the theme (palette checkbox, language menu hover, addon reset button in dark mode) and any others like them.
+- Changed: section 225 (GUI `c438511`, `upstream.json`). Ticked palette checkbox = accent, tick in the accent's ink (was the Motion colour; dark mode had fixed #a1c6fa / white). Drop-down lists (language, asset browser, icon studio, restore points) drawn by the page (`appearance: base-select`): panel, hover tint, chosen entry in the accent, no Windows blue. Native checkboxes / radios / sliders: `accent-color` = accent. Addon page: reset arrows, search / clear icon and checkbox tick in the ink (undo.svg / check.svg had an invisible rgba rectangle that kept them unthemed; the dark-mode invert filter removed). To reverse: `git revert` the merge.
+- Extension check: styles and interface pictures only; no calculation, timing or stage drawing changes.
+- Verified in the test app: language list opens as a panel with English in the accent; ticked Looks checkbox accent with white tick; addon page in dark mode: reset and header icons masked in the ink (no filter), ticked checkbox accent with its tick; no errors in the app log · Not verified: the hover tint in the language list (no mouse hover over CDP), the asset browser / icon studio / restore-point lists opened.
+- Not changed (fixed on purpose): addon tags (theme, beta, danger badges with their own background and text). The packager window's drop-downs are not part of the GUI and keep the system list.
+- Result after build: assumed working
+
 ### Session 244 — Addons merged; addon page without groups, badges and footer (2026-11-10)
 - Asked: merge the addons that belong together, with switches to turn off the mouse position, clone counter, block count, hidden delete buttons and sprite-delete question; new names, joined credits and descriptions; delete Code Editor Tabbing, the New / Recommended badges, the "Others (46)" header with its arrow and the footer lines.
 - Changed: section 224 (GUI `a23962e`, `upstream.json`). 46 → 40 addons: Drag blocks with Ctrl and Alt, Mouse clone and block counters, Costume editor tool defaults, Block shape and text, Delete protection. Delete protection has no Sprites option (sprite tiles have had no trash button since section 216). To reverse: `git revert` the merge.
