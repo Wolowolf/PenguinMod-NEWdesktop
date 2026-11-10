@@ -2,6 +2,12 @@
 
 Not read by default: CLAUDE.md points here; Grep for the heading you need and read only that part. The rules in CLAUDE.md (never delete releases still pointed to, ask before anything hard to undo, …) apply to all of them.
 
+## Shipping by hand (when `tweak.mjs` can't be used)
+Commit, push, `gh pr create`, `gh pr merge --merge` (signed in as Wolowolf; if `gh` is not found use `C:\Program Files\GitHub CLI\gh.exe`).
+- PowerShell 5.1 drops double quotes inside arguments: write commit and PR texts to files in the scratchpad and use `git commit -F <file>` / `gh pr create --body-file <file>`. Never append `2>&1` to `gh pr …` (it is passed to `gh` as an argument).
+- No global git identity: commit with `git -c user.name=Wolowolf -c user.email=98824418+Wolowolf@users.noreply.github.com commit …` and end the message with the Co-Authored-By line.
+- Fork commits by hand: commit, `git -C <checkout> push https://github.com/Wolowolf/<name>.git HEAD:refs/heads/desktop`, edit `upstream.json` (commit and `"branch": "desktop"`).
+
 ## Moving to newer upstream code
 Upstream code only changes when `upstream.json` changes. Moving to newer upstream is its own tweak: in a full clone of the fork outside this repo (`git clone -b desktop https://github.com/Wolowolf/<name>.git`; the test cache is too shallow to merge), `git fetch <original repo URL> <branch>` and `git merge FETCH_HEAD` (fix conflicts there; they replace the old `PATCH FAILED`), push `desktop`, move `pinned` forward to the merged upstream commit, put the new commit into `upstream.json`, local test with `-Update`, PR. Forks without a `desktop` branch only need `pinned` moved and the new commit in `upstream.json`.
 
