@@ -3,7 +3,7 @@
   "penguinmod.github.io": {
     "repo": "https://github.com/Wolowolf/penguinmod.github.io.git",
     "branch": "desktop",
-    "commit": "7c3058026c710e0dd73c610b753284c81e84229f"
+    "commit": "ed4d7532bf4ed6b2d6b51f810c78682bce941bc2"
   },
   "PenguinMod-Vm": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Vm.git",
@@ -23,7 +23,7 @@
   "PenguinMod-Paint": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Paint.git",
     "branch": "desktop",
-    "commit": "99df7b7de98a1d20055d72a9f8d5d3395f9bb06f"
+    "commit": "be864e70af9cb4f750e89da48809ca651c13fea2"
   },
   "PenguinMod-ExtensionsGallery": {
     "repo": "https://github.com/Wolowolf/PenguinMod-ExtensionsGallery.git",
