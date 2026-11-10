@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 246 — A class per variable; targets out of dictionary mode (2026-11-10)
+- Asked: port TurboWarp/scratch-vm #378 (a hidden class per variable) and #385 (no `delete t.targetPaneOrder` on targets); measure with ScratchBench, warp timer off.
+- Changed: section 226 (VM `07bbaea`, `upstream.json`). Every scalar variable gets its own class, lists share one, clone / duplicate copies keep the original's class (`runtime.newVariableCopy`); sprite-pane and layer order kept in a Map beside the targets. To reverse: `git revert` the merge.
+- Extension check: variable values and block results unchanged; extension variable types (Timers) are copied as before. `block-eq auto` (everything): 0 blocks differ between modes and against the last run before the change.
+- Measured (ScratchBench, warp timer off, 2 runs each): total 31,931 / 31,526 → 39,420 / 38,891 (+23% both); loops +29–34%, vars +48%, math +42–45%, app +36–41%; every checksum same. The first run after starting the app hung both before and after (discarded anyway).
+- Verified in the test app: pane order and layer order after load, reload and adding a sprite; no order property left on targets; own class per variable, shared list class, clones and duplicates keep the class; Timers variable kept by a clone and a duplicate (a bug found here and fixed: the copy got the original object as its id) · Not verified: projects with cloud variables.
+- Result after build: assumed working
+
 ### Session 245 — Last fixed-colour icons linked: palette checkbox, drop-down lists, addon page (2026-11-10)
 - Asked: link the icons that stayed blue or white whatever the theme (palette checkbox, language menu hover, addon reset button in dark mode) and any others like them.
 - Changed: section 225 (GUI `c438511`, `upstream.json`). Ticked palette checkbox = accent, tick in the accent's ink (was the Motion colour; dark mode had fixed #a1c6fa / white). Drop-down lists (language, asset browser, icon studio, restore points) drawn by the page (`appearance: base-select`): panel, hover tint, chosen entry in the accent, no Windows blue. Native checkboxes / radios / sliders: `accent-color` = accent. Addon page: reset arrows, search / clear icon and checkbox tick in the ink (undo.svg / check.svg had an invisible rgba rectangle that kept them unthemed; the dark-mode invert filter removed). To reverse: `git revert` the merge.
