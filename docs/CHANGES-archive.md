@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 251 — Broadcast messages found by name through an index (2026-11-11)
+- Asked: find why "broadcast and wait" and script restarts are slow (ScratchBench sched_pingpong / sched_restart ~70 rounds/ms vs 4,930 for an empty round), fix it if small.
+- Cause: compiled broadcasts call `lookupBroadcastMsg("", name)` every time (to mark the message sent); it scanned every stage variable and lowercased each name: 8.8 µs per lookup with the benchmark's 133 stage variables, most of a ~14 µs round. Shown by `bench\bcast-one-probe.mjs` (59% own time in the looping script, where the scan was inlined; startHats, thread start and tryCompile under 1% each) and a direct timing.
+- Changed: section 235 (VM `966b300`, `upstream.json`): a per-target name index, made again when a variable is added, deleted or renamed (`pmVarNamesVersion`) or `variables` is replaced; first match wins as before; non-text names keep the scan. To reverse: `git revert` the merge.
+- Extension check: Events Expansion, Messages+ and Sharktilities use the same lookup; `block-eq auto s251` (everything): new vs interp 0 (1 expected), new vs old 0, page test 0 in every mode.
+- Verified: `bench\bcast-index-check.mjs` in the test app: 1,488 lookups equal to the old scan (add, rename, delete, case duplicates, odd names, replaced `variables`, sprite and clone), 0.04 µs per lookup. ScratchBench (warp timer off, warm-up discarded; one disturbed run replaced): pingpong 72.3 / 74.7 → 377 / 446, restart 75.0 / 72.1 → 365 / 437, total 39,177 / 39,161 → 42,290 / 42,783, every other checksum same · Not verified: projects outside the benchmark.
+- Result after build: assumed working
 ### Session 250 — Compiled "mod" with a fixed modulus worked out in place (2026-11-11)
 - Asked: make the compiled "mod" block cheaper with exactly the same answers; look at TurboWarp develop and its closed PR 338 first; warp timer off.
 - Found: TurboWarp develop still calls the same `mod()` helper; PR 338 (`((a % b) + b) % b`) was closed because answers change (last-bit errors, 1 mod 1e20 = 0, -0).
