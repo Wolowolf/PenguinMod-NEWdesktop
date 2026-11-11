@@ -16,7 +16,7 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - **Shipped extensions only (section 105):** the app loads only its built-in extensions, including all 107 gallery extensions (each a chunk of its own; nothing loads from an address since section 110). Projects name extensions by ID only. The integration plan is finished; mechanisms, direct calls and status per extension: `docs/EXTENSION-INTEGRATION.md`. Standard check after engine or compiler changes: `block-eq.mjs auto`.
 - **Engine contacts (section 153):** VM test `desktop_engine_contacts.js` keeps `engine-contacts.json` and fails on any new or removed contact. Shared `runtime.pm*` doors exist for random numbers and the clock, timers, hidden state and the page. What is left, in order: `docs/EXTENSION-INTEGRATION.md` "Hidden state" and "One door to the page".
 - **Editor changes:** 236 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
-- **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80); benchmarks, extension scan, list and hat checks, the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), and putting the galleries into the test app: `docs/PROCEDURES.md`.
+- **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80); benchmarks, extension scan, list and hat checks, the VM regression set (`benchm-regressun.mjs`, Session 253), the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), and putting the galleries into the test app: `docs/PROCEDURES.md`.
 - **Compiler study (2026-11-11, research only):** ours vs TurboWarp, MistWarp and PenguinMod-Port on ScratchBench, plus three throwaway compiler experiments: `docs/COMPILER-STUDY.md`; patches, runner, logs and generated code in `C:\Users\elias\Documents\PenguinMod-test\bench\compiler-study\`.
 - **Not verified yet:**
   - The updater's window and its downloads from a real release while installing a new offline library or packager Electron (its install steps are checked by the local `updater-check.cjs`, Session 116; an update itself worked end to end in Session 30).
@@ -27,6 +27,12 @@ Kept short on purpose (read at the start of every session). Not read by default,
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 253 — VM regression set from TurboWarp's test projects (2026-11-11)
+- Asked: add TurboWarp's self-checking test projects (scratch-vm `0cb82af`, MPL-2.0) and `probe.sb3` as a regression set, a runner (compiled and interpreted, in the test app), today's result as baseline, why projects fail, the command in `docs/PROCEDURES.md`. Tool only.
+- Changed: `docs/PROCEDURES.md` "VM regression set" (command, how it judges, baseline, failures and causes); the tool is outside the repo in `PenguinMod-test\bench\vm-regress\` (`run.mjs`, `projects\`, `baseline.json`). No app change, builds nothing. To reverse: `git revert` the merge.
+- Verified: full run twice in the test app (≈45 s each), second run 0 differences from the saved baseline: 188 runs pass, 22 fail (14 projects), 90 unsupported (the 45 `.sb2` files, section 143), probe output the same compiled and interpreted; the editor's own VM unaffected afterwards. Causes found: section 87 (removed `sensing_userid`), two compiler bugs inherited from upstream PenguinMod (unrounded compiled "size", an argument name that is a number) · Not verified: causes of the other 11 failing projects (listed in `docs/PROCEDURES.md`).
+- Result after build: no build (`.md` only)
 
 ### Session 252 — Faster compare and list item helpers in compiled code (2026-11-11)
 - Asked: port the compiler study's experiment C into the VM: `x === x` instead of `isNaN(x)` in the compare fast paths, a number fast path in `listGet` / `listReplace`; identical answers, tested per helper; ScratchBench with the warp timer off and on.
@@ -41,14 +47,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Changed: section 235 (VM `966b300`, `upstream.json`): a per-target name index, made again when a variable is added, deleted or renamed (`pmVarNamesVersion`) or `variables` is replaced; first match wins as before; non-text names keep the scan. To reverse: `git revert` the merge.
 - Extension check: Events Expansion, Messages+ and Sharktilities use the same lookup; `block-eq auto s251` (everything): new vs interp 0 (1 expected), new vs old 0, page test 0 in every mode.
 - Verified: `bench\bcast-index-check.mjs` in the test app: 1,488 lookups equal to the old scan (add, rename, delete, case duplicates, odd names, replaced `variables`, sprite and clone), 0.04 µs per lookup. ScratchBench (warp timer off, warm-up discarded; one disturbed run replaced): pingpong 72.3 / 74.7 → 377 / 446, restart 75.0 / 72.1 → 365 / 437, total 39,177 / 39,161 → 42,290 / 42,783, every other checksum same · Not verified: projects outside the benchmark.
-- Result after build: assumed working
-
-### Session 250 — Compiled "mod" with a fixed modulus worked out in place (2026-11-11)
-- Asked: make the compiled "mod" block cheaper with exactly the same answers; look at TurboWarp develop and its closed PR 338 first; warp timer off.
-- Found: TurboWarp develop still calls the same `mod()` helper; PR 338 (`((a % b) + b) % b`) was closed because answers change (last-bit errors, 1 mod 1e20 = 0, -0).
-- Changed: section 234 (VM `56421f2`, `upstream.json`): a fixed, finite, non-zero modulus is worked out in place with the helper's own steps; every other modulus still calls `mod()`. To reverse: `git revert` the merge.
-- Extension check: compiler change, but no extension compiles or calls `mod`; `block-eq auto s250` (everything): new vs interp 0 (1 expected), new vs old 0; page test 0 in every mode.
-- Verified: node test, generated code vs helper, 8,955,688 inputs over 443 moduli (edges, subnormals, random bit patterns): 0 differences (the same test finds 285,891 with `r < 0` alone and 3.6 million with PR 338's formula); in the test app, `x mod <fixed>` vs `x mod <variable>` (helper), compiled: 6,402 pairs, 0 differences, no errors, folded fixed values included. ScratchBench (warp timer off, warm-up runs discarded): before 36,238 / 32,464, after 37,600 / 38,713; vars_many 67.9k / 63.4k → 77.2k / 77.1k, vars_local 65.2k / 62.1k → 76.8k / 78.1k, math_arith and math_collatz unchanged (±3%), checksums same · Not verified: projects outside the benchmark.
 - Result after build: assumed working
 
 ## Template (keep entries this short)

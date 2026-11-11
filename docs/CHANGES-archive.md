@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 250 — Compiled "mod" with a fixed modulus worked out in place (2026-11-11)
+- Asked: make the compiled "mod" block cheaper with exactly the same answers; look at TurboWarp develop and its closed PR 338 first; warp timer off.
+- Found: TurboWarp develop still calls the same `mod()` helper; PR 338 (`((a % b) + b) % b`) was closed because answers change (last-bit errors, 1 mod 1e20 = 0, -0).
+- Changed: section 234 (VM `56421f2`, `upstream.json`): a fixed, finite, non-zero modulus is worked out in place with the helper's own steps; every other modulus still calls `mod()`. To reverse: `git revert` the merge.
+- Extension check: compiler change, but no extension compiles or calls `mod`; `block-eq auto s250` (everything): new vs interp 0 (1 expected), new vs old 0; page test 0 in every mode.
+- Verified: node test, generated code vs helper, 8,955,688 inputs over 443 moduli (edges, subnormals, random bit patterns): 0 differences (the same test finds 285,891 with `r < 0` alone and 3.6 million with PR 338's formula); in the test app, `x mod <fixed>` vs `x mod <variable>` (helper), compiled: 6,402 pairs, 0 differences, no errors, folded fixed values included. ScratchBench (warp timer off, warm-up runs discarded): before 36,238 / 32,464, after 37,600 / 38,713; vars_many 67.9k / 63.4k → 77.2k / 77.1k, vars_local 65.2k / 62.1k → 76.8k / 78.1k, math_arith and math_collatz unchanged (±3%), checksums same · Not verified: projects outside the benchmark.
+- Result after build: assumed working
 ### Session 249 — Block Pinning checkboxes act on the original block; dropdown checkboxes of hidden monitors (2026-11-11)
 - Asked: find the cause of the Block Pinning addon's "pinned Blocks with Checkboxes behave weirdly" and fix it to be consistent and fool-proof.
 - Cause: the pinned copy was made with the original's block id. Blockly gives a block whose id already exists a random one, and the Pinned category is built first, so the original got the random id; checkboxes are keyed by block id, so the original's checkbox made monitors under that random id and the two drifted apart. Shown in the test app by the flyout's checkbox ids.
