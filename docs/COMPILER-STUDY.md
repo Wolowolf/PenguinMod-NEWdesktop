@@ -66,3 +66,4 @@ while an install was running). Plain Node (older V8): TurboWarp before the new c
 - L made two benchmark tests 12 to 15% slower (app_raycast, app_ast; not looked into).
 - A's dry runs repeat the work of inner loops (a cache is needed); this is why compile time rose from 26 to 108 ms.
 - The block-eq test cannot catch analysis mistakes (one block per script, no loops), so a fuzz test must come first.
+  Done in Session 256: `docs/PROCEDURES.md` "Type-analysis fuzz test".

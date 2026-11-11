@@ -16,7 +16,8 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - **Shipped extensions only (section 105):** the app loads only its built-in extensions, including all 107 gallery extensions (each a chunk of its own; nothing loads from an address since section 110). Projects name extensions by ID only. The integration plan is finished; mechanisms, direct calls and status per extension: `docs/EXTENSION-INTEGRATION.md`. Standard check after engine or compiler changes: `block-eq.mjs auto`.
 - **Engine contacts (section 153):** VM test `desktop_engine_contacts.js` keeps `engine-contacts.json` and fails on any new or removed contact. Shared `runtime.pm*` doors exist for random numbers and the clock, timers, hidden state and the page. What is left, in order: `docs/EXTENSION-INTEGRATION.md` "Hidden state" and "One door to the page".
 - **Editor changes:** 237 sections, one commit each on the forks' `desktop` branches. One line per section, then details, commits and files: `docs/SECTIONS.md` (Grep `^- <n> ` for one).
-- **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80); benchmarks, extension scan, list and hat checks, the VM regression set (`benchm-regressun.mjs`, Session 253), the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), and putting the galleries into the test app: `docs/PROCEDURES.md`.
+- **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80); benchmarks, extension scan, list and hat checks, the VM regression set (`benchm-regress
+un.mjs`, Session 253), the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), the fuzz test for the compiler's type analysis (`bench\type-fuzz\type-fuzz.mjs`, Session 256), and putting the galleries into the test app: `docs/PROCEDURES.md`.
 - **Compiler study (2026-11-11, research only):** ours vs TurboWarp, MistWarp and PenguinMod-Port on ScratchBench, plus three throwaway compiler experiments: `docs/COMPILER-STUDY.md`; patches, runner, logs and generated code in `C:\Users\elias\Documents\PenguinMod-test\bench\compiler-study\`.
 - **Not verified yet:**
   - The updater's window and its downloads from a real release while installing a new offline library or packager Electron (its install steps are checked by the local `updater-check.cjs`, Session 116; an update itself worked end to end in Session 30).
@@ -27,6 +28,13 @@ Kept short on purpose (read at the start of every session). Not read by default,
   - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
+
+### Session 256 — Fuzz test for the compiler's type analysis (2026-11-11)
+- Asked: a seeded fuzz test (tool only) as the proof for the next compiler steps: random scripts with mixed values, run compiled, compiled with a test switch, and interpreted; a two-script kind with a type change during a pause; show that it catches a planted mistake.
+- Changed: `docs/PROCEDURES.md` "Type-analysis fuzz test" (command, options, known differences, what is kept out, the planted checks), a pointer in `docs/COMPILER-STUDY.md`; the tool is outside the repo in `PenguinMod-test\bench\type-fuzz\` (`type-fuzz.mjs`, `worker.cjs`, `known.json`). No app change, builds nothing. To reverse: `git revert` the merge.
+- Verified: default run (seed `base1`, 6,000 scripts + 2,000 pairs, 33 s) three times on VM `1732cf6`: 73 cases differ, the same each time, all from one existing cause (compiled number conversion turns -0 into 0), recorded as known; planted "for each variable keeps its old type": 63 new differing cases, smallest script 3 lines; planted "types kept across a pause": 8 pairs, 0 single scripts; both removed, VM checkout clean, run again: nothing new; replay by seed + case, a random seed, `runtime:pmNoConstantFolding` (0 differences compiled vs switch in 2,000 cases), an unknown switch, 0 cases · Not verified: an `env:` switch (no code reads one yet); mistakes in block kinds the generator does not make (extensions, waits, broadcasts, clones).
+- Found on the way, not fixed: the -0 difference above; the interpreter's "exit loop" runs the surrounding block again when nothing follows the loop (compiled is right).
+- Result after build: no build (`.md` only)
 
 ### Session 255 — block-eq gives the page its real clock back (2026-11-11)
 - Asked: the VM regression set hung when run after `block-eq` in the same app (`block-eq` left the page's clock frozen); make `block-eq` put it back, update the docs.
@@ -40,12 +48,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Extension check: compiler change for two core blocks only; `block-eq auto s253` (everything): new vs interp 0 (1 expected), new vs old 0, new vs guarded 0, page test 0.
 - Verified: regression set in a fresh test app: exactly `tw-change-size-does-not-use-rounded-size` and `tw-procedure-argument-name-is-literal-number` (compiled) fail → pass, nothing else changed (190 pass, 20 fail, 90 unsupported; new baseline saved); a custom block with a yes/no argument named "1" and a text argument named "2": "truex" compiled and interpreted, no compile error · Not verified: projects outside these tests.
 - Result after build: assumed working
-
-### Session 253 — VM regression set from TurboWarp's test projects (2026-11-11)
-- Asked: add TurboWarp's self-checking test projects (scratch-vm `0cb82af`, MPL-2.0) and `probe.sb3` as a regression set, a runner (compiled and interpreted, in the test app), today's result as baseline, why projects fail, the command in `docs/PROCEDURES.md`. Tool only.
-- Changed: `docs/PROCEDURES.md` "VM regression set" (command, how it judges, baseline, failures and causes); the tool is outside the repo in `PenguinMod-test\bench\vm-regress\` (`run.mjs`, `projects\`, `baseline.json`). No app change, builds nothing. To reverse: `git revert` the merge.
-- Verified: full run twice in the test app (≈45 s each), second run 0 differences from the saved baseline: 188 runs pass, 22 fail (14 projects), 90 unsupported (the 45 `.sb2` files, section 143), probe output the same compiled and interpreted; the editor's own VM unaffected afterwards. Causes found: section 87 (removed `sensing_userid`), two compiler bugs inherited from upstream PenguinMod (unrounded compiled "size", an argument name that is a number) · Not verified: causes of the other 11 failing projects (listed in `docs/PROCEDURES.md`).
-- Result after build: no build (`.md` only)
 
 ## Template (keep entries this short)
 

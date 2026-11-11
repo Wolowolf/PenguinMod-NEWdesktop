@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 253 — VM regression set from TurboWarp's test projects (2026-11-11)
+- Asked: add TurboWarp's self-checking test projects (scratch-vm `0cb82af`, MPL-2.0) and `probe.sb3` as a regression set, a runner (compiled and interpreted, in the test app), today's result as baseline, why projects fail, the command in `docs/PROCEDURES.md`. Tool only.
+- Changed: `docs/PROCEDURES.md` "VM regression set" (command, how it judges, baseline, failures and causes); the tool is outside the repo in `PenguinMod-test\bench\vm-regress\` (`run.mjs`, `projects\`, `baseline.json`). No app change, builds nothing. To reverse: `git revert` the merge.
+- Verified: full run twice in the test app (≈45 s each), second run 0 differences from the saved baseline: 188 runs pass, 22 fail (14 projects), 90 unsupported (the 45 `.sb2` files, section 143), probe output the same compiled and interpreted; the editor's own VM unaffected afterwards. Causes found: section 87 (removed `sensing_userid`), two compiler bugs inherited from upstream PenguinMod (unrounded compiled "size", an argument name that is a number) · Not verified: causes of the other 11 failing projects (listed in `docs/PROCEDURES.md`).
+- Result after build: no build (`.md` only)
+
 ### Session 252 — Faster compare and list item helpers in compiled code (2026-11-11)
 - Asked: port the compiler study's experiment C into the VM: `x === x` instead of `isNaN(x)` in the compare fast paths, a number fast path in `listGet` / `listReplace`; identical answers, tested per helper; ScratchBench with the warp timer off and on.
 - Changed: section 236 (VM `0a00661`, `upstream.json`): see `docs/SECTIONS.md`. Why identical: the compare fast paths already know both values are numbers, and for a number `isNaN(x)` is exactly `x !== x`; the list fast paths repeat `listIndex's` number steps (`(idx | 0) - 1`, same range check), and `listGet` hands every `undefined` read back to the old code. To reverse: `git revert` the merge.
