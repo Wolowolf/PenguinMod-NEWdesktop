@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 254 — Compiled "size" rounded and number-named custom block arguments (2026-11-11)
+- Asked: fix the two compiler bugs inherited from upstream PenguinMod that the VM regression set found.
+- Changed: section 237 (VM `1732cf6`, `upstream.json`): see `docs/SECTIONS.md`. `bench\vm-regress\run.mjs` now refuses to run in a page whose clock was replaced by `block-eq` (it hung there); `docs/PROCEDURES.md` baseline updated. To reverse: `git revert` the merge.
+- Extension check: compiler change for two core blocks only; `block-eq auto s253` (everything): new vs interp 0 (1 expected), new vs old 0, new vs guarded 0, page test 0.
+- Verified: regression set in a fresh test app: exactly `tw-change-size-does-not-use-rounded-size` and `tw-procedure-argument-name-is-literal-number` (compiled) fail → pass, nothing else changed (190 pass, 20 fail, 90 unsupported; new baseline saved); a custom block with a yes/no argument named "1" and a text argument named "2": "truex" compiled and interpreted, no compile error · Not verified: projects outside these tests.
+- Result after build: assumed working
+
 ### Session 253 — VM regression set from TurboWarp's test projects (2026-11-11)
 - Asked: add TurboWarp's self-checking test projects (scratch-vm `0cb82af`, MPL-2.0) and `probe.sb3` as a regression set, a runner (compiled and interpreted, in the test app), today's result as baseline, why projects fail, the command in `docs/PROCEDURES.md`. Tool only.
 - Changed: `docs/PROCEDURES.md` "VM regression set" (command, how it judges, baseline, failures and causes); the tool is outside the repo in `PenguinMod-test\bench\vm-regress\` (`run.mjs`, `projects\`, `baseline.json`). No app change, builds nothing. To reverse: `git revert` the merge.
