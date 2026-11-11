@@ -28,6 +28,12 @@ Kept short on purpose (read at the start of every session). Not read by default,
 
 ## Recent sessions (newest first, at most 3; move older ones to the top of the archive's change log)
 
+### Session 255 — block-eq gives the page its real clock back (2026-11-11)
+- Asked: the VM regression set hung when run after `block-eq` in the same app (`block-eq` left the page's clock frozen); make `block-eq` put it back, update the docs.
+- Changed: local test tools only (`benchlock-eq-page.js` `__beq.restore()`: `Math.random`, `crypto` random functions, `Date`, `performance.now`, timers, the engine's clock, step timer and frame loop; `benchlock-eq.mjs` calls it after the last job and when a job stops); `docs/PROCEDURES.md` "VM regression set". No app change. To reverse: `git revert` the merge.
+- Verified: in one fresh test app, `ONLY='^SPtempVars_' block-eq.mjs run` then the full regression set: ran normally (39 s, 0 changes from baseline); afterwards the editor's frame loop runs, its clock is the real one · Not verified: a full `block-eq all` (each mode starts its own app anyway).
+- Result after build: no build (`.md` only)
+
 ### Session 254 — Compiled "size" rounded and number-named custom block arguments (2026-11-11)
 - Asked: fix the two compiler bugs inherited from upstream PenguinMod that the VM regression set found.
 - Changed: section 237 (VM `1732cf6`, `upstream.json`): see `docs/SECTIONS.md`. `bench\vm-regress\run.mjs` now refuses to run in a page whose clock was replaced by `block-eq` (it hung there); `docs/PROCEDURES.md` baseline updated. To reverse: `git revert` the merge.
@@ -40,13 +46,6 @@ Kept short on purpose (read at the start of every session). Not read by default,
 - Changed: `docs/PROCEDURES.md` "VM regression set" (command, how it judges, baseline, failures and causes); the tool is outside the repo in `PenguinMod-test\bench\vm-regress\` (`run.mjs`, `projects\`, `baseline.json`). No app change, builds nothing. To reverse: `git revert` the merge.
 - Verified: full run twice in the test app (≈45 s each), second run 0 differences from the saved baseline: 188 runs pass, 22 fail (14 projects), 90 unsupported (the 45 `.sb2` files, section 143), probe output the same compiled and interpreted; the editor's own VM unaffected afterwards. Causes found: section 87 (removed `sensing_userid`), two compiler bugs inherited from upstream PenguinMod (unrounded compiled "size", an argument name that is a number) · Not verified: causes of the other 11 failing projects (listed in `docs/PROCEDURES.md`).
 - Result after build: no build (`.md` only)
-
-### Session 252 — Faster compare and list item helpers in compiled code (2026-11-11)
-- Asked: port the compiler study's experiment C into the VM: `x === x` instead of `isNaN(x)` in the compare fast paths, a number fast path in `listGet` / `listReplace`; identical answers, tested per helper; ScratchBench with the warp timer off and on.
-- Changed: section 236 (VM `0a00661`, `upstream.json`): see `docs/SECTIONS.md`. Why identical: the compare fast paths already know both values are numbers, and for a number `isNaN(x)` is exactly `x !== x`; the list fast paths repeat `listIndex's` number steps (`(idx | 0) - 1`, same range check), and `listGet` hands every `undefined` read back to the old code. To reverse: `git revert` the merge.
-- Extension check: compiler helpers, no extension calls them directly; `block-eq auto s252` (everything): new vs interp 0 (1 expected), new vs old 0, page test 0 in every mode.
-- Verified: `benchhelper-eq.cjs` old vs new helpers: 0 differences (110M compare calls, 145k list calls; a deliberately wrong version is caught). ScratchBench before → after, two runs each (warm-up discarded), checksums same: warp timer off total 44,225 / 44,365 → 44,976 / 45,672, algo_sort 100k → 202k (2.0x), algo_sieve 98k → 130k (1.3x), list_replace +5–10%; warp timer on total 30,899 / 30,581 → 31,311 / 31,082, algo_sort 1.5–1.6x, algo_sieve 1.04–1.11x; others within noise (±5%, loops_ifelse and math_round 0.91–0.95x in run 1 only) · Not verified: projects outside the benchmark.
-- Result after build: assumed working
 
 ## Template (keep entries this short)
 
