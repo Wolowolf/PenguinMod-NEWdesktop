@@ -230,3 +230,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 242 compiled code keeps variable types through loops that cannot pause (VM)
 - 243 compiled sin, cos, asin, acos, atan compute as the interpreter does (VM)
 - 244 compiled code keeps variable types across calls to custom blocks that cannot pause (VM)
+- 245 compiled code keeps variables in JavaScript locals inside loops that cannot pause (VM)
