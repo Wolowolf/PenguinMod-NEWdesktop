@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 256 — Fuzz test for the compiler's type analysis (2026-11-11)
+- Asked: a seeded fuzz test (tool only) as the proof for the next compiler steps: random scripts with mixed values, run compiled, compiled with a test switch, and interpreted; a two-script kind with a type change during a pause; show that it catches a planted mistake.
+- Changed: `docs/PROCEDURES.md` "Type-analysis fuzz test" (command, options, known differences, what is kept out, the planted checks), a pointer in `docs/COMPILER-STUDY.md`; the tool is outside the repo in `PenguinMod-test\bench\type-fuzz\` (`type-fuzz.mjs`, `worker.cjs`, `known.json`). No app change, builds nothing. To reverse: `git revert` the merge.
+- Verified: default run (seed `base1`, 6,000 scripts + 2,000 pairs, 33 s) three times on VM `1732cf6`: 73 cases differ, the same each time, all from one existing cause (compiled number conversion turns -0 into 0), recorded as known; planted "for each variable keeps its old type": 63 new differing cases, smallest script 3 lines; planted "types kept across a pause": 8 pairs, 0 single scripts; both removed, VM checkout clean, run again: nothing new; replay by seed + case, a random seed, `runtime:pmNoConstantFolding` (0 differences compiled vs switch in 2,000 cases), an unknown switch, 0 cases · Not verified: an `env:` switch (no code reads one yet); mistakes in block kinds the generator does not make (extensions, waits, broadcasts, clones).
+- Found on the way, not fixed: the -0 difference above; the interpreter's "exit loop" runs the surrounding block again when nothing follows the loop (compiled is right).
+- Result after build: no build (`.md` only)
+
 ### Session 255 — block-eq gives the page its real clock back (2026-11-11)
 - Asked: the VM regression set hung when run after `block-eq` in the same app (`block-eq` left the page's clock frozen); make `block-eq` put it back, update the docs.
 - Changed: local test tools only (`benchlock-eq-page.js` `__beq.restore()`: `Math.random`, `crypto` random functions, `Date`, `performance.now`, timers, the engine's clock, step timer and frame loop; `benchlock-eq.mjs` calls it after the last job and when a job stops); `docs/PROCEDURES.md` "VM regression set". No app change. To reverse: `git revert` the merge.
