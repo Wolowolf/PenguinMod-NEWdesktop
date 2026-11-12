@@ -14,12 +14,12 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 264 — Variables kept in JavaScript locals inside loops that cannot pause (2026-11-12)
-- Asked: variables in JavaScript locals inside loops that cannot pause (experiment L, MistWarp 3d898e6c), the loop step's block kinds, no cloud variables, written back each round of the outermost loop; first find why the experiment slowed app_raycast and app_ast; test switch; prove; measure with ScratchBench, warp timer off.
-- Found: app_ast was noise. app_raycast was real: a whole number made by "floor" is an integer for the engine in the variable's object but a fraction number in a local. Rule: a variable the loop sets from floor / ceiling / round stays in its object. MistWarp's NaN-and-lists rule was slower here, not taken.
-- Changed: section 245 (VM `dc44b70`, `upstream.json`): see `docs/SECTIONS.md`; switch `runtime.pmNoLoopLocals`. New local tools `bench\looplocals-check.cjs`, `one-vm.cjs` (`docs/PROCEDURES.md`). To reverse: `git revert` the merge.
-- Extension check: a loop containing an extension block is compiled as before; `block-eq auto`: 0 of 638 blocks differ.
-- Verified: `verify-compiler s245 --switch pmNoLoopLocals` 10 steps ok; `looplocals-check.cjs` 29 cases ok; 4 planted mistakes caught; ScratchBench 45.7k / 46.0k → 60.9k / 59.7k points, same checksums, app_raycast 1.29 / 1.23 times · Not solved: algo_sieve 0.87 / 0.82, algo_sort 0.83 / 0.92 in the app (`docs/BENCH-BASELINE.md`).
+### Session 265 — Finer number facts in the compiler: cannot be NaN, is a whole number (2026-11-12)
+- Asked: track "cannot be NaN" and "is a whole number" (constants, + - * /, round / floor / ceiling, list length, loop counters, variables) so NaN guards disappear where proven; TurboWarp's rules checked; a matrix test like theirs; test switch; prove.
+- Changed: section 246 (VM `4e25045`, `upstream.json`): see `docs/SECTIONS.md`; switch `runtime.pmNoNumberFacts`. New local tool `bench\number-facts\number-facts-check.cjs` (`docs/PROCEDURES.md`). To reverse: `git revert` the merge.
+- Found: TurboWarp's + - * / rules hold (rederived, mine are tighter for Infinity). Issue 362 exists here too ("pick random" with an infinite fixed bound typed "never NaN"): type corrected. My own first sin / cos rule was wrong (huge angle → NaN) and the new check caught it: removed.
+- Extension check: extension blocks get the same values (only proven-never-NaN values lose a guard); `block-eq auto`: 0 of 638 blocks differ.
+- Verified: matrix check 2,148,169 checks ok, 15 planted mistakes caught; `verify-compiler s246 --switch pmNoNumberFacts` 10 steps ok; `calltypes-check`, `looplocals-check` ok; ScratchBench 62.8k / 63.1k → 64.4k / 64.7k, same checksums · Not verified: that the switch gives byte-identical old code (by construction only); compile time; "whole number" changes no code yet.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
