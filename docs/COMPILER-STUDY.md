@@ -65,5 +65,6 @@ while an install was running). Plain Node (older V8): TurboWarp before the new c
   kinds for loop bodies, and "exit loop" / "continue loop" must switch it off, as the experiment does.
 - L made two benchmark tests 12 to 15% slower (app_raycast, app_ast; not looked into).
 - A's dry runs repeat the work of inner loops (a cache is needed); this is why compile time rose from 26 to 108 ms.
+  Done in section 242 (Session 260): results remembered per loop and entry state, compile time about 1.5 times.
 - The block-eq test cannot catch analysis mistakes (one block per script, no loops), so a fuzz test must come first.
   Done in Session 256: `docs/PROCEDURES.md` "Type-analysis fuzz test".

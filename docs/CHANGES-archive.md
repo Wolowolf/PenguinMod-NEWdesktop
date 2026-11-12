@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 257 — Compiled code keeps -0; the interpreter's "exit loop" fixed (2026-11-12)
+- Asked: fix the two differences the fuzz test found (Session 256).
+- Changed: sections 238 and 239 (VM `3999802`, `9e97058`, `upstream.json`): see `docs/SECTIONS.md`. Fuzz tool: the loop shape that hung the interpreter is back in the mix, the math functions were added, `known.json` is empty; `docs/PROCEDURES.md` updated. To reverse: `git revert` the merge.
+- Extension check: number conversion in compiled code changes for every block, so `block-eq auto s256` ran everything: new vs interp 0 (1 expected), new vs old 0, new vs guarded 0, page test 0.
+- Verified: fuzz test, seed `base1` and a random seed, 8,000 cases each: no difference (before: 73 known; with the loop shape allowed the interpreter hung); VM regression set in the test app: 0 changes from the baseline (a first run showed `tw-tangent` failing compiled: the compiled `tan` gave -0 for 360, hidden until now; fixed in 238); ScratchBench 48.3k and 48.7k against 44.3k (`s252-warmA`): not slower · Not verified: asin / acos / atan differ compiled vs interpreted in the last digit (found on the way, not fixed, kept out of the fuzz mix).
+- Result after build: assumed working
 ### Session 256 — Fuzz test for the compiler's type analysis (2026-11-11)
 - Asked: a seeded fuzz test (tool only) as the proof for the next compiler steps: random scripts with mixed values, run compiled, compiled with a test switch, and interpreted; a two-script kind with a type change during a pause; show that it catches a planted mistake.
 - Changed: `docs/PROCEDURES.md` "Type-analysis fuzz test" (command, options, known differences, what is kept out, the planted checks), a pointer in `docs/COMPILER-STUDY.md`; the tool is outside the repo in `PenguinMod-test\bench\type-fuzz\` (`type-fuzz.mjs`, `worker.cjs`, `known.json`). No app change, builds nothing. To reverse: `git revert` the merge.
