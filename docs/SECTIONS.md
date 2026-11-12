@@ -232,3 +232,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 244 compiled code keeps variable types across calls to custom blocks that cannot pause (VM)
 - 245 compiled code keeps variables in JavaScript locals inside loops that cannot pause (VM)
 - 246 compiled code tracks which numbers cannot be NaN (and which are whole) and leaves out the NaN guard there (VM)
+- 247 compiled code keeps variable types after 1,431 extension blocks that cannot change variables, also through loops and custom blocks (VM)

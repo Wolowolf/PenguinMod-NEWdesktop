@@ -14,12 +14,12 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 265 — Finer number facts in the compiler: cannot be NaN, is a whole number (2026-11-12)
-- Asked: track "cannot be NaN" and "is a whole number" (constants, + - * /, round / floor / ceiling, list length, loop counters, variables) so NaN guards disappear where proven; TurboWarp's rules checked; a matrix test like theirs; test switch; prove.
-- Changed: section 246 (VM `4e25045`, `upstream.json`): see `docs/SECTIONS.md`; switch `runtime.pmNoNumberFacts`. New local tool `bench\number-facts\number-facts-check.cjs` (`docs/PROCEDURES.md`). To reverse: `git revert` the merge.
-- Found: TurboWarp's + - * / rules hold (rederived, mine are tighter for Infinity). Issue 362 exists here too ("pick random" with an infinite fixed bound typed "never NaN"): type corrected. My own first sin / cos rule was wrong (huge angle → NaN) and the new check caught it: removed.
-- Extension check: extension blocks get the same values (only proven-never-NaN values lose a guard); `block-eq auto`: 0 of 638 blocks differ.
-- Verified: matrix check 2,148,169 checks ok, 15 planted mistakes caught; `verify-compiler s246 --switch pmNoNumberFacts` 10 steps ok; `calltypes-check`, `looplocals-check` ok; ScratchBench 62.8k / 63.1k → 64.4k / 64.7k, same checksums · Not verified: that the switch gives byte-identical old code (by construction only); compile time; "whole number" changes no code yet.
+### Session 266 — Keep variable types after extension blocks that cannot change variables (2026-11-12)
+- Asked: stop forgetting variable types after extension blocks that are called plainly, never wait and write none of variables, threads, script, events, blocks, project (block-inventory.json); count them, spot-check 20 in their source; test switch; prove with block-eq auto, compile-eq and the fuzz test with such blocks.
+- Changed: section 247 (VM `751df5d`, `upstream.json`): see `docs/SECTIONS.md`; switch `runtime.pmNoKeepTypesAfterExtensions`. Also lets loops and custom blocks holding these blocks keep types (sections 242/244), not loop locals. Fuzz `--with ext` (`docs/PROCEDURES.md`). To reverse: `git revert` the merge.
+- Found: 1,431 blocks qualify (737 commands, 538 reporters, 156 Booleans); 20 read in source, none sets variables, starts scripts or pauses.
+- Extension check: only these 1,431 blocks are affected, and they get the same values; `block-eq auto`: 0 of 638 blocks differ (new/guarded/interp/old).
+- Verified: `verify-compiler s247 --switch pmNoKeepTypesAfterExtensions` 10 steps ok; fuzz `--with ext` 4 ways ok; planted mistake caught · Not verified: speed (ScratchBench and the regression projects compile unchanged: no such blocks in them).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
