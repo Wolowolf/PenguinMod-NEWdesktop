@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 258 — Variable set to a number literal is known as a number (2026-11-12)
+- Asked: in the compiler, a variable set to a fixed number literal is known to hold a number (`patch-a2.cjs`), behind a test switch; prove with compile-eq, the fuzz test and the regression projects.
+- Changed: section 240 (VM `a067d14`, `upstream.json`): see `docs/SECTIONS.md`; switch `runtime.pmNoLiteralNumberType`. To reverse: `git revert` the merge.
+- Extension check: variables set to numbers feed every extension's inputs in `block-eq`, so `auto s258` ran everything: new vs interp 0 (1 expected), new vs old 0, new vs guarded 0, page test 0.
+- Verified: compile-eq with the switch: VM regression projects 7 of 328 scripts differ (6 real, in `tw-forkphorus-515-…`, `tw-list-search-and-get`, `tw-procedure-code-has-multiple-variants`, `tw-unsafe-equals`: the number conversion dropped; 1 only a randomly made variable ID), benchmark projects 0 of 426 (37 and 38 left out: too big for the debug connection), ScratchBench 0 of 85; fuzz test with the switch, seed `base1` and a random seed, plus `base1` with the warp timer: nothing new (8,000 cases each); planted "every fixed value is a number": 3 differences within 23 cases; VM regression set: 0 changes from the baseline, the 4 changed projects pass in both modes · Not verified: speed (not measured).
+- Result after build: assumed working
 ### Session 257 — Compiled code keeps -0; the interpreter's "exit loop" fixed (2026-11-12)
 - Asked: fix the two differences the fuzz test found (Session 256).
 - Changed: sections 238 and 239 (VM `3999802`, `9e97058`, `upstream.json`): see `docs/SECTIONS.md`. Fuzz tool: the loop shape that hung the interpreter is back in the mix, the math functions were added, `known.json` is empty; `docs/PROCEDURES.md` updated. To reverse: `git revert` the merge.
