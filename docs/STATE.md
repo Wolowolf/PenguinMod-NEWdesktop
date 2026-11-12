@@ -16,3 +16,20 @@ Not read by default: Grep for the part you need (each bullet starts with its nam
 - **Editor changes:** 243 sections, one commit each on the forks' `desktop` branches. One short line per section: `docs/SECTIONS.md` (Grep `^- <n> ` for one); what each does, commits and files: `docs/SECTIONS-details.md` (Grep `^- <n>:`).
 - **Local tools (outside the repo, in the local test folder):** `cdp.mjs` and `tweak.mjs` (CLAUDE.md; `tweak.mjs fork` also takes the three gallery keys since Session 80; `tweak.mjs finish`, `cdp.mjs steps-file` and `run-local-test.ps1 -StepsFile` since Session 262); the compiler proofs in one command (`bencherify-compiler.mjs`, Session 262); benchmarks, extension scan, list and hat checks, the VM regression set (`benchm-regressun.mjs`, Session 253), the equality test for every extension block (`bench\block-eq.mjs`, Session 131; `auto` since Session 146; `page` for page blocks since Session 148) and for section 138's core blocks (`bench\core-eq.mjs`, Session 139), the fuzz test for the compiler's type analysis (`bench\type-fuzz\type-fuzz.mjs`, Session 256), and putting the galleries into the test app: `docs/PROCEDURES.md`.
 - **Compiler study (2026-11-11, research only):** ours vs TurboWarp, MistWarp and PenguinMod-Port on ScratchBench, plus three throwaway compiler experiments: `docs/COMPILER-STUDY.md`; patches, runner, logs and generated code in `C:\Users\elias\Documents\PenguinMod-test\bench\compiler-study\`.
+
+## Files and forks
+
+| Path | What it is |
+| --- | --- |
+| `app/electron-main.js` | Main process, menu (System → Check for Updates, Reload), maps URLs to offline folders |
+| `app/preload.js` | Preload script |
+| `app/updater.js` | Update engine (no Electron dependency); installs this fork's `win-unpacked.zip` |
+| Forks `Wolowolf/<upstream.json key>` | My copies of the 13 upstream projects (e.g. `Wolowolf/penguinmod.github.io` = GUI). Branch `pinned` = the untouched upstream commit; branch `desktop` (which projects: "Upstream pins" above) = upstream plus all editor and packager changes, one commit per section |
+| Forks of git-hosted npm packages | 7 ("Upstream pins" above; branch `pinned`). Branches `dep/<commit>` = an old upstream commit installed as a dependency, with only its `package.json` pointed at the forks. Every `package.json` names git packages as `github:Wolowolf/<repo>#<full commit>` |
+| `app/offline-library.json` | Which offline library (Kenney, game-icons.net, sound generators) this app version needs |
+| `library/kenney-packs.json`, `scripts/make-offline-library.mjs` | The Kenney pack list and the script that builds the offline library zip (run on a PC) |
+| `.github/workflows/main.yml` | The CI build (Windows only) |
+| `package.json` | Entry point and electron-builder settings (NSIS installer, `.pmp` association) |
+| `upstream.json` | The fork and exact commit of each of the 13 projects (9 for CI and the local test, 4 for the offline-library script) |
+| `npm-snapshot.json`, `.github/workflows/npm-snapshot.yml` | Which npm snapshot release the build restores as Bun's package cache, and the manual workflow that makes one |
+| `scripts/clone-pinned.js` | Downloads one project from `upstream.json` (`node scripts/clone-pinned.js <name> [folder]`) |
