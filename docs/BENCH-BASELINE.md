@@ -371,6 +371,7 @@ The sizes of costs are measured; every gain below is a guess until built.
 | done | Collision grid (section 190) | project 47: work 100.7 → 5.2 ms; earlier "1.0 ms" evidence could not show it (one candidate) | measured, see "Collision grid" |
 | 7 | Typed variables / number lists (speed) | raycaster scripts 1.1 ms | measured: small |
 | 8 | Custom block inlining | 27,000 calls 0.7 ms | measured: small |
+| done | A custom block calling itself calls its own function by name (section 248, Session 267) | ScratchBench algo_fib +22–29%, algo_ack +13–20% (3 pairs in the app); one call 4.2 → 3.5 ns (fib), 5.6 → 4.7 ns (ack). Not worth it, measured: leaving out the `thread.spoofing` check (±0) and remembering other custom blocks' functions (app_ast ±0) | measured |
 | 9 | Worker for rendering | at most draw's 2.1 ms in 25 | gain limit measured: small now; large change |
 
 Recommendation (Session 179): cheaper clone deletion first (part of rank 3), measured with 32 at ×2; then rank 2, measured with 25.
