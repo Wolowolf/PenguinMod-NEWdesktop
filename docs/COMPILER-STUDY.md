@@ -64,6 +64,19 @@ while an install was running). Plain Node (older V8): TurboWarp before the new c
 - A and L use a short list of block kinds and do not know extension kinds: a real version needs a list of allowed
   kinds for loop bodies, and "exit loop" / "continue loop" must switch it off, as the experiment does.
 - L made two benchmark tests 12 to 15% slower (app_raycast, app_ast; not looked into).
+  Looked into and built as section 245 (Session 264). app_ast was noise: the experiment's two runs differ by 23% from
+  each other, and it is 5 to 16% faster with the real version. app_raycast was real (7% slower with everything in
+  locals): the ray's map square (`floor` of the position, then stepped by 1) is a whole number; in the variable's
+  object the JavaScript engine has noted "only small whole numbers" and computes with it as an integer, in a local it
+  only sees `Math.floor`'s result, a fraction number, and converts on every use. Keeping just those two variables in
+  their objects: 32% faster than without locals (and a throwaway `| 0` after the floor, which tells the engine
+  "integer", made the all-locals code as fast: 87 → 125 rounds per ms). Rule in section 245: a variable the loop sets to the result of
+  floor / ceiling / round stays in its object. Not the cause: re-wrapping fraction numbers handed to the compare
+  helpers (0 garbage collections without locals, about 190 with; keeping those variables out changed nothing
+  measurable). MistWarp's own rule (a variable stored into a list as a number that might be NaN stays in its
+  object, `3d898e6c`) was measured and NOT taken over: here it made algo_matmul 1.25 times faster instead of 1.64
+  (our list writes go through `listReplace`, a call, not a direct array store).
+  Tools for such questions: `PenguinMod-test\bench\compiler-study\runner\one-vm.cjs` (`docs/PROCEDURES.md`).
 - A's dry runs repeat the work of inner loops (a cache is needed); this is why compile time rose from 26 to 108 ms.
   Done in section 242 (Session 260): results remembered per loop and entry state, compile time about 1.5 times.
 - The block-eq test cannot catch analysis mistakes (one block per script, no loops), so a fuzz test must come first.
