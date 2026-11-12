@@ -16,7 +16,7 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ### Session 262 — Token savings: smaller start, fewer steps (2026-11-12)
 - Asked: build the token audit's options 1, 2, 4 to 12, 14 and 16, plus two new rules (unrelated request after a merge; several changes in one prompt).
-- Changed: `CLAUDE.md` tightened and the two rules added; "Current state" moved to `docs/STATE.md`; `CHANGES.md` keeps the open points and one short last session; `docs/SECTIONS.md` is the index only (details in `docs/SECTIONS-details.md`); local tools: `tweak.mjs finish` (and `start` prints `CHANGES.md`), `bench\verify-compiler.mjs`, `cdp.mjs steps-file`, `run-local-test.ps1 -StepsFile`; `.claude/settings.local.json` (not in git) with 5 environment variables. To reverse: `git revert` the merge; the old scripts are in the archive entry's note.
+- Changed: `CLAUDE.md` tightened and the two rules added; "Current state" moved to `docs/STATE.md`; `CHANGES.md` keeps the open points and one short last session; `docs/SECTIONS.md` is the index only (details in `docs/SECTIONS-details.md`); local tools: `tweak.mjs finish` (and `start` prints `CHANGES.md`), `bench\verify-compiler.mjs`, `cdp.mjs steps-file`, `run-local-test.ps1 -StepsFile`; `.claude/settings.local.json` (not in git) with 5 environment variables. To reverse: `git revert` the merge; the script changes only add commands (the old ones work as before).
 - Verified: `finish` dry run on a throwaway copy (twice, 7 bad inputs), steps file in the test app, all 10 steps of `verify-compiler` · Not verified: whether the desktop app honours the environment variables; the savings themselves.
 - Result after build: builds nothing (`.md` only)
 
