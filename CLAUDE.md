@@ -54,20 +54,7 @@ Every step (one message of tool calls) sends the whole conversation again: a ste
 ## Project
 A thin Electron wrapper around the PenguinMod **editor only** (no home page). The editor is not in this repo: CI downloads my forks of the PenguinMod GUI and its libraries at the commits in `upstream.json` (they include all editor changes), builds them, and packs them into the app with offline copies of the extension galleries and the offline asset library.
 
-| Path | What it is |
-| --- | --- |
-| `app/electron-main.js` | Main process, menu (System → Check for Updates, Reload), maps URLs to offline folders |
-| `app/preload.js` | Preload script |
-| `app/updater.js` | Update engine (no Electron dependency); installs this fork's `win-unpacked.zip` |
-| Forks `Wolowolf/<upstream.json key>` | My copies of the 13 upstream projects (e.g. `Wolowolf/penguinmod.github.io` = GUI). Branch `pinned` = the untouched upstream commit; branch `desktop` (which projects: `docs/STATE.md`) = upstream plus all editor and packager changes, one commit per section |
-| Forks of git-hosted npm packages | 7 (`docs/STATE.md`; branch `pinned`). Branches `dep/<commit>` = an old upstream commit installed as a dependency, with only its `package.json` pointed at the forks. Every `package.json` names git packages as `github:Wolowolf/<repo>#<full commit>` |
-| `app/offline-library.json` | Which offline library (Kenney, game-icons.net, sound generators) this app version needs |
-| `library/kenney-packs.json`, `scripts/make-offline-library.mjs` | The Kenney pack list and the script that builds the offline library zip (run on a PC) |
-| `.github/workflows/main.yml` | The CI build (Windows only) |
-| `package.json` | Entry point and electron-builder settings (NSIS installer, `.pmp` association) |
-| `upstream.json` | The fork and exact commit of each of the 13 projects (9 for CI and the local test, 4 for the offline-library script) |
-| `npm-snapshot.json`, `.github/workflows/npm-snapshot.yml` | Which npm snapshot release the build restores as Bun's package cache, and the manual workflow that makes one |
-| `scripts/clone-pinned.js` | Downloads one project from `upstream.json` (`node scripts/clone-pinned.js <name> [folder]`) |
+Files and forks, one line each: `docs/STATE.md` "Files and forks". Forks `Wolowolf/<upstream.json key>`: branch `pinned` = the untouched upstream commit, branch `desktop` = upstream plus all editor and packager changes, one commit per section.
 
 Editor changes (commits in my forks):
 - Make them in the local test's cached checkouts, which are clones of the forks: GUI `C:\Users\elias\Documents\PenguinMod-test\src\penguinmod.github.io`, VM / Render / Blocks / Paint in its `node_modules\scratch-vm`, `scratch-render`, `scratch-blocks`, `scratch-paint`, extension galleries `C:\Users\elias\Documents\PenguinMod-test\galleries\<upstream.json key>`, packager `C:\Users\elias\Documents\PenguinMod-test\src\PenguinMod-Packager` (built with the editor's VM and Render, so a VM or Render change needs no packager commit). Test them uncommitted (uncommitted changes are built).
