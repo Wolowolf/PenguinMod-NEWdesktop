@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `/CHANGES.md` and `docs/SECTIONS.md` win where they differ. Sessions dropped from `/CHANGES.md` go on top of the change log. The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 255 — block-eq gives the page its real clock back (2026-11-11)
+- Asked: the VM regression set hung when run after `block-eq` in the same app (`block-eq` left the page's clock frozen); make `block-eq` put it back, update the docs.
+- Changed: local test tools only (`benchlock-eq-page.js` `__beq.restore()`: `Math.random`, `crypto` random functions, `Date`, `performance.now`, timers, the engine's clock, step timer and frame loop; `benchlock-eq.mjs` calls it after the last job and when a job stops); `docs/PROCEDURES.md` "VM regression set". No app change. To reverse: `git revert` the merge.
+- Verified: in one fresh test app, `ONLY='^SPtempVars_' block-eq.mjs run` then the full regression set: ran normally (39 s, 0 changes from baseline); afterwards the editor's frame loop runs, its clock is the real one · Not verified: a full `block-eq all` (each mode starts its own app anyway).
+- Result after build: no build (`.md` only)
+
 ### Session 254 — Compiled "size" rounded and number-named custom block arguments (2026-11-11)
 - Asked: fix the two compiler bugs inherited from upstream PenguinMod that the VM regression set found.
 - Changed: section 237 (VM `1732cf6`, `upstream.json`): see `docs/SECTIONS.md`. `bench\vm-regress\run.mjs` now refuses to run in a page whose clock was replaced by `block-eq` (it hung there); `docs/PROCEDURES.md` baseline updated. To reverse: `git revert` the merge.
