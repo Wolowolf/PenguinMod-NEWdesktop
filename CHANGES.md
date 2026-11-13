@@ -14,11 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 274 — Plain Map for the thread map (2026-11-13)
-- Asked: scheduler study cause 6b: replace the ThreadMap subclass (section 168) with a plain Map plus a changed flag; stop if anything outside the VM writes to the map. It did (SharkPool Extra Controls in the offline gallery); you said go ahead with a size check as safety net and a test referee.
-- Changed: section 255 (VM 0905627: `runtime.js`, `sequencer.js`, `pm_eventsExpansion`, bundled Extra Controls). To reverse: `git revert` the merge.
-- Measured: sched-study `ablate.sh` 6 rounds, ours/MistWarp before → after (runs/s): clonechurn 206/247 → 213/237 (gap x1.20 → x1.11), pingpong 538/703 → 602/735 (x1.31 → x1.22), fanout 2599 → 2702, fanwait 2674 → 2682, threads 22135 → 23095 (MistWarp moved 1-4 % too: noise).
-- Verified: referee (`bench\threadmap-referee.js`: rebuilds the map every tick and compares; clones, broadcasts with restarts, broadcast and wait, stop other scripts, delete clone, Extra Controls "run async") 0 differences, same result as the old code; stray write/delete repaired; with the size check sabotaged a stray entry stays and the referee flags it. block-eq auto s274 (everything) 1659 + 638 blocks identical in every mode, 0 jobs differ from s273 · Not verified: nothing beyond the CI build
+### Session 275 — Addon page cleanup (2026-11-13)
+- Asked: a CLAUDE.md rule that "delete" also means removing the code only that thing used; on the addon page: credits in quiet ink without links or "Credits:", right-aligned beside the reset arrow (same place without one); no puzzle/brush icons; remove five info notes (Ctrl/Cmd and Alt/Option in the drag-keys description, option renamed "Make individual grab default").
+- Changed: section 256 (GUI 1b35cc3: addon settings page, manifests, translations, 2 icons deleted); CLAUDE.md rule. To reverse: `git revert` the merge.
+- Verified: test app addon page: credits right-aligned at the same x in every addon with or without arrow, grey quiet ink, 0 links, 0 icons; drag-keys text and option name as asked; cards narrowed to 420 px: credits cut with "…", arrow keeps its place. The pinned-blocks warning was already absent from the code. · Not verified: other languages on screen.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)

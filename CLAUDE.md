@@ -10,6 +10,7 @@ Loaded automatically: don't read it again. `tweak.mjs start` prints `CHANGES.md`
 - Always separate what you verified (ran, saw, measured) from what you did not (reasoned, could not run). Never write "this works" for something you could not run.
 - Assume every build works until I say otherwise: don't mark builds as untested, and don't watch, download or check them after a merge.
 - Small changes, only what I asked. If a request is ambiguous, pick the most likely reading and say which one.
+- When I explicitly ask to delete something, delete it both from what users see and from the code: also remove the code, files, styles, texts and translations that only it used (anything nothing else uses or needs).
 - If I ask for something unrelated in a conversation whose tweak is already merged, show the "New session / Do it here" card before doing any work.
 - If I ask for several changes in one prompt, decide per case and tell me which you chose: one conversation each when a change needs its own build and test, the same conversation when they are small or touch the same files. Separate conversations run one after another, never at the same time (one folder, one test app, no worktrees): start the next only after the previous one merged.
 - Compatibility with older projects (saved files, stored settings, old formats, old extension data) is never taken into account unless I say so explicitly: no migration or fallback code, don't keep old data readable, don't mention it as a risk.
