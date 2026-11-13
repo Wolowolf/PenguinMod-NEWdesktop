@@ -7,6 +7,7 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 - **Not verified yet:**
   - The updater's window and its downloads from a real release while installing a new offline library or packager Electron (its install steps are checked by the local `updater-check.cjs`, Session 116; an update itself worked end to end in Session 30).
   - Opening a `.pmp` by double-click (the test app cannot be started by Windows with a file; a second start of the test app with a file opens it in a new window, Session 235; a saved file's bytes loaded in a fresh app keep the category order, Session 116).
+- **Review of sections 226–255 (2026-11-13, not acted on):** measure sections 244 and 247 with their switches (`pmNoCallTypes`, `pmNoKeepTypesAfterExtensions`; neither gain was ever measured) and revert one that gains nothing; rework section 251 (lower cap than 64: +3–9 % gain against 84–88 ms frames); section 227 has no way out of a load that never ends. Ranking and further ideas: `docs/BENCH-BASELINE.md` "Ranking of the remaining ideas".
 - **Ideas offered, not applied** (offer when relevant):
   - Make the stage's WebGL context after the rest of the first render: at most ~700 ms off the editor's start (`docs/BENCH-BASELINE.md` "Start-up").
   - Loading like a game engine: "load on first use" is done (sections 162, 164, 165). Not chosen so far: scenes, asset groups, sprites on demand, streaming.

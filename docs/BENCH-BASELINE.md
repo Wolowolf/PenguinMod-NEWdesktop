@@ -357,7 +357,7 @@ Before/after, same build, `--uncapped`, before = `--set pmNoTouchingGrid`:
 
 The "off" column still has the cost added to every move (two counters, `_skin` accessor), so it cannot show that cost; 25 against the Session 195 figures is the only hint (not compared, other builds). A first version made 49 worse (50 → 90 ms, every question visited the clones several times and sorted them); it now compares the list directly when the cells near the asker hold more entries than the whole list. 49's gain comes from skipping the `filter` and the preparing, not from the grid. GC in 50 goes from 7 to 12 ms/s (longest pause 5 → 13 ms). Not improved: touching color, "touching point", lists under 64, lists asked fewer than 32 times per frame.
 
-## Ranking of the remaining ideas (Session 176; next after Session 179: clone deletion, seen in project 32)
+## Ranking of the remaining ideas (Session 176; updated 2026-11-13 after section 255)
 
 The sizes of costs are measured; every gain below is a guess until built.
 
@@ -369,12 +369,47 @@ The sizes of costs are measured; every gain below is a guess until built.
 | done | Fewer GC pauses (section 173) | 27: the lost frame at 26.5 s gone; 25: garbage 2.3 → 0.8 MB per frame, GC 3.1 → 1.4 ms/s | measured |
 | done | Faster start (section 174, Session 187) | editor cold start 4.2 → 3.05 s; game 1.83 → about 1.6 s | measured, see "Start-up" |
 | done | Collision grid (section 190) | project 47: work 100.7 → 5.2 ms; earlier "1.0 ms" evidence could not show it (one candidate) | measured, see "Collision grid" |
-| 7 | Typed variables / number lists (speed) | raycaster scripts 1.1 ms | measured: small |
+| done in part | Types inside one script (sections 240–247): through if / else, loops and custom block calls that cannot pause, finer number facts, after 1,431 extension blocks; variables in locals inside such loops | ScratchBench (timer off) 45.7k → 60.9k with section 245 alone, +3 % with 246; 244 and 247 not measured. Only with the warp timer off (packaged games), not in the editor | measured |
+| done | Scheduler study causes 1–6 (sections 249–255) | see "Scheduler study fixes" | measured |
+| 7 | Typed variables shared between scripts / number lists (speed) | raycaster scripts 1.1 ms | measured: small |
 | 8 | Custom block inlining | 27,000 calls 0.7 ms | measured: small |
 | done | A custom block calling itself calls its own function by name (section 248, Session 267) | ScratchBench algo_fib +22–29%, algo_ack +13–20% (3 pairs in the app); one call 4.2 → 3.5 ns (fib), 5.6 → 4.7 ns (ack). Not worth it, measured: leaving out the `thread.spoofing` check (±0) and remembering other custom blocks' functions (app_ast ±0) | measured |
 | 9 | Worker for rendering | at most draw's 2.1 ms in 25 | gain limit measured: small now; large change |
 
 Recommendation (Session 179): cheaper clone deletion first (part of rank 3), measured with 32 at ×2; then rank 2, measured with 25.
+
+### Review of sections 226–255 (2026-11-13; read in the docs and the VM at `0905627`, nothing run)
+
+Riskiest first. "Gain" is what the session measured.
+
+| Section | Risk | Why | Gain | Verdict |
+|---|---|---|---|---|
+| 253 plain functions | high | changes nearly every compiled script; a script stays a generator only if its code contains the word `yield`; "stop all" / "delete this clone" inside custom blocks now leave by throwing `globalState.pmRetired`, which any `catch` around a call would swallow (only `control.trycatch` and "as sprite" pass it on) | pingpong 1.73×, fanout 2.68×, fanwait 3.15× | keep |
+| 245 loop locals | medium-high | newest values live outside the variable objects during the loop; error inside the loop and sprite-event listeners not checked | ScratchBench 1.30–1.33× | keep, rework the algo_sieve / algo_sort losses (0.82–0.92×) |
+| 244 types across calls | medium | compiles a called custom block while compiling the caller; the fuzz test did not catch a planted "stop exit not recorded" (only `calltypes-check.cjs` did) | never measured | measure with `pmNoCallTypes`; revert if nothing |
+| 247 types after extension blocks | medium | correct only while 1,431 inventory lines are right (20 read); a wrong line gives wrong arithmetic, not an error | never measured (no benchmark has these blocks) | measure with `pmNoKeepTypesAfterExtensions` on a loop with such blocks; revert if nothing |
+| 251 clock every 1–64 ticks | medium | longest frame 84–88 ms instead of ~30 when ticks turn heavy mid-frame | +3–9 % against MistWarp, pingpong none | rework: lower cap (e.g. 16) and measure both sides |
+| 255 plain thread map | medium-low | the offline gallery's Extra Controls writes the map outside the engine; caught by the size check, except a replaced key whose thread is not in `runtime.threads` | pingpong +12 %, clonechurn +3 % | keep |
+| 226 class per variable | medium-low | places that read many different variables (interpreter, monitors, extensions walking variables) see many classes; one class per variable in projects with thousands (memory, load) | ScratchBench +23 % | keep; measure an interpreted / monitor-heavy project with ~1,000 variables |
+| 227 loads one after another | low-medium | a load that never ends (neither loads nor fails) blocks every later load until restart | bug fix | add a way out (newest load wins, or a time limit) |
+| 241, 242, 246 types in if / loops, number facts | low-medium | well covered (fuzz, switches, byte-identical with switch); compile time 1.5× (20 nested loops 8 → 44 ms) | loops +2–9 %, +3 % | keep; watch compile time on big projects |
+| 234–236, 240, 248–250, 252, 254 | low | small, proven equal (helpers, lookups, guards) | 252: +5–8 %, below its own 10 % bar | keep |
+| 228–231, 237–239, 243 | low | bring compiled results closer to the interpreter | 243: math_trig −8 % | keep |
+
+None is a clear revert on the evidence; 244 and 247 are the ones with risk and no measured gain.
+
+### Open ideas after section 255 (gains are guesses until measured)
+
+| Rank | Idea | Evidence | Effort |
+|---|---|---|---|
+| 1 | Measure 244 and 247 (above) | no numbers yet | S |
+| 2 | Loop types and locals with the warp timer on (the editor's setting): write the locals back before the timer's pause and read them again after | sections 242 and 245 are off with the timer on; ScratchBench timer on last measured 31k (Session 252), timer off 69.6k (Session 272) | M, medium risk |
+| 3 | Use the "whole number" facts of section 246 (tracked, unused): mark floor / ceiling / round results as integers where provable, then drop section 245's floor rule | throwaway `\| 0`: app_raycast 115 → 125 rounds per ms with all variables in locals | S–M |
+| 4 | Rest of the scheduler gap: pingpong ×1.22, clonechurn ×1.11 | study's unexplained 13 %: broadcast looked up twice per send, thread target getter / setter (section 171), hat field matching | S each |
+| 5 | Lower cap for section 251 | see review | S |
+| 6 | One compiled function shared by many clones' threads | `tryCompile` + `stepThread` ~6 % each in project 36 | M–L |
+| 7 | Compile time on big projects after 242 / 244 | 1.5× on ScratchBench; projects 37 / 38 not measured in the app | S to measure |
+| 8 | WebGL context after the first render | ≤ ~700 ms of the 3.05 s editor start | M |
 
 ## Start-up (Session 187)
 Real cold starts (process started afresh on the hidden desktop, RTX 4060), not page reloads: a reload is 370 ms and hides most of this. Tools: `docs/PROCEDURES.md` "Start-up".
@@ -388,3 +423,17 @@ Real cold starts (process started afresh on the hidden desktop, RTX 4060), not p
 ## Finer number facts in the compiler (Session 265, section 246)
 
 ScratchBench in the test app, warp timer off, switch `runtime.pmNoNumberFacts` on / off, alternating, after a warm-up (raw: `bench\scratch-bench\results\s265-*.json`): total 62,765 / 63,057 → 64,436 / 64,707 points (1.03 times both pairs), every checksum the same. First pair per test: app_life 1.31, math_compare 1.30, loops_ifelse 1.23, list_replace 1.21, list_read 1.19, algo_sieve 1.19, math_arith 1.09; math_trig 0.90 (its code is unchanged: noise of a single test); the rest within 5%. Code changed in 58 of 328 scripts of the VM regression projects (60 with the warp timer off) and 10 of 85 of ScratchBench.
+
+## Scheduler study fixes (Sessions 268–274, sections 249–255)
+
+Harness `C:\Users\elias\Documents\sched-study` (`tools/ablate.sh <dir> 6 ours mw`, then `sumres.cjs`): ScratchBench's five scheduler tests, medians of 6, ours and MistWarp in the same run. Plan and causes: page "Scheduler speed gap vs MistWarp" (claude.ai).
+
+| Test | Study start: ours / MistWarp | After section 255: ours / MistWarp | Now |
+|---|---|---|---|
+| sched_pingpong | 231 / 725 | 602 / 735 | MistWarp ×1.22 ahead |
+| sched_fanout | 600 / 1,827 | 2,702 / 2,019 | ours ×1.34 ahead |
+| sched_fanwait | 548 / 1,901 | 2,682 / 2,012 | ours ×1.33 ahead |
+| sched_clonechurn | 112 / 239 | 213 / 237 | MistWarp ×1.11 ahead |
+| sched_threads | 11,500 / 18,571 | 23,095 / 18,581 | ours ×1.24 ahead |
+
+Per section, ours before → after in its own session: 249 fanout +37 %, fanwait +30 %; 250 threads +74 %; 251 fanout +6 %, fanwait +9 % (relative to MistWarp; pingpong none; longest frame 84–88 ms when ticks turn heavy mid-frame); 252 +5–8 %; 253 pingpong 1.73×, fanout 2.68×, fanwait 3.15×, clonechurn 1.23×; 254 clonechurn 1.32×; 255 pingpong +12 %, clonechurn +3 %. MistWarp's own numbers moved up to 15 % between runs, so single gains under ~10 % are within noise. ScratchBench total in the test app after 253: 69,594 (warp timer off; the study measured MistWarp at 68,123 on 2026-11-11, another day).

@@ -1,6 +1,6 @@
 # Compiler study (2026-11-11): TurboWarp / MistWarp compiler versus ours
 
-Research only: nothing from it is in the app or the build. Full notes, patches, runner, logs and generated code live
+Status 2026-11-13: built. Experiment C is section 236, A is sections 240–242, L is section 245; sections 243, 244, 246–248 went further on the same ground. This file keeps the study as it was run (the numbers below are from before those sections). Full notes, patches, runner, logs and generated code live
 outside the repo in `C:\Users\elias\Documents\PenguinMod-test\bench\compiler-study\` (its `README.md` also says how to
 rebuild the set-up, about 20 minutes; the clones and patched VM copies were not kept).
 
