@@ -14,12 +14,12 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 268 — The compiler is looked up once, not on every thread start (2026-11-13)
-- Asked: in the VM, resolve `require('../compiler/compile')` once instead of on every thread start (cause 2 of the MistWarp scheduler study).
-- Changed: section 249 (VM dbe141c, `upstream.json`): `thread.js` keeps the compile function in a module variable, filled on the first `tryCompile()`. To reverse: `git revert` the merge.
-- Measured: sched-study `ablate.sh` 6 rounds, ours before → after (runs/s): fanout 496 → 682 (+37%), fanwait 562 → 732 (+30%), pingpong 262 → 271, clonechurn 107 → 112, threads 9663 → 9696.
-- Extension check: no calculation, timing or optimisation changes; only the loader call is skipped.
-- Verified: `block-eq auto s268` (ran everything: thread.js is shared engine code): 636 of 638 blocks identical in every mode; Monitors Plus "make variable" / "delete variable" differed in the page run, identical in every mode in two isolated page reruns of the same build (state left by an earlier job). · Not verified: —
+### Session 269 — Thread loop skips event lookups when nobody listens (2026-11-13)
+- Asked: remove the per-thread lookups of the four thread events from the scheduler loop when nobody listens, keeping the events working (cause 3 of the MistWarp scheduler study).
+- Changed: section 250 (VM fb3b908, `sequencer.js`, `upstream.json`): flag `pmThreadEvents`, recomputed per pass plus a `newListener` hook. To reverse: `git revert` the merge.
+- Measured: sched-study `ablate.sh` 6 rounds, ours before → after (runs/s): threads 12466 → 21723 (+74%, MistWarp 18651); pingpong, fanout, fanwait, clonechurn unchanged within noise.
+- Extension check: no calculation, timing or optimisation change; no shipped extension listens to these events.
+- Verified: listeners still get all four events per step in both compiler modes, AFTER_THREAD_CONSIDERED after a finished thread, flag on at once when added and off after removal; `block-eq auto s269` (everything): 1659 + 638 blocks identical in every mode. · Not verified: —
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)

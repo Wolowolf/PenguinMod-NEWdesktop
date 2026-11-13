@@ -235,3 +235,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 247 compiled code keeps variable types after 1,431 extension blocks that cannot change variables, also through loops and custom blocks (VM)
 - 248 a custom block calling itself calls its own compiled function by name, not through thread.procedures (VM)
 - 249 the compiler is looked up once, not on every thread start (VM)
+- 250 the thread loop skips the four per-thread event lookups when nobody listens to them (VM)
