@@ -234,3 +234,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 246 compiled code tracks which numbers cannot be NaN (and which are whole) and leaves out the NaN guard there (VM)
 - 247 compiled code keeps variable types after 1,431 extension blocks that cannot change variables, also through loops and custom blocks (VM)
 - 248 a custom block calling itself calls its own compiled function by name, not through thread.procedures (VM)
+- 249 the compiler is looked up once, not on every thread start (VM)
