@@ -14,12 +14,12 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 267 — A custom block calling itself calls its own function (2026-11-13)
-- Asked: measure what a custom block call costs (ScratchBench algo_fib / algo_ack, a profile): the `thread.procedures["..."]` lookup and the `thread.spoofing` check; apply behind a test switch if it gains over ~5% with identical answers.
-- Changed: section 248 (VM 62788b4, `upstream.json`): a custom block calling itself calls its own function by name; switch `runtime.pmNoSelfCallByName`. Not applied (measured ±0): skipping the spoof check, remembering other custom blocks' functions. To reverse: `git revert` the merge.
-- Measured: in the app, 3 pairs: algo_fib +22/+25/+29%, algo_ack +17/+13/+20%, checksums same, total ±1%; one call 4.2 → 3.5 ns (fib), 5.6 → 4.7 ns (ack). Profile: the time sits in the custom block's own function in both; the gain is the engine knowing the called function.
-- Extension check: only custom blocks calling themselves change; My Blocks+ calls and Extra Controls' use of `thread.procedures` are untouched.
-- Verified: `verify-compiler s248 --switch pmNoSelfCallByName`: 10 of 11 steps ok (block-eq 0 of 638 differ); benchmark projects (without 37/38, which break the debug connection as known): only the 3 scripts reaching a recursive block differ; `selfcall-check.cjs` 9 recursion cases equal, planted mistake caught · Not verified: My Blocks+ custom branches calling themselves (own call path, unchanged).
+### Session 268 — The compiler is looked up once, not on every thread start (2026-11-13)
+- Asked: in the VM, resolve `require('../compiler/compile')` once instead of on every thread start (cause 2 of the MistWarp scheduler study).
+- Changed: section 249 (VM dbe141c, `upstream.json`): `thread.js` keeps the compile function in a module variable, filled on the first `tryCompile()`. To reverse: `git revert` the merge.
+- Measured: sched-study `ablate.sh` 6 rounds, ours before → after (runs/s): fanout 496 → 682 (+37%), fanwait 562 → 732 (+30%), pingpong 262 → 271, clonechurn 107 → 112, threads 9663 → 9696.
+- Extension check: no calculation, timing or optimisation changes; only the loader call is skipped.
+- Verified: `block-eq auto s268` (ran everything: thread.js is shared engine code): 636 of 638 blocks identical in every mode; Monitors Plus "make variable" / "delete variable" differed in the page run, identical in every mode in two isolated page reruns of the same build (state left by an earlier job). · Not verified: —
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
