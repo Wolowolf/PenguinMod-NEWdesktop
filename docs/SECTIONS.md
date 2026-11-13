@@ -236,3 +236,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 248 a custom block calling itself calls its own compiled function by name, not through thread.procedures (VM)
 - 249 the compiler is looked up once, not on every thread start (VM)
 - 250 the thread loop skips the four per-thread event lookups when nobody listens to them (VM)
+- 251 the scheduler reads its work-time clock every few ticks (adaptive, at most 64) instead of before every tick (VM)
