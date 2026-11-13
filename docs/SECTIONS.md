@@ -240,3 +240,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 252 thread start and the scheduler loop skip unheard events, empty procedure objects and a field-based loop index (VM)
 - 253 top-level scripts that never pause run as plain functions, not generators; "stop all" / "delete this clone" in a custom block no longer pause (VM)
 - 254 cloning copies effects and the speech-bubble state without JSON, IDs are built by concatenation: faster clone creation (VM)
+- 255 thread map is a plain Map with a changed flag and a size check instead of a Map subclass: cheaper thread starts (VM)
