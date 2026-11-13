@@ -14,12 +14,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 272 — Scripts that never pause run as plain functions (2026-11-13)
-- Asked: scheduler study cause 1: port TurboWarp PRs 391, 395 and 392 (top-level scripts that cannot pause are plain functions; no pause after "delete this clone" / "stop all"), started automatically once Session 271 had merged.
-- Changed: section 253 (VM 5d78b93: `intermediate.js`, `irgen.js`, `jsgen.js`, `compile.js`, `jsexecute.js`, `thread.js`, `sequencer.js`; `docs/EXTENSION-RISKS.md`, `upstream.json`). Switch `runtime.pmNoPlainScripts` (tests only). To reverse: `git revert` the merge.
-- Measured: sched-study `ablate.sh` 6 rounds, ours before → after (runs/s): pingpong 323 → 560, fanout 886 → 2374, fanwait 880 → 2772, clonechurn 124 → 153, threads 22626 → 21621 (noise). MistWarp on the same runs: 753 / 1988 / 1901 / 236 / 18796.
-- Extension check: only sp Extra-Controls reads `thread.generator` (inside try/catch, then sets the status): same result on a plain thread. My-Blocks-Plus writes `yield*` itself: caught by the code scan.
-- Verified: `verify-compiler s272 --switch pmNoPlainScripts` all 10 steps ok (fuzz 3 × 8000 nothing new, regress 0 verdicts changed, block-eq 1659 + 638 identical); `plain-entry-check.cjs` 18 cases equal to the VM before; Extra-Controls thread blocks 6 cases equal with the switch on and off; ScratchBench checksums unchanged · Not verified: extension compiler code outside the shipped galleries
+### Session 273 — Cheaper clone creation (2026-11-13)
+- Asked: scheduler study cause 6a: copy clone effects and the bubble state without JSON (exactly the same result) and check whether MistWarp's uid() is faster in ours.
+- Changed: section 254 (VM 6caf204: `clone.js` new `Clone.flat`, `uid.js`, `rendered-target.js`, `scratch3_looks.js`). To reverse: `git revert` the merge.
+- Measured: sched-study `ablate.sh` 6 rounds, ours before → after (runs/s): clonechurn 153 → 202 (MistWarp 235 / 219 in the two runs), pingpong 556 → 540, fanout 2620 → 2494, fanwait 2766 → 2646, threads 22781 → 21900 (MistWarp dropped by the same share: noise). Microbench: effects copy ~1050 → ~350 ns, uid ~760 → ~470 ns.
+- Verified: `Clone.flat` equal to the JSON copy on 14 edge cases (NaN, ±Infinity, -0, undefined, functions, symbols, nested, arrays, `__proto__`, numeric key order, getters, bigint throws); block-eq auto s273 (everything: shared engine files) 1659 + 638 blocks identical in every mode, 0 jobs differ from s272 · Not verified: nothing beyond the CI build
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
