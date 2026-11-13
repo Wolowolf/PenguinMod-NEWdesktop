@@ -14,12 +14,12 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 271 — Four small per-thread costs removed (2026-11-13)
-- Asked: scheduler study cause 5 as one change: THREAD_FINISHED and HATS_STARTED only with a listener, plain loop in startHats, shared empty procedures object, local loop index in stepThreads.
-- Changed: section 252 (VM e0d2247, `sequencer.js`, `thread.js`, `runtime.js`, `compile.js`, `upstream.json`). To reverse: `git revert` the merge.
-- Measured: sched-study `ablate.sh` 6 rounds, ours before → after (runs/s): pingpong 303 → 323, fanout 821 → 886, fanwait 839 → 880, clonechurn 127 → 124 (noise), threads 21078 → 22626. +5 to +8%: below the hoped ~10%.
-- Extension check: no block calculation changes; HATS_STARTED still reaches Events Expansion and Messages-Plus (listener check), which block-eq covers.
-- Verified: grep found no dependent of any piece; `block-eq auto s271` (everything): 1659 + 638 blocks identical in every mode, 0 jobs differ from s270b · Not verified: nothing else
+### Session 272 — Scripts that never pause run as plain functions (2026-11-13)
+- Asked: scheduler study cause 1: port TurboWarp PRs 391, 395 and 392 (top-level scripts that cannot pause are plain functions; no pause after "delete this clone" / "stop all"), started automatically once Session 271 had merged.
+- Changed: section 253 (VM 5d78b93: `intermediate.js`, `irgen.js`, `jsgen.js`, `compile.js`, `jsexecute.js`, `thread.js`, `sequencer.js`; `docs/EXTENSION-RISKS.md`, `upstream.json`). Switch `runtime.pmNoPlainScripts` (tests only). To reverse: `git revert` the merge.
+- Measured: sched-study `ablate.sh` 6 rounds, ours before → after (runs/s): pingpong 323 → 560, fanout 886 → 2374, fanwait 880 → 2772, clonechurn 124 → 153, threads 22626 → 21621 (noise). MistWarp on the same runs: 753 / 1988 / 1901 / 236 / 18796.
+- Extension check: only sp Extra-Controls reads `thread.generator` (inside try/catch, then sets the status): same result on a plain thread. My-Blocks-Plus writes `yield*` itself: caught by the code scan.
+- Verified: `verify-compiler s272 --switch pmNoPlainScripts` all 10 steps ok (fuzz 3 × 8000 nothing new, regress 0 verdicts changed, block-eq 1659 + 638 identical); `plain-entry-check.cjs` 18 cases equal to the VM before; Extra-Controls thread blocks 6 cases equal with the switch on and off; ScratchBench checksums unchanged · Not verified: extension compiler code outside the shipped galleries
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)

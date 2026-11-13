@@ -238,3 +238,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 250 the thread loop skips the four per-thread event lookups when nobody listens to them (VM)
 - 251 the scheduler reads its work-time clock every few ticks (adaptive, at most 64) instead of before every tick (VM)
 - 252 thread start and the scheduler loop skip unheard events, empty procedure objects and a field-based loop index (VM)
+- 253 top-level scripts that never pause run as plain functions, not generators; "stop all" / "delete this clone" in a custom block no longer pause (VM)
