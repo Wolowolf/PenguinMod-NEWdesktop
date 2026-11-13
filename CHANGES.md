@@ -14,11 +14,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 273 — Cheaper clone creation (2026-11-13)
-- Asked: scheduler study cause 6a: copy clone effects and the bubble state without JSON (exactly the same result) and check whether MistWarp's uid() is faster in ours.
-- Changed: section 254 (VM 6caf204: `clone.js` new `Clone.flat`, `uid.js`, `rendered-target.js`, `scratch3_looks.js`). To reverse: `git revert` the merge.
-- Measured: sched-study `ablate.sh` 6 rounds, ours before → after (runs/s): clonechurn 153 → 202 (MistWarp 235 / 219 in the two runs), pingpong 556 → 540, fanout 2620 → 2494, fanwait 2766 → 2646, threads 22781 → 21900 (MistWarp dropped by the same share: noise). Microbench: effects copy ~1050 → ~350 ns, uid ~760 → ~470 ns.
-- Verified: `Clone.flat` equal to the JSON copy on 14 edge cases (NaN, ±Infinity, -0, undefined, functions, symbols, nested, arrays, `__proto__`, numeric key order, getters, bigint throws); block-eq auto s273 (everything: shared engine files) 1659 + 638 blocks identical in every mode, 0 jobs differ from s272 · Not verified: nothing beyond the CI build
+### Session 274 — Plain Map for the thread map (2026-11-13)
+- Asked: scheduler study cause 6b: replace the ThreadMap subclass (section 168) with a plain Map plus a changed flag; stop if anything outside the VM writes to the map. It did (SharkPool Extra Controls in the offline gallery); you said go ahead with a size check as safety net and a test referee.
+- Changed: section 255 (VM 0905627: `runtime.js`, `sequencer.js`, `pm_eventsExpansion`, bundled Extra Controls). To reverse: `git revert` the merge.
+- Measured: sched-study `ablate.sh` 6 rounds, ours/MistWarp before → after (runs/s): clonechurn 206/247 → 213/237 (gap x1.20 → x1.11), pingpong 538/703 → 602/735 (x1.31 → x1.22), fanout 2599 → 2702, fanwait 2674 → 2682, threads 22135 → 23095 (MistWarp moved 1-4 % too: noise).
+- Verified: referee (`bench\threadmap-referee.js`: rebuilds the map every tick and compares; clones, broadcasts with restarts, broadcast and wait, stop other scripts, delete clone, Extra Controls "run async") 0 differences, same result as the old code; stray write/delete repaired; with the size check sabotaged a stray entry stays and the referee flags it. block-eq auto s274 (everything) 1659 + 638 blocks identical in every mode, 0 jobs differ from s273 · Not verified: nothing beyond the CI build
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
