@@ -14,12 +14,12 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 270 — Scheduler reads its clock every few ticks (2026-11-13)
-- Asked: port TurboWarp's adaptive work-time check into `Sequencer.stepThreads()`, keeping redraw and thread-count checks every tick (scheduler study cause 4).
-- Changed: section 251 (VM b964aa5, `sequencer.js`, `upstream.json`). To reverse: `git revert` the merge.
-- Measured: sched-study `ablate.sh` 6 rounds, ours before → after (runs/s, MistWarp before → after): pingpong 302 → 316 (714 → 758), fanout 834 → 874 (1998 → 1979), fanwait 815 → 884 (2004 → 1986), clonechurn 133 → 140 (239 → 245), threads 21440 → 21714. Against MistWarp: fanout +6%, fanwait +9%, clonechurn +3%, pingpong and threads unchanged; well below the study's 1.24x/1.15x/1.11x. Test app, light forever loop: 255k → 401k ticks per frame.
-- Extension check: only how often the clock is read changes; block results are the same, ticks per frame can differ (timing).
-- Verified: frame rate kept at 30, turbo, 60 and screen rate with one heavy tick per 50; light-to-heavy switch mid-frame: one ~85 ms frame; `block-eq auto s270b s269` (everything): 1659 + 638 blocks identical in every mode · Not verified: the old build's light-to-heavy frame (reasoned ~30 ms)
+### Session 271 — Four small per-thread costs removed (2026-11-13)
+- Asked: scheduler study cause 5 as one change: THREAD_FINISHED and HATS_STARTED only with a listener, plain loop in startHats, shared empty procedures object, local loop index in stepThreads.
+- Changed: section 252 (VM e0d2247, `sequencer.js`, `thread.js`, `runtime.js`, `compile.js`, `upstream.json`). To reverse: `git revert` the merge.
+- Measured: sched-study `ablate.sh` 6 rounds, ours before → after (runs/s): pingpong 303 → 323, fanout 821 → 886, fanwait 839 → 880, clonechurn 127 → 124 (noise), threads 21078 → 22626. +5 to +8%: below the hoped ~10%.
+- Extension check: no block calculation changes; HATS_STARTED still reaches Events Expansion and Messages-Plus (listener check), which block-eq covers.
+- Verified: grep found no dependent of any piece; `block-eq auto s271` (everything): 1659 + 638 blocks identical in every mode, 0 jobs differ from s270b · Not verified: nothing else
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
