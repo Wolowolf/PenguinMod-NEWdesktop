@@ -14,12 +14,12 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 269 — Thread loop skips event lookups when nobody listens (2026-11-13)
-- Asked: remove the per-thread lookups of the four thread events from the scheduler loop when nobody listens, keeping the events working (cause 3 of the MistWarp scheduler study).
-- Changed: section 250 (VM fb3b908, `sequencer.js`, `upstream.json`): flag `pmThreadEvents`, recomputed per pass plus a `newListener` hook. To reverse: `git revert` the merge.
-- Measured: sched-study `ablate.sh` 6 rounds, ours before → after (runs/s): threads 12466 → 21723 (+74%, MistWarp 18651); pingpong, fanout, fanwait, clonechurn unchanged within noise.
-- Extension check: no calculation, timing or optimisation change; no shipped extension listens to these events.
-- Verified: listeners still get all four events per step in both compiler modes, AFTER_THREAD_CONSIDERED after a finished thread, flag on at once when added and off after removal; `block-eq auto s269` (everything): 1659 + 638 blocks identical in every mode. · Not verified: —
+### Session 270 — Scheduler reads its clock every few ticks (2026-11-13)
+- Asked: port TurboWarp's adaptive work-time check into `Sequencer.stepThreads()`, keeping redraw and thread-count checks every tick (scheduler study cause 4).
+- Changed: section 251 (VM b964aa5, `sequencer.js`, `upstream.json`). To reverse: `git revert` the merge.
+- Measured: sched-study `ablate.sh` 6 rounds, ours before → after (runs/s, MistWarp before → after): pingpong 302 → 316 (714 → 758), fanout 834 → 874 (1998 → 1979), fanwait 815 → 884 (2004 → 1986), clonechurn 133 → 140 (239 → 245), threads 21440 → 21714. Against MistWarp: fanout +6%, fanwait +9%, clonechurn +3%, pingpong and threads unchanged; well below the study's 1.24x/1.15x/1.11x. Test app, light forever loop: 255k → 401k ticks per frame.
+- Extension check: only how often the clock is read changes; block results are the same, ticks per frame can differ (timing).
+- Verified: frame rate kept at 30, turbo, 60 and screen rate with one heavy tick per 50; light-to-heavy switch mid-frame: one ~85 ms frame; `block-eq auto s270b s269` (everything): 1659 + 638 blocks identical in every mode · Not verified: the old build's light-to-heavy frame (reasoned ~30 ms)
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
