@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 277 — Descriptions after the duplicate-block removal (2026-11-14)
-- Asked: switch the local test tools to the blocks that stay; change the extensions' new descriptions (and titles if pertinent) so they don't name the removed blocks.
-- Changed: section 258 (GUI `extension-texts.js`): 5 descriptions; titles kept (none named a removed block). Local tools (not in git): bench\make-projects.mjs (projects 22, 45, 55, 58 use Clones+ isClone and the built-in power, ≥, ≤; unused extensions dropped; x1/x2/x8 regenerated), fold\fold-e2e.mjs (bit operations dropped), hooks-render-check.mjs (Looks set stretch). To reverse: `git revert` the merge.
-- Verified: test app library shows the new More Operators text; the other 4 texts are in the built editor; hooks-render-check ALL OK; fold-e2e 0 differing; the 4 new projects run in bench.mjs (old speed results for them no longer compare). · Not verified: gallery descriptions on screen (no galleries in the test app).
+### Session 278 — Duplicate blocks removed, unique jobs moved (2026-11-14)
+- Asked: do every keep/delete verdict of the duplicate-block review, moving what had no twin first (BigInt speed into Big Decimals, E2EE key exchange into Cryptography, Quaternions into 3D Math, Letter Case cases into Text, "sprite clicked?" into Utilities, Physics drives the Camera), and clean every trace.
+- Changed: section 259 (VM 3486a6c, GUI de3ff12, galleries): 9 extensions and 129 blocks removed with menus, helpers, compiler entries, lists, texts, icons, translations; 14 blocks / options moved in; docs and local tests and benchmark projects switched to blocks that stay. To reverse: `git revert` the merge.
+- Verified: all 115 extensions load, palettes valid; 31 feature checks in the app; Big Decimals 40,000 cases and quaternions 54,005 equal to the old code; verify-compiler all 6 steps ok (block-eq 0 differ); hook, hat, lazy, name-search, setup-reader checks ok; g9 direct calls: plain and guarded equal old in all 384 scenarios; changed benchmark projects run. · Not verified: gallery tiles on screen (no galleries in the test app).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)

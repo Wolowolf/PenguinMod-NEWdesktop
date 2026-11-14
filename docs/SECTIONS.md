@@ -244,3 +244,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 256 addon page: credits right-aligned in quiet ink beside the reset arrow, no links or icons, five info notes removed (GUI)
 - 257 44 duplicate extension blocks removed (Lily's utils, True Fantom Math, Utilities, Text, Operators Expansion bit ops and 4 more) (VM)
 - 258 library descriptions no longer name the blocks removed in section 257 (GUI)
+- 259 Duplicate blocks removed: 9 extensions, 129 blocks; quaternions, ECDH, MD5, 7 text cases, sprite clicked, sprite attach moved in (VM, GUI, galleries)
