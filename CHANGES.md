@@ -15,9 +15,9 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
 ### Session 278 — Duplicate blocks removed, unique jobs moved (2026-11-14)
-- Asked: do every keep/delete verdict of the duplicate-block review, moving what had no twin first (BigInt speed into Big Decimals, E2EE key exchange into Cryptography, Quaternions into 3D Math, Letter Case cases into Text, "sprite clicked?" into Utilities, Physics drives the Camera), and clean every trace.
-- Changed: section 259 (VM 3486a6c, GUI de3ff12, galleries): 9 extensions and 129 blocks removed with menus, helpers, compiler entries, lists, texts, icons, translations; 14 blocks / options moved in; docs and local tests and benchmark projects switched to blocks that stay. To reverse: `git revert` the merge.
-- Verified: all 115 extensions load, palettes valid; 31 feature checks in the app; Big Decimals 40,000 cases and quaternions 54,005 equal to the old code; verify-compiler all 6 steps ok (block-eq 0 differ); hook, hat, lazy, name-search, setup-reader checks ok; g9 direct calls: plain and guarded equal old in all 384 scenarios; changed benchmark projects run. · Not verified: gallery tiles on screen (no galleries in the test app).
+- Asked: do every keep/delete verdict of the duplicate-block review, moving what had no twin first, and clean every trace; then big-number bitwise operations and interpreted try / catch.
+- Changed: section 259 (VM 3486a6c, GUI de3ff12, galleries): 9 extensions and 129 blocks removed with every trace; 14 blocks / options moved in. Section 260 (VM 47fb997, GUI 36ab3c7): Big Decimals bitwise menu options. Section 261 (VM 0756ef5): built-in try / catch, throw, "error" interpreted. To reverse: `git revert` the merge.
+- Verified: all 115 extensions load; 31 feature checks; Big Decimals 40,000 and quaternions 54,005 cases equal to the old code; bitwise 120,003 checks equal to the old BigInt; try / catch 5 scenarios ok compiled and interpreted; verify-compiler all 6 steps ok again (new vs old 0; only the 2 older interpreted differences); hook, hat, lazy, name-search, setup-reader, g9 checks ok. · Not verified: gallery tiles on screen (no galleries in the test app).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)

@@ -245,3 +245,5 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 257 44 duplicate extension blocks removed (Lily's utils, True Fantom Math, Utilities, Text, Operators Expansion bit ops and 4 more) (VM)
 - 258 library descriptions no longer name the blocks removed in section 257 (GUI)
 - 259 Duplicate blocks removed: 9 extensions, 129 blocks; quaternions, ECDH, MD5, 7 text cases, sprite clicked, sprite attach moved in (VM, GUI, galleries)
+- 260 Big Decimals: bitwise and / or / xor / shifts / not in its two operation menus, from the removed BigInt (VM, GUI)
+- 261 built-in try / catch, throw and "error" work in interpreted scripts too (VM)

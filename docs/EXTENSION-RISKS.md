@@ -95,7 +95,7 @@ List index · typed variables · real data types.
 - Read or change list items (since section 125 through `Variable.pmGetValue` / `pmSetValue` / `pmItemsChanged` / `pmIndexOf`, which keep section 62's tables; no shipped extension reads or sets a list's `value`): tw `Lily/ListTools`, `qxsck/var-and-list`, `TheShovel/ShovelUtils`, `Xeltalliv/simple3D` (reads lists as vertex data), `obviousAlexC/penPlus` · sp `Scenes` (saves and restores lists), `MIDI-Tools`.
 - Section 62 (list lookup tables): any read or write of a list's `value` (since section 125 no shipped extension; the editor's list monitor edits through `vm.setVariableValue`, engine code not changed for section 62) turns that list's table off until the engine itself gives the list a new array (delete all, loading); such lists are searched item by item as before. Lists holding objects (the types below) get no table either.
 - Objects in variables (`registerSerializer`, own types): pm `steve0greatness/timers` (timer variables).
-- Page-wide changes to built-in types: none since section 121 (sp `Extra-Controls` replaced `window.Error` and `console.error`; its try/catch now listens to the compiler's `BLOCK_STACK_ERROR` event for its branch's script).
+- Page-wide changes to built-in types: none since section 121 (sp `Extra-Controls` replaced `window.Error` and `console.error` before; its try/catch was removed in section 259).
 
 ## Sound
 Mixer channels, effects, positional sound.
