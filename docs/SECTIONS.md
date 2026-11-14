@@ -243,3 +243,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 255 thread map is a plain Map with a changed flag and a size check instead of a Map subclass: cheaper thread starts (VM)
 - 256 addon page: credits right-aligned in quiet ink beside the reset arrow, no links or icons, five info notes removed (GUI)
 - 257 44 duplicate extension blocks removed (Lily's utils, True Fantom Math, Utilities, Text, Operators Expansion bit ops and 4 more) (VM)
+- 258 library descriptions no longer name the blocks removed in section 257 (GUI)
