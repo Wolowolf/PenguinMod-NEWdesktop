@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 276 — Remove 44 duplicate extension blocks (2026-11-14)
-- Asked: fully delete 44 extension blocks that compute the same as a block that stays (Lily's utils, True Fantom Math, Utilities, Graphics 2D, Text, Hyper Sense V2, ShovelUtils, Operators Expansion, Stretch) and update the block lists so the VM tests pass.
-- Changed: section 257 (VM): blocks, their code, translations and empty separators; block-inventory/pure/direct/keep-types lists, pure-inline.js, jsgen.js fold list, 4 compiler helpers only they used; engine-contacts.json regenerated (it was already out of date since section 255). EXTENSION-INTEGRATION.md no longer names restartProject. To reverse: `git revert` the merge.
-- Verified: VM tests desktop_block_inventory (129/129) and desktop_engine_contacts (2/2) pass; test app: the 9 extensions load, none of the 44 opcodes exists; block-eq auto s276: 0 differences, 1,612 blocks identical in every mode, page test 638 identical. · Not verified: palettes looked at on screen.
+### Session 277 — Descriptions after the duplicate-block removal (2026-11-14)
+- Asked: switch the local test tools to the blocks that stay; change the extensions' new descriptions (and titles if pertinent) so they don't name the removed blocks.
+- Changed: section 258 (GUI `extension-texts.js`): 5 descriptions; titles kept (none named a removed block). Local tools (not in git): bench\make-projects.mjs (projects 22, 45, 55, 58 use Clones+ isClone and the built-in power, ≥, ≤; unused extensions dropped; x1/x2/x8 regenerated), fold\fold-e2e.mjs (bit operations dropped), hooks-render-check.mjs (Looks set stretch). To reverse: `git revert` the merge.
+- Verified: test app library shows the new More Operators text; the other 4 texts are in the built editor; hooks-render-check ALL OK; fold-e2e 0 differing; the 4 new projects run in bench.mjs (old speed results for them no longer compare). · Not verified: gallery descriptions on screen (no galleries in the test app).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
