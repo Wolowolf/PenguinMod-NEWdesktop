@@ -6,6 +6,8 @@ Where the time goes in the engine after sections 36–162, measured to rank the 
 
 ## Projects (made by `bench\make-projects.mjs`, deterministic, no random numbers)
 
+Since section 259 (Session 278) projects 13, 15, 16, 18, 22, 24, 31, 45, 51–57, 60, 62, 65, 66 and 110–119 use other blocks in place of the removed ones (59, 79, 89, 90 and 112 are gone), so their numbers here and in older results no longer compare with new runs.
+
 | # | Project | What it does |
 |---|---|---|
 | 25 | bouncing-clones | 10,000 clones moving 4 steps + "if on edge, bounce" every frame |
@@ -13,7 +15,7 @@ Where the time goes in the engine after sections 36–162, measured to rank the 
 | 27 | raycaster | stage only: 320 rays per frame stepped through a 32 × 32 map list, distances into a list |
 | 28 | tile-map | 400 × 18 level in one list, scrolling, 468 tile clones picking costumes from it, 200 walkers colliding with tiles |
 | 29 / 30 | custom-blocks | 3,000 hidden clones, 9 custom-block calls each per frame; 29 normal, 30 "run without screen refresh" |
-| 31 | physics | Box2D Physics (griffpatch), 300 circle bodies in a boxed stage |
+| 31 | physics | Physics Objects & Joints (pooiod's Box2D; Box2D Physics (griffpatch) until section 259), 300 circle objects in the stage's walls, each attached to its clone |
 | 33 | pen | one sprite: clear, 2,000 lines and 100 stamps every frame |
 | 34 | sound | 50 hidden clones, each starting a 0.2 s sound every frame (test app muted, audio running) |
 | 35 | say-bubbles | 200 clones whose say text changes every frame |
