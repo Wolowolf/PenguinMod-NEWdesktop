@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 275 — Addon page cleanup (2026-11-13)
-- Asked: a CLAUDE.md rule that "delete" also means removing the code only that thing used; on the addon page: credits in quiet ink without links or "Credits:", right-aligned beside the reset arrow (same place without one); no puzzle/brush icons; remove five info notes (Ctrl/Cmd and Alt/Option in the drag-keys description, option renamed "Make individual grab default").
-- Changed: section 256 (GUI 1b35cc3: addon settings page, manifests, translations, 2 icons deleted); CLAUDE.md rule. To reverse: `git revert` the merge.
-- Verified: test app addon page: credits right-aligned at the same x in every addon with or without arrow, grey quiet ink, 0 links, 0 icons; drag-keys text and option name as asked; cards narrowed to 420 px: credits cut with "…", arrow keeps its place. The pinned-blocks warning was already absent from the code. · Not verified: other languages on screen.
+### Session 276 — Remove 44 duplicate extension blocks (2026-11-14)
+- Asked: fully delete 44 extension blocks that compute the same as a block that stays (Lily's utils, True Fantom Math, Utilities, Graphics 2D, Text, Hyper Sense V2, ShovelUtils, Operators Expansion, Stretch) and update the block lists so the VM tests pass.
+- Changed: section 257 (VM): blocks, their code, translations and empty separators; block-inventory/pure/direct/keep-types lists, pure-inline.js, jsgen.js fold list, 4 compiler helpers only they used; engine-contacts.json regenerated (it was already out of date since section 255). EXTENSION-INTEGRATION.md no longer names restartProject. To reverse: `git revert` the merge.
+- Verified: VM tests desktop_block_inventory (129/129) and desktop_engine_contacts (2/2) pass; test app: the 9 extensions load, none of the 44 opcodes exists; block-eq auto s276: 0 differences, 1,612 blocks identical in every mode, page test 638 identical. · Not verified: palettes looked at on screen.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
