@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 278 — Duplicate blocks removed, unique jobs moved (2026-11-14)
-- Asked: do every keep/delete verdict of the duplicate-block review, moving what had no twin first, and clean every trace; then big-number bitwise operations and interpreted try / catch.
-- Changed: section 259 (VM 3486a6c, GUI de3ff12, galleries): 9 extensions and 129 blocks removed with every trace; 14 blocks / options moved in. Section 260 (VM 47fb997, GUI 36ab3c7): Big Decimals bitwise menu options. Section 261 (VM 0756ef5): built-in try / catch, throw, "error" interpreted. To reverse: `git revert` the merge.
-- Verified: all 115 extensions load; 31 feature checks; Big Decimals 40,000 and quaternions 54,005 cases equal to the old code; bitwise 120,003 checks equal to the old BigInt; try / catch 5 scenarios ok compiled and interpreted; verify-compiler all 6 steps ok again (new vs old 0; only the 2 older interpreted differences); hook, hat, lazy, name-search, setup-reader, g9 checks ok. · Not verified: gallery tiles on screen (no galleries in the test app).
+### Session 279 — Sharktilities "when changed" after 0 / empty / false (2026-11-14)
+- Asked: review the hidden-block list (verdict: keep all; each one is shown inside another block, as a ready-made version, or after a button), then fix the "when changed" bug found there.
+- Changed: section 262 (VM 5f33f1d): `Sharktilities.js` "when [] is changed" sees changes from 0, "" or false; "old value" shows 0 / false. To reverse: `git revert` the merge.
+- Verified: test script (variable 0 -> 5 -> "" -> 7 -> false -> 1 -> 0 -> 0 -> 3 -> 3): old build counted 3 of 7 changes, new build 7 of 7 with correct old values, compiled and interpreted; repeats still ignored; block-eq auto (Sharktilities) equal. · Not verified: nothing else.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)

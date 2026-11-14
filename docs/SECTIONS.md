@@ -247,3 +247,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 259 Duplicate blocks removed: 9 extensions, 129 blocks; quaternions, ECDH, MD5, 7 text cases, sprite clicked, sprite attach moved in (VM, GUI, galleries)
 - 260 Big Decimals: bitwise and / or / xor / shifts / not in its two operation menus, from the removed BigInt (VM, GUI)
 - 261 built-in try / catch, throw and "error" work in interpreted scripts too (VM)
+- 262 Sharktilities "when changed" fires after 0, empty or false; "old value" shows 0 / false (VM)
