@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 277 — Descriptions after the duplicate-block removal (2026-11-14)
-- Asked: switch the local test tools to the blocks that stay; change the extensions' new descriptions (and titles if pertinent) so they don't name the removed blocks.
-- Changed: section 258 (GUI `extension-texts.js`): 5 descriptions; titles kept (none named a removed block). Local tools (not in git): bench\make-projects.mjs (projects 22, 45, 55, 58 use Clones+ isClone and the built-in power, ≥, ≤; unused extensions dropped; x1/x2/x8 regenerated), fold\fold-e2e.mjs (bit operations dropped), hooks-render-check.mjs (Looks set stretch). To reverse: `git revert` the merge.
-- Verified: test app library shows the new More Operators text; the other 4 texts are in the built editor; hooks-render-check ALL OK; fold-e2e 0 differing; the 4 new projects run in bench.mjs (old speed results for them no longer compare). · Not verified: gallery descriptions on screen (no galleries in the test app).
+### Session 278 — Duplicate blocks removed, unique jobs moved (2026-11-14)
+- Asked: do every keep/delete verdict of the duplicate-block review, moving what had no twin first, and clean every trace; then big-number bitwise operations and interpreted try / catch.
+- Changed: section 259 (VM 3486a6c, GUI de3ff12, galleries): 9 extensions and 129 blocks removed with every trace; 14 blocks / options moved in. Section 260 (VM 47fb997, GUI 36ab3c7): Big Decimals bitwise menu options. Section 261 (VM 0756ef5): built-in try / catch, throw, "error" interpreted. To reverse: `git revert` the merge.
+- Verified: all 115 extensions load; 31 feature checks; Big Decimals 40,000 and quaternions 54,005 cases equal to the old code; bitwise 120,003 checks equal to the old BigInt; try / catch 5 scenarios ok compiled and interpreted; verify-compiler all 6 steps ok again (new vs old 0; only the 2 older interpreted differences); hook, hat, lazy, name-search, setup-reader, g9 checks ok. · Not verified: gallery tiles on screen (no galleries in the test app).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
