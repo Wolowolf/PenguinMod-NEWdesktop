@@ -253,3 +253,5 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 265 Square menus: 179 menus that only recognise their own items no longer take reporters; useful known values added as items (VM, GUI, Blocks)
 - 266 Code for menu values left out in section 265 removed: 3D Math parsed switch, Dictation codes, smoothing tan, legacy blend modes (VM, Render)
 - 267 Dead and legacy code removed (22 unused menus, deprecation regions, Box2D hidden labels, engine leftovers); GIF Manager dither fixed (VM, Blocks)
+- 268 Custom styles addon: monitor font and text size options (GUI)
+- 269 Hyper Sense V2 ask dropdown copies the ask input's colours, border and roundness (VM)
