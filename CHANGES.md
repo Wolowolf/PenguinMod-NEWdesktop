@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 279 — Sharktilities "when changed" after 0 / empty / false (2026-11-14)
-- Asked: review the hidden-block list (verdict: keep all; each one is shown inside another block, as a ready-made version, or after a button), then fix the "when changed" bug found there.
-- Changed: section 262 (VM 5f33f1d): `Sharktilities.js` "when [] is changed" sees changes from 0, "" or false; "old value" shows 0 / false. To reverse: `git revert` the merge.
-- Verified: test script (variable 0 -> 5 -> "" -> 7 -> false -> 1 -> 0 -> 0 -> 3 -> 3): old build counted 3 of 7 changes, new build 7 of 7 with correct old values, compiled and interpreted; repeats still ignored; block-eq auto (Sharktilities) equal. · Not verified: nothing else.
+### Session 280 — Extension merges: 20 extensions into 10 (2026-11-15)
+- Asked: merge Google + Discord Auth; Encoding + HTML Encode, LZ Compress, Base, Prism's deflate; Text + Text Case; Utilities' "sprite clicked?" into More Events ("parse JSON" deleted); Mouse Cursor + Pointer Lock; Keys+ + Key Simulation; Video Sensing + Camera Sensing+ + Face Sensing (working together); Notifications + Toasts; Device Info + Battery + Wake Lock; Random Tools + Perlin Noise; Variables Expanded + Variable and list + List Tools (no duplicates, no blocks the Custom styles addon covers); remove everything left over; delete simplex-noise.
+- Changed: section 263 (VM, GUI, PM / TW / SP galleries; docs). To reverse: `git revert` the merge.
+- Verified: all 12 merged extensions load with the planned blocks and labels, the 16 removed IDs are unknown; functional checks of every merged block group; inventory test 104/104, engine contacts 2/2, video motion 6/6, target 34/34; verify-compiler s280d as before; hooks, list hooks, camera skin, name search, edit-rename, direct calls, data inline, edge hats OK; bench of the 6 changed projects. Fixed on the way: 3 older bugs (variable stored under "", duplicate variable names, compiled by-name set kept number type). · Not verified: gallery pages on screen, real camera, real logins.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
