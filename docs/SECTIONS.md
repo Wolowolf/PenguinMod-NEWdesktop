@@ -250,3 +250,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 262 Sharktilities "when changed" fires after 0, empty or false; "old value" shows 0 / false (VM)
 - 263 Extension merges: 20 extensions into 10 (Sign-in, Camera Sensing, Variables & Lists, Encoding, Device Info and more) (VM, GUI, galleries)
 - 264 Extension library: 11 categories regrouped from the new texts, "|" in names, no count before side bar names (GUI)
+- 265 Square menus: 179 menus that only recognise their own items no longer take reporters; useful known values added as items (VM, GUI, Blocks)

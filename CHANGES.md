@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 281 — Extension library: 11 categories (2026-11-15)
-- Asked: fewer extension categories with the original criteria (beginner game makers first, every extension in one, most used first, extensions that work together side by side, names that match), made from the extensions' new titles and descriptions; 3D with Math / Time, Clipboard in Text | Popups; "|" instead of "/"; no number and bar in front of category names.
-- Changed: section 264 (GUI `3db4914`; `upstream.json`, docs): 23 → 11 categories, labels with "|", side bar count and bar removed. To reverse: `git revert` the merge.
-- Verified: script check: the 99 keys of the categories and of `extension-texts.js` are identical, none twice; test app: side bar shows the 11 names without number or bar (Text | Popups and Online | Encoding hidden there because they hold only gallery extensions), headings match, side bar 157 px wide. · Not verified: the gallery extensions on screen (galleries not linked into the test app).
+### Session 282 — Square menus for fixed lists (2026-11-15)
+- Asked: every round menu that only recognises its own items becomes square; borderline ones decided by me (all four groups square, useful extra values added as items); performance effect.
+- Changed: section 265 (VM 8174229, GUI 9bbaa59, Blocks 7008b7d): 177 extension menus and 2 built-in ones square, useful known values added as items, compiler reads the new fields. To reverse: `git revert` the merge.
+- Verified: test app: menus are fields, new items listed and working, built-in blocks square on screen, compiled scripts correct; verify-compiler s282b all 6 steps ok (fuzz nothing new, vm-regress 0 changed, block-eq only the older orIfFalsey / ifIsTruthy type difference). · Not verified: interpreted run of my hand-made script (a plain one made that way does not run either), Geolocation zip code against the live IP service.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
