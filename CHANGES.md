@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 284 — Dead and legacy code removed (2026-11-15)
-- Asked: fix or delete everything Session 283's scan found, except the hidden built-in blocks.
-- Changed: section 267 (VM b1eb038, Blocks 45cbe65): GIF dither fixed; unused menus, deprecation regions, Box2D hidden labels, unused helpers, engine leftovers and the two unused Blocks menus removed. To reverse: `git revert` the merge.
-- Verified: unit tests desktop_block_inventory (104) and engine contacts pass; every block of the changed extensions keeps its function; test app: all 19 changed extensions load with no console errors, palette fine; verify-compiler s284: fuzz nothing new (3 runs), vm-regress 0 changed; timer-off run and block-eq timed out on a stuck test app, rerun on a fresh app: timer-off 0 changed, block-eq new vs old 0, new vs interp only the 3 known, page test 0. · Not verified: GIF export with each dither by hand.
+### Session 285 — Monitor font options, themed ask dropdown (2026-11-15)
+- Asked: do the logical changes from the Variables & Lists / ask prompt review against the Custom styles addon.
+- Changed: section 268 (GUI f373a8a): Custom styles gets "Monitor font" and "Monitor text size (%)"; the font blocks stay (per monitor, packaged games). Section 269 (VM ebe097a): Hyper Sense V2's ask dropdown copies the ask input's colours, border and roundness. To reverse: `git revert` the merge.
+- Verified: test app: addon Pixel at 150 % gives Pixel, 18 px on a variable monitor; Variables & Lists set font/size blocks still override it (serif, 20 px); default settings emit no font CSS; dropdown with addon ask colours matches the input (bg, text, 3 px border, 7 px roundness); two dropdown calls leave one dropdown; no new console errors. · Not verified: list monitors with the size option by eye, a packaged game's dropdown.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
