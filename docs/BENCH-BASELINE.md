@@ -8,6 +8,8 @@ Where the time goes in the engine after sections 36–162, measured to rank the 
 
 Since section 259 (Session 278) projects 13, 15, 16, 18, 22, 24, 31, 45, 51–57, 60, 62, 65, 66 and 110–119 use other blocks in place of the removed ones (59, 79, 89, 90 and 112 are gone), so their numbers here and in older results no longer compare with new runs.
 
+Since section 263 (extension merges) projects 17, 18, 22, 67, 117 and 119 use the merged blocks (Variables & Lists, More Events, Text, Encoding, Random Utilities) and 71, 81, 83 and 113 are gone (Utilities' "parse JSON" and Variables Expanded's "set to color" removed): their numbers here and in older results no longer compare with new runs.
+
 | # | Project | What it does |
 |---|---|---|
 | 25 | bouncing-clones | 10,000 clones moving 4 steps + "if on edge, bounce" every frame |
