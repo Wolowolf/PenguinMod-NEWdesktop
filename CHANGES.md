@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 283 — Left-out menu values: code removed; legacy scan (2026-11-15)
-- Asked: delete the code of the values left out in section 265; search the VM and extensions for other legacy, broken or always hidden blocks and code, report back.
-- Changed: section 266 (VM e0fd268, Render e90bf83): 3D Math parsed switch, Dictation codes, smoothing tan, legacy blend modes removed. To reverse: `git revert` the merge. Search: report only (`bench\legacy-scan.mjs`), nothing else deleted.
-- Verified: all changed files parse; test app: smoothing sin / cos equal Math.sin / cos; block-eq auto s283 (everything, Render changed): new vs old 0, new vs guarded 0, new vs interp only the 3 known (SPtempVars expected, orIfFalsey / ifIsTruthy older type difference), page test 0 in every mode. · Not verified: Clipping & Blending "blend mode" called by hand (my direct call got no sprite; covered by block-eq).
+### Session 284 — Dead and legacy code removed (2026-11-15)
+- Asked: fix or delete everything Session 283's scan found, except the hidden built-in blocks.
+- Changed: section 267 (VM b1eb038, Blocks 45cbe65): GIF dither fixed; unused menus, deprecation regions, Box2D hidden labels, unused helpers, engine leftovers and the two unused Blocks menus removed. To reverse: `git revert` the merge.
+- Verified: unit tests desktop_block_inventory (104) and engine contacts pass; every block of the changed extensions keeps its function; test app: all 19 changed extensions load with no console errors, palette fine; verify-compiler s284: fuzz nothing new (3 runs), vm-regress 0 changed; timer-off run and block-eq timed out on a stuck test app, rerun on a fresh app: timer-off 0 changed, block-eq new vs old 0, new vs interp only the 3 known, page test 0. · Not verified: GIF export with each dither by hand.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
