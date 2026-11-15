@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `docs/STATE.md` and `docs/SECTIONS.md` win where they differ. `tweak.mjs finish` puts every session’s full entry on top of the change log (since Session 262; `/CHANGES.md` keeps only a short copy of the last one). The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 281 — Extension library: 11 categories (2026-11-15)
+- Asked: fewer extension categories with the original criteria (beginner game makers first, every extension in one, most used first, extensions that work together side by side, names that match), made from the extensions' new titles and descriptions; 3D with Math / Time, Clipboard in Text | Popups; "|" instead of "/"; no number and bar in front of category names.
+- Changed: section 264 (GUI `3db4914`; `upstream.json`, docs): 23 → 11 categories, labels with "|", side bar count and bar removed. To reverse: `git revert` the merge.
+- Verified: script check: the 99 keys of the categories and of `extension-texts.js` are identical, none twice; test app: side bar shows the 11 names without number or bar (Text | Popups and Online | Encoding hidden there because they hold only gallery extensions), headings match, side bar 157 px wide. · Not verified: the gallery extensions on screen (galleries not linked into the test app).
+- Result after build: assumed working
+
 ### Session 280 — Extension merges: 20 extensions into 10 (2026-11-15)
 - Asked: carry out the merges planned in Session 279: 1 Sign-in, 2 Encoding (+ Prism's deflate / inflate, removed from Prism), 3 Text Case's last blocks into Text, 4 Utilities' "sprite clicked?" into More Events and "parse JSON" deleted, 5 Mouse Cursor + Pointer Lock and Key Simulation into Keys+ V2, 6 Video Sensing + Camera Sensing+ + Face Sensing working together, 7 Notifications, 9 Device Info, 10 Perlin Noise into Random Tools, 12 Variables Expanded + Variable and list + List Tools (Temporary Variables alone; blocks overlapping the Custom styles addon removed); per merge logical order, one language, headers only where needed, no conflicting or duplicate blocks; clean removal of palette entries, code, titles, descriptions, thumbnails, translations, separators, lists, compiler helpers, docs, tests and benchmarks; run the affected tests and benchmarks; delete simplex-noise if nothing uses it.
 - Changed: section 263.

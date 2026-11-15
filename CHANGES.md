@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 280 — Extension merges: 20 extensions into 10 (2026-11-15)
-- Asked: merge Google + Discord Auth; Encoding + HTML Encode, LZ Compress, Base, Prism's deflate; Text + Text Case; Utilities' "sprite clicked?" into More Events ("parse JSON" deleted); Mouse Cursor + Pointer Lock; Keys+ + Key Simulation; Video Sensing + Camera Sensing+ + Face Sensing (working together); Notifications + Toasts; Device Info + Battery + Wake Lock; Random Tools + Perlin Noise; Variables Expanded + Variable and list + List Tools (no duplicates, no blocks the Custom styles addon covers); remove everything left over; delete simplex-noise.
-- Changed: section 263 (VM, GUI, PM / TW / SP galleries; docs). To reverse: `git revert` the merge.
-- Verified: all 12 merged extensions load with the planned blocks and labels, the 16 removed IDs are unknown; functional checks of every merged block group; inventory test 104/104, engine contacts 2/2, video motion 6/6, target 34/34; verify-compiler s280d as before; hooks, list hooks, camera skin, name search, edit-rename, direct calls, data inline, edge hats OK; bench of the 6 changed projects. Fixed on the way: 3 older bugs (variable stored under "", duplicate variable names, compiled by-name set kept number type). · Not verified: gallery pages on screen, real camera, real logins.
+### Session 281 — Extension library: 11 categories (2026-11-15)
+- Asked: fewer extension categories with the original criteria (beginner game makers first, every extension in one, most used first, extensions that work together side by side, names that match), made from the extensions' new titles and descriptions; 3D with Math / Time, Clipboard in Text | Popups; "|" instead of "/"; no number and bar in front of category names.
+- Changed: section 264 (GUI `3db4914`; `upstream.json`, docs): 23 → 11 categories, labels with "|", side bar count and bar removed. To reverse: `git revert` the merge.
+- Verified: script check: the 99 keys of the categories and of `extension-texts.js` are identical, none twice; test app: side bar shows the 11 names without number or bar (Text | Popups and Online | Encoding hidden there because they hold only gallery extensions), headings match, side bar 157 px wide. · Not verified: the gallery extensions on screen (galleries not linked into the test app).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
