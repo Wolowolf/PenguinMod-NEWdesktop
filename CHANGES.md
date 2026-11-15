@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 282 — Square menus for fixed lists (2026-11-15)
-- Asked: every round menu that only recognises its own items becomes square; borderline ones decided by me (all four groups square, useful extra values added as items); performance effect.
-- Changed: section 265 (VM 8174229, GUI 9bbaa59, Blocks 7008b7d): 177 extension menus and 2 built-in ones square, useful known values added as items, compiler reads the new fields. To reverse: `git revert` the merge.
-- Verified: test app: menus are fields, new items listed and working, built-in blocks square on screen, compiled scripts correct; verify-compiler s282b all 6 steps ok (fuzz nothing new, vm-regress 0 changed, block-eq only the older orIfFalsey / ifIsTruthy type difference). · Not verified: interpreted run of my hand-made script (a plain one made that way does not run either), Geolocation zip code against the live IP service.
+### Session 283 — Left-out menu values: code removed; legacy scan (2026-11-15)
+- Asked: delete the code of the values left out in section 265; search the VM and extensions for other legacy, broken or always hidden blocks and code, report back.
+- Changed: section 266 (VM e0fd268, Render e90bf83): 3D Math parsed switch, Dictation codes, smoothing tan, legacy blend modes removed. To reverse: `git revert` the merge. Search: report only (`bench\legacy-scan.mjs`), nothing else deleted.
+- Verified: all changed files parse; test app: smoothing sin / cos equal Math.sin / cos; block-eq auto s283 (everything, Render changed): new vs old 0, new vs guarded 0, new vs interp only the 3 known (SPtempVars expected, orIfFalsey / ifIsTruthy older type difference), page test 0 in every mode. · Not verified: Clipping & Blending "blend mode" called by hand (my direct call got no sprite; covered by block-eq).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
