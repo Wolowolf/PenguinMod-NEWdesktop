@@ -37,7 +37,7 @@ contextBridge.exposeInMainWorld("PMLogin", {
 });
 
 window.addEventListener("DOMContentLoaded", async () => {
-  // The stage's clean-feed window (an empty page the addon fills) gets no window buttons or overlays.
+  // The second-screen stage window (an empty page the addon fills) gets no window buttons or overlays.
   if (location.href === "about:blank") return;
   webFrame.executeJavaScript(`
   (() => {

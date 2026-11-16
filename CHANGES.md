@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 287 — Stage on second screen addon (2026-11-16)
-- Asked: an addon "stage on second screen" that works like DaVinci Resolve's clean feed; a second screen was connected for testing.
-- Changed: section 271 (GUI 9a1c7df, `app/electron-main.js`, `app/preload.js`): a button above the stage (only with 2+ screens) opens the stage full screen on the other screen, live, at its resolution. To reverse: `git revert` the merge.
-- Verified: test app (hidden desktop, real 2nd screen 1920×1080): button shown, feed window at x=2560 on screen 2, sprite moves show live, 16:9 and 4:3 stages fill with black bars, editor stage keeps its size and returns to 335×188 on close; closes by button, Escape and outside close. · Not verified: how it looks on the physical screen (hidden mode), turning the addon off while open. Known: at this screen's 210% scale the window is 1922×1082 (Electron rounds to whole scaled units), at most 1 px cut per edge; monitors and extension overlays are not in the feed.
+### Session 288 — Stage on second screen moves the real stage (2026-11-16)
+- Asked: instead of copying the stage (271), move the existing stage to the second screen, behaving the same, with the small stage gone until the button is pressed again; delete the copying code.
+- Changed: section 272 (GUI 5667ef6; comments in `app/electron-main.js`, `app/preload.js`). To reverse: `git revert` the merge.
+- Verified: test app (hidden desktop, 2nd screen 1920×1080): stage, variable display and ask box on screen 2, centred, drawn at 1922×1081; answering the ask reached the project ("Pingu"), arrow key and "A" reached it, clicks map to stage coordinates (centre ≈ 0,0); 4:3 refits with bars; editor shows no stage, frame meter in its place; back by button, outside close, full screen; no errors in the log. · Not verified: physical screen look, addon off while away, loading another project while away.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
