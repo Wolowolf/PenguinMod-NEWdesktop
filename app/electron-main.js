@@ -428,15 +428,13 @@ function storeLocalFile(filePath) {
   return `https://studio.penguinmod.com/__localfile__/${id}`;
 }
 
-// ---- game login (Google Auth / Discord Auth extensions) ----------------------------------------
-// Opens a Google or Discord login page in the user's own browser and waits on this PC
+// ---- game login (Google Sign-in extension) ----------------------------------------
+// Opens a Google login page in the user's own browser and waits on this PC
 // (http://127.0.0.1) for the page the login sends the user back to (OAuth "loopback" redirect).
 // A redirect_uri without a port gets a free one. Answers {redirectUri, params} or {error}.
 // The same helper is in the packager's template for packaged desktop games.
 const LOGIN_PAGES = [
   { host: "accounts.google.com", path: "/o/oauth2/" },
-  { host: "discord.com", path: "/oauth2/authorize" },
-  { host: "discord.com", path: "/api/oauth2/authorize" },
 ];
 let stopLogin = null;
 ipcMain.handle("pm-login-loopback", (event, authUrl) => new Promise((resolve) => {
@@ -450,7 +448,7 @@ ipcMain.handle("pm-login-loopback", (event, authUrl) => new Promise((resolve) =>
     return;
   }
   if (auth.protocol !== "https:" || !LOGIN_PAGES.some((p) => auth.host === p.host && auth.pathname.startsWith(p.path))) {
-    resolve({ error: "not a Google or Discord login page" });
+    resolve({ error: "not a Google login page" });
     return;
   }
   if (redirect.protocol !== "http:" || !["127.0.0.1", "localhost", "[::1]"].includes(redirect.hostname)) {
