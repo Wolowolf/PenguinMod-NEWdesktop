@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 289 — Addon page empty again fixed (2026-11-16)
-- Asked: the addon menu shows no addons; fix it.
-- Changed: section 273 (GUI cf2537d): `stage-second-screen` manifest gets `"tags": []`. To reverse: `git revert` the merge.
-- Verified: before: the addon window's console showed `TypeError: Cannot read properties of undefined (reading 'filter')` from the search index (only non-built-in addon without tags was Stage on second screen). After rebuild: addon window lists the addons (Insert blocks by name, Theme colors, Stage on second screen…), reload shows no errors; other `manifest.tags` readers all work with an empty list. · Not verified: nothing else open.
+### Session 290 — Modular blocks share the single blocks' code (2026-11-16)
+- Asked: make the modular operator blocks (and the modular if) use the single blocks' code; compare block with Scratch rules; single nand/nor/xnor blocks; best performance for the "optimize" flag.
+- Changed: section 274 (VM e41ed9d, GUI 2c6fdbb): modular blocks compiled and interpreted as nested single blocks; nand/nor/xor/xnor in the palette. To reverse: `git revert` the merge.
+- Verified: 90 cases (math precedence, join, 62 and/or mixes, compare, if/else-if) give the expected answer compiled, interpreted, and compiled without constant folding; compiler proofs all ok (block-eq 0 differences in 571 blocks, fuzz nothing new, regress 0 verdicts changed); the 4 blocks show in the palette. · Not verified: nothing else open.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
