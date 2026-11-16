@@ -3,6 +3,27 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `docs/STATE.md` and `docs/SECTIONS.md` win where they differ. `tweak.mjs finish` puts every session’s full entry on top of the change log (since Session 262; `/CHANGES.md` keeps only a short copy of the last one). The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 294 — Extensions can declare modular blocks; Bitwise pilot (2026-11-16)
+- Asked: tweak extension-modular-blocks (started automatically after shared-modular-maker, PR 337, merged): a blockInfo option turned into the shared maker's settings in runtime.js; args.mutation for extension blocks also when compiled; expandable-blocks.js usable with own symbol levels; pilot Bitwise (singles locked, one modular block chaining the single functions, priority like JavaScript); EXTENSION-INTEGRATION.md.
+- Changed: section 278.
+  - Blocks c731142: maker settings `json` (base JSON instead of the operator category/extensions; its args0, e.g. an extension icon, stay before the −/+ buttons) and `names` (a single's two input names), in dist/vertical.js and dist/web/vertical.js (+175 bytes of code each, plus the comment).
+  - VM 731e9e8: runtime.js `_convertBlockForScratchBlocks` (`modular` → `blockJSON.modular = {settings, lock}`, palette mutation, generated `<prefix>1/2` arguments for a modular block); expandable-blocks.js `runChain` + `nestInfix` export; bitwise.js (requires the helper above its wrapper function; `SINGLES`, `MODULAR`, `LEVELS`; `bitwiseModular`); block-inventory.json and pure-blocks.json entries.
+  - GUI 17d2f6f: containers/blocks.jsx defines `modular` blocks with the maker.
+  - Compiler check: irgen.js sets `args.mutation` for every extension block (lines ~1024 and ~2003) and jsgen.js passes it in the pure, plain and compatibility calls: no change needed.
+  - Priority chosen: `>> << >>> ↻ ↺` (4) before `and` (3) before `xor` (2) before `or` (1), equal ranks from the left; rotations rank with the shifts.
+  - docs/EXTENSION-INTEGRATION.md: new chapter "Modular extension blocks", Bitwise row 9 → 10 blocks.
+- Verified (test app, hidden, build of the uncommitted checkouts; scripts bench\s294-page.js, s294-steps*.txt):
+  - Palette: 10 Bitwise blocks; singles `LEFT [symbol] RIGHT` with number shadows, colour #17cde6, round; modular block `[−][+] NUM1 [>>] NUM2`, palette mutation `inputcount="2" menuvalues="r"` (screenshot s294-c.png).
+  - Editing by code: + twice → `arr`, symbols set → `axL`, − down to 2 and no further, 20 adds → 22 inputs, 30 removes → 2, duplicate keeps the shape; with pauses: undo/redo of a symbol change and of an add each one step. By mouse: + click (4 inputs, `axr`), symbol menu opened (8 items), "or" picked → `axo` (screenshots s294-a/b.png).
+  - Answers: 5 fixed + 30 random chains (2–6 inputs; values 0, 1, 31, 32, 33, −1, −8, 123456789, 4294967295, 8589934592, 5.7, "12", " 7 ", "abc", "", "0x10", true) against JavaScript's own expression, 4 rotation chains against nested single blocks and JavaScript; each with fixed inputs and with variables: 86/86 in compiled, pmNoPureInline, pmNoConstantFolding and interpreted; again 86/86 in all four after save + reload (blocks found again by position: saving renames block IDs).
+  - Fresh app: a saved project with a 4-input modular block loaded before the extension was loaded: shape `oxa` restored, answer 7 = `1 | 2 ^ 7 & 12`.
+  - Maker with an extension icon and Boolean slots (test definition): icon first, label, buttons, `B1..B3` with check Boolean; the base JSON is not changed by the maker.
+  - Helper in node: unknown symbol → fallback, 1 input → the input, 0 inputs → `empty`.
+  - block-eq auto s294 (chose everything: runtime.js and expandable-blocks.js count as shared engine code): extensions 1300 blocks, new vs old 0 differ; new vs interp 3 differ: SPtempVars_scopeVar (expected), jgTween_tweenVal (also in s293), and pmOperatorsExpansion_orIfFalsey / ifIsTruthy [set 1] number vs text for typed "-2.5" / "0". Those two are not from this change: the test picks tricky inputs by block index (`TRICKY[(bi*3+k) % 12]`), the new first-extension block shifted every later block's inputs (in s293 that job got "true"), and both blocks have their own compiler code in pm_operatorsExpansion/index.js, untouched here. Page blocks: 571 identical in every mode.
+- Not verified: other languages (the singles now show the symbol text "and/or/xor", not the translated block text); that orIfFalsey / ifIsTruthy differed before this change was reasoned from the test's input rule and the diff, not run on the old build.
+- Extensions: only blocks that declare `modular` take the new path (Bitwise); its singles' functions and inline code are unchanged.
+- Result after build: assumed working
+
 ### Session 293 — Shared maker for modular and single blocks (2026-11-16)
 - Asked: one shared piece of code in scratch-blocks ("Option B") that makes both the modular operator blocks and their single blocks; singles keep opcodes and input names; "mod" as a symbol of modular maths; square −/+ buttons with theme-purpose colours; tests listed in the request.
 - Changed: section 277.

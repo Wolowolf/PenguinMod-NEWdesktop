@@ -263,3 +263,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 275 single "===" block, shares code with the modular comparison's "===" (VM, GUI)
 - 276 extension library stays open after adding an extension; the tile's checkmark shows it was added (GUI)
 - 277 one shared maker for modular and single operator blocks; "mod" symbol in modular maths; square −/+ buttons (Blocks, VM, GUI)
+- 278 extensions can declare modular blocks and their singles (shared maker); Bitwise: singles + one modular bitwise block (Blocks, VM, GUI)
