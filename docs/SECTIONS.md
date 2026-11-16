@@ -259,3 +259,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 271 Stage on second screen addon: clean feed of the stage, full screen on the other display (GUI, app)
 - 272 Stage on second screen moves the real, playable stage instead of a copy (GUI, app comments)
 - 273 addon page shows its addons again (Stage on second screen manifest got its tags list) (GUI)
+- 274 modular operator/if blocks compiled as nested single blocks (shared code, interpreter support); nand/nor/xor/xnor in palette (VM, GUI)
