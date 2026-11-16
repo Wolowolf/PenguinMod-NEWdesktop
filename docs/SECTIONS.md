@@ -261,3 +261,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 273 addon page shows its addons again (Stage on second screen manifest got its tags list) (GUI)
 - 274 modular operator/if blocks compiled as nested single blocks (shared code, interpreter support); nand/nor/xor/xnor in palette (VM, GUI)
 - 275 single "===" block, shares code with the modular comparison's "===" (VM, GUI)
+- 276 extension library stays open after adding an extension; the tile's checkmark shows it was added (GUI)
