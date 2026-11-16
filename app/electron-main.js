@@ -510,8 +510,8 @@ ipcMain.on("pm-window-control", (event, action) => {
   else if (action === "close") win.close();
 });
 
-// ---- "Stage on second screen" addon: a clean feed of the stage, full screen on another display --------
-// The addon opens window.open("", STAGE_FEED_NAME) and draws every stage frame into it; this side only
+// ---- "Stage on second screen" addon: the editor's stage, moved full screen onto another display --------
+// The addon opens window.open("", STAGE_FEED_NAME) and moves the stage into it; this side only
 // places that window (borderless, full screen, on a display the editor is not on) and reports the displays.
 const STAGE_FEED_NAME = "pm-stage-feed";
 const stageFeeds = new Map(); // feed window -> the editor window that opened it
@@ -542,7 +542,7 @@ function openStageFeed(editorWin, feed) {
   feed.on("closed", () => stageFeeds.delete(feed));
   editorWin.once("closed", () => { if (!feed.isDestroyed()) feed.close(); });
   feed.setMenuBarVisibility(false);
-  // Shown without taking the keyboard from the editor, like a video clean feed.
+  // Shown without taking the keyboard from the editor; clicking it gives it the keyboard for playing.
   feed.showInactive();
   feed.setFullScreen(true);
 }
