@@ -9,6 +9,7 @@ const {
   Menu,
   shell,
   utilityProcess,
+  screen,
 } = require("electron");
 const path = require("path");
 const fs = require("fs");
@@ -509,6 +510,43 @@ ipcMain.on("pm-window-control", (event, action) => {
   else if (action === "close") win.close();
 });
 
+// ---- "Stage on second screen" addon: a clean feed of the stage, full screen on another display --------
+// The addon opens window.open("", STAGE_FEED_NAME) and draws every stage frame into it; this side only
+// places that window (borderless, full screen, on a display the editor is not on) and reports the displays.
+const STAGE_FEED_NAME = "pm-stage-feed";
+const stageFeeds = new Map(); // feed window -> the editor window that opened it
+function otherDisplay(editorWin) {
+  const here = screen.getDisplayMatching(editorWin.getBounds());
+  return screen.getAllDisplays().find(d => d.id !== here.id) || null;
+}
+function sendDisplayCount() {
+  const count = screen.getAllDisplays().length;
+  for (const win of editorWindows) if (!win.isDestroyed()) win.webContents.send("pm-display-count", count);
+}
+ipcMain.handle("pm-display-count", () => screen.getAllDisplays().length);
+function setupStageFeedDisplays() {
+  screen.on("display-added", sendDisplayCount);
+  screen.on("display-removed", (_event, gone) => {
+    // A feed whose screen was unplugged closes instead of jumping onto the editor's screen.
+    for (const [feed, editor] of stageFeeds) {
+      if (feed.isDestroyed()) continue;
+      const b = gone.bounds, f = feed.getBounds();
+      if (f.x >= b.x && f.y >= b.y && f.x < b.x + b.width && f.y < b.y + b.height) feed.close();
+      else if (!editor.isDestroyed() && screen.getDisplayMatching(f).id === screen.getDisplayMatching(editor.getBounds()).id) feed.close();
+    }
+    sendDisplayCount();
+  });
+}
+function openStageFeed(editorWin, feed) {
+  stageFeeds.set(feed, editorWin);
+  feed.on("closed", () => stageFeeds.delete(feed));
+  editorWin.once("closed", () => { if (!feed.isDestroyed()) feed.close(); });
+  feed.setMenuBarVisibility(false);
+  // Shown without taking the keyboard from the editor, like a video clean feed.
+  feed.showInactive();
+  feed.setFullScreen(true);
+}
+
 ipcMain.handle("pm-open-external", async (_event, url) => {
   try {
     const u = new URL(url);
@@ -879,6 +917,7 @@ app.whenReady().then(() => {
   setupHeaderSpoofing();
   setupDialogs();
   setupAppMenu();
+  setupStageFeedDisplays();
   createWindow(projectFileFromArgs(process.argv.slice(1)));
 });
 
@@ -968,7 +1007,24 @@ function createWindow(fileToOpen) {
     else console.log(prefix, message);
   });
 
-  win.webContents.setWindowOpenHandler(({ url }) => {
+  win.webContents.setWindowOpenHandler(({ url, frameName }) => {
+    if (frameName === STAGE_FEED_NAME) {
+      const display = url === "about:blank" ? otherDisplay(win) : null;
+      if (!display) return { action: "deny" };
+      const { x, y, width, height } = display.bounds;
+      return {
+        action: "allow",
+        overrideBrowserWindowOptions: {
+          x, y, width, height,
+          frame: false,
+          show: false,
+          skipTaskbar: true,
+          backgroundColor: "#000000",
+          title: "Stage",
+          webPreferences: { backgroundThrottling: false },
+        },
+      };
+    }
     if (isBlockedWebsite(url)) return { action: "deny" };
     return {
       action: "allow",
@@ -982,6 +1038,10 @@ function createWindow(fileToOpen) {
         }
       }
     };
+  });
+
+  win.webContents.on("did-create-window", (child, { frameName }) => {
+    if (frameName === STAGE_FEED_NAME) openStageFeed(win, child);
   });
 
   win.on("closed", () => {
