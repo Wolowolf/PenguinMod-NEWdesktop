@@ -24,6 +24,9 @@ contextBridge.exposeInMainWorld("__electronInternalBridge", {
 contextBridge.exposeInMainWorld("PMDesktop", {
   openExternal: url => ipcRenderer.invoke("pm-open-external", String(url)),
   fetchBytes: (url, range) => ipcRenderer.invoke("pm-fetch-bytes", String(url), range === undefined ? undefined : String(range)),
+  // For the "Stage on second screen" addon: how many screens are connected, now and on every change.
+  displayCount: () => ipcRenderer.invoke("pm-display-count"),
+  onDisplayCount: callback => { ipcRenderer.on("pm-display-count", (_event, count) => callback(count)); },
 });
 
 // For the Google Sign-in extension: log in through the user's own browser
@@ -34,6 +37,8 @@ contextBridge.exposeInMainWorld("PMLogin", {
 });
 
 window.addEventListener("DOMContentLoaded", async () => {
+  // The stage's clean-feed window (an empty page the addon fills) gets no window buttons or overlays.
+  if (location.href === "about:blank") return;
   webFrame.executeJavaScript(`
   (() => {
     window.alert = (msg) => window.__electronInternalBridge.alert(msg);

@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 286 — Block cleanup for non-coders and all platforms (2026-11-16)
-- Asked: carry out the block review (useless everywhere, code languages, engine-dead blocks, platform blocks) with the user's changes: keep Network (connection type to Device Info), Cryptography, WebRTC, Pen Plus shaders; Discord parts out, Sign-in Google only; My Blocks Plus "current value of [x]"; real "running on a phone?"; never / every other frame hats out; plain try/catch names; library texts updated.
-- Changed: section 270 (VM 94d6102, GUI abff670, Blocks 0a0607b, Packager b260c11, PM f2a51f1, SP af2575b, app login helper). To reverse: `git revert` the merge.
-- Verified: test app: 97 extensions load, removed blocks/extensions unknown, no menu without a block, renamed texts shown, Turbo switch works, saving works, library shows Google Sign-in and no Steam/Discord/regex; "current value of" right compiled and interpreted with two callers; inventory 102/102, engine contacts 2/2; verify-compiler s270 all 6 ok, block-eq 0 differ. · Not verified: phones (phone check, connection type), a real Google login.
+### Session 287 — Stage on second screen addon (2026-11-16)
+- Asked: an addon "stage on second screen" that works like DaVinci Resolve's clean feed; a second screen was connected for testing.
+- Changed: section 271 (GUI 9a1c7df, `app/electron-main.js`, `app/preload.js`): a button above the stage (only with 2+ screens) opens the stage full screen on the other screen, live, at its resolution. To reverse: `git revert` the merge.
+- Verified: test app (hidden desktop, real 2nd screen 1920×1080): button shown, feed window at x=2560 on screen 2, sprite moves show live, 16:9 and 4:3 stages fill with black bars, editor stage keeps its size and returns to 335×188 on close; closes by button, Escape and outside close. · Not verified: how it looks on the physical screen (hidden mode), turning the addon off while open. Known: at this screen's 210% scale the window is 1922×1082 (Electron rounds to whole scaled units), at most 1 px cut per edge; monitors and extension overlays are not in the feed.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
