@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 292 — Extension library stays open (2026-11-16)
-- Asked: adding an extension should not return to the editor; the tile gets a checkmark so many can be added quickly; leave the library by hand.
-- Changed: section 276 (GUI 0e27d62): extension library no longer closes on click, re-renders after a load so the checkmark appears, ignores repeat clicks while loading. To reverse: `git revert` the merge.
-- Verified: in the test app clicked More Motion twice, More Events, More Operators: library stayed open, 3 checkmarks, each loaded once; Back closed it and the 3 categories were in the toolbox. · Not verified: gallery (URL) extensions (no galleries in the test app), a failed load (unchanged path: alert, no checkmark).
+### Session 293 — Shared maker for modular and single blocks (2026-11-16)
+- Asked: one shared piece of code in scratch-blocks for the modular operator blocks and their singles; "mod" in modular maths; square −/+ buttons.
+- Changed: section 277 (Blocks 68e0b82, VM d62ec50, GUI 66230e2): `Blockly.scratchBlocksUtils.modularBlock` makes the 4 modular blocks and 20 singles (opcodes, input names, saved format unchanged); "mod" = code `%`, same rank as * and /; −/+ buttons square with square white icons. vertical.js 2,510,716 → 2,500,092 bytes. To reverse: `git revert` the merge.
+- Verified: in the test app all 24 blocks built with the right inputs/shapes and shown in the flyout; mouse: dragged a single and a modular block out, clicked +/−, picked "mod"; add/remove, symbol change, undo/redo, duplicate, 20 fast adds/30 removes, save + reload, clean up; 2+3*4^2 mod 5 = 5 and 8 more pairs equal between modular and singles, compiled and interpreted; block-eq auto: 0 blocks differ (extension and page blocks, all modes). · Not verified: the editor-tweaks addon switched on (off by default); other languages (singles now show the symbol text, not the translated message).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)

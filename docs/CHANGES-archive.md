@@ -3,6 +3,28 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `docs/STATE.md` and `docs/SECTIONS.md` win where they differ. `tweak.mjs finish` puts every session’s full entry on top of the change log (since Session 262; `/CHANGES.md` keeps only a short copy of the last one). The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 293 — Shared maker for modular and single blocks (2026-11-16)
+- Asked: one shared piece of code in scratch-blocks ("Option B") that makes both the modular operator blocks and their single blocks; singles keep opcodes and input names; "mod" as a symbol of modular maths; square −/+ buttons with theme-purpose colours; tests listed in the request.
+- Changed: section 277.
+  - Blocks 68e0b82: `Blockly.scratchBlocksUtils.modularBlock(settings, lock, prefix)` + `modularBlock.sets` (math, bool, compare, join) spliced into dist/vertical.js and dist/web/vertical.js before the operator blocks; the 19 old single definitions and 4 modular definitions removed. Each file 2,510,716 / 2,511,004 → 2,500,092 / 2,500,380 bytes (−10,624).
+  - No single needed renaming: NUM1/2 (maths), OPERAND1/2 (compare, and/or family), STRING1/2 (join) are passed as the prefix.
+  - Kept as before: method names `fillInBlock`, `menuGenerator`, `onExpandableButtonClicked_`, `inputs_`, `expandable_` (the editor-tweaks addon replaces `fillInBlock` of the Bool block); minimum inputs (maths 1, join 1, Bool 2, compare 2); new-input shadows (math_number, checkbox, empty text, join's fruit words); Bool's `optimize` attribute.
+  - Fixed on the way: undoing a symbol change removed an input in the old domToMutation; the menu's unnamed field event set the first menu on redo (seen in the first test run: redo gave menuvalues "%%+" instead of "+%+"), so a symbol change now fires only the mutation event.
+  - VM d62ec50: `%` in MATH_LEVELS (level 2), irgen kinds (`op.mod`), interpreter functions (`this.mod`).
+  - GUI 66230e2: operator_strictEquals from the maker; editor-tweaks addon's button boxes rx/ry 0.
+  - Buttons: no theme purpose fits because they sit on a block, whose colours are fixed on purpose (block categories): the icon is the block's white text colour, the outline stays the translucent dark line that follows the block's colour.
+- Verified (test app, production build):
+  - Structure of all 24 made blocks + not/random untouched: input names, symbol text, Boolean checks, output type and shape, no mutation on singles; all in the Operators flyout with the same text as before.
+  - Values modular vs chain of singles, compiled/interpreted: 2+3*4^2 mod 5 = 5/5 vs 5/5; 7 mod 3 * 2 = 2; 2 * 7 mod 3 = 2; −7 mod 3 = 2; 5 mod 0 = NaN; 10 − 7 mod 4 ^ 2 = 3; 1<2<3 true; join a b c = abc; a === A false; true xor (empty) or true = true.
+  - Editing each modular block: 2 adds, symbol change, remove, 4 undos and 4 redos (every step the expected mutation and inputs), duplicate equal, 20 adds without pause then 30 removes (stops at the minimum), removing an input that holds a real block (block is unplugged, stays), VM mutation in step.
+  - Save to .pmp bytes and load again: 5 blocks identical, values 5/5.
+  - Clean up: a script holding all 4 modular blocks and 2 singles kept its blocks and mutations (loose reporters are deleted by clean up, as before).
+  - Real mouse: dragged operator_add and the modular maths block out of the flyout, clicked + twice and − once, opened the menu (screenshot: square buttons, "mod" in the list), picked "mod" → menuvalues "%".
+  - Equality test `block-eq.mjs auto s293`: extension blocks and 571 page blocks, 0 differ in every mode (auto ran every mode because the three VM files count as shared engine code by path; the change itself is one table entry each).
+- Not verified: the editor-tweaks addon switched on; other interface languages.
+- Extensions: none affected (no extension uses these tables; single blocks' opcodes and inputs are unchanged).
+- Result after build: assumed working
+
 ### Session 292 — Extension library stays open (2026-11-16)
 - Asked: clicking an extension in the gallery should not bring you back to the editor; a checkmark should show it was added; exit the gallery by hand.
 - Changed: GUI `src/components/library/library.jsx` handleSelect: no close when `actor === 'ExtensionLibrary'` (Shift+click already worked this way for all libraries). `src/containers/extension-library.jsx`: `this.loading` set ignores a click on a tile whose URL is still loading; after a successful load `forceUpdate()` (unless unmounted) so the existing "Used in this project" checkmark (`used` flag computed in render) appears; `onCategorySelected` still scrolls the toolbox behind the library to the new category.
