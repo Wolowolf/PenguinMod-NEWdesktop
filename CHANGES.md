@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 293 — Shared maker for modular and single blocks (2026-11-16)
-- Asked: one shared piece of code in scratch-blocks for the modular operator blocks and their singles; "mod" in modular maths; square −/+ buttons.
-- Changed: section 277 (Blocks 68e0b82, VM d62ec50, GUI 66230e2): `Blockly.scratchBlocksUtils.modularBlock` makes the 4 modular blocks and 20 singles (opcodes, input names, saved format unchanged); "mod" = code `%`, same rank as * and /; −/+ buttons square with square white icons. vertical.js 2,510,716 → 2,500,092 bytes. To reverse: `git revert` the merge.
-- Verified: in the test app all 24 blocks built with the right inputs/shapes and shown in the flyout; mouse: dragged a single and a modular block out, clicked +/−, picked "mod"; add/remove, symbol change, undo/redo, duplicate, 20 fast adds/30 removes, save + reload, clean up; 2+3*4^2 mod 5 = 5 and 8 more pairs equal between modular and singles, compiled and interpreted; block-eq auto: 0 blocks differ (extension and page blocks, all modes). · Not verified: the editor-tweaks addon switched on (off by default); other languages (singles now show the symbol text, not the translated message).
+### Session 294 — Extensions can declare modular blocks; Bitwise pilot (2026-11-16)
+- Asked: a blockInfo option so extensions get modular blocks and their singles from the shared maker; shared VM helper with own symbol levels; pilot Bitwise (singles locked + one modular block); doc.
+- Changed: section 278 (Blocks c731142, VM 731e9e8, GUI 17d2f6f): `modular: {prefix, symbols, shadow, locked?}`; `runChain` in expandable-blocks.js; Bitwise's 8 singles locked, new `bitwiseModular` (order: shifts and rotations, then and, xor, or; left to right); docs/EXTENSION-INTEGRATION.md "Modular extension blocks". The compiler already passed the saved shape to extension blocks. To reverse: `git revert` the merge.
+- Verified: test app: 10 Bitwise blocks in the palette; mouse: + click, symbol menu, picked "or"; add/remove, min 2, 20 adds/30 removes, undo/redo, duplicate; 35 chains + 4 rotation chains, fixed and from variables, equal to JavaScript / nested singles in compiled, no-inline, no-folding and interpreted, also after save + reload and in a freshly started app; block-eq auto (everything): Bitwise equal in all modes, page blocks 0 differ. · Not verified: other languages (singles show the symbol text). Found, not from this change: pmOperatorsExpansion orIfFalsey / ifIsTruthy answer number compiled but text interpreted for typed "-2.5" / "0" (the new block shifted the test's inputs).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
