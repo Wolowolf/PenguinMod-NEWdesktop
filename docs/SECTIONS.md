@@ -258,3 +258,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 270 Block cleanup: code-language, useless and Discord blocks out, phone check, Google-only Sign-in, "current value of" (VM, GUI, Blocks, Packager, galleries)
 - 271 Stage on second screen addon: clean feed of the stage, full screen on the other display (GUI, app)
 - 272 Stage on second screen moves the real, playable stage instead of a copy (GUI, app comments)
+- 273 addon page shows its addons again (Stage on second screen manifest got its tags list) (GUI)

@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 288 — Stage on second screen moves the real stage (2026-11-16)
-- Asked: instead of copying the stage (271), move the existing stage to the second screen, behaving the same, with the small stage gone until the button is pressed again; delete the copying code.
-- Changed: section 272 (GUI 5667ef6; comments in `app/electron-main.js`, `app/preload.js`). To reverse: `git revert` the merge.
-- Verified: test app (hidden desktop, 2nd screen 1920×1080): stage, variable display and ask box on screen 2, centred, drawn at 1922×1081; answering the ask reached the project ("Pingu"), arrow key and "A" reached it, clicks map to stage coordinates (centre ≈ 0,0); 4:3 refits with bars; editor shows no stage, frame meter in its place; back by button, outside close, full screen; no errors in the log. · Not verified: physical screen look, addon off while away, loading another project while away.
+### Session 289 — Addon page empty again fixed (2026-11-16)
+- Asked: the addon menu shows no addons; fix it.
+- Changed: section 273 (GUI cf2537d): `stage-second-screen` manifest gets `"tags": []`. To reverse: `git revert` the merge.
+- Verified: before: the addon window's console showed `TypeError: Cannot read properties of undefined (reading 'filter')` from the search index (only non-built-in addon without tags was Stage on second screen). After rebuild: addon window lists the addons (Insert blocks by name, Theme colors, Stage on second screen…), reload shows no errors; other `manifest.tags` readers all work with an empty list. · Not verified: nothing else open.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
