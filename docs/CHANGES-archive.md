@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `docs/STATE.md` and `docs/SECTIONS.md` win where they differ. `tweak.mjs finish` puts every session’s full entry on top of the change log (since Session 262; `/CHANGES.md` keeps only a short copy of the last one). The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 292 — Extension library stays open (2026-11-16)
+- Asked: clicking an extension in the gallery should not bring you back to the editor; a checkmark should show it was added; exit the gallery by hand.
+- Changed: GUI `src/components/library/library.jsx` handleSelect: no close when `actor === 'ExtensionLibrary'` (Shift+click already worked this way for all libraries). `src/containers/extension-library.jsx`: `this.loading` set ignores a click on a tile whose URL is still loading; after a successful load `forceUpdate()` (unless unmounted) so the existing "Used in this project" checkmark (`used` flag computed in render) appears; `onCategorySelected` still scrolls the toolbox behind the library to the new category.
+- Extensions check: GUI-only, no change to calculations or optimisation; no extension block affected.
+- Verified (test app, hidden): opened the library, clicked More Motion twice quickly, More Events, More Operators: library still open, loaded extensions exactly pmMotionExpansion, pmEventsExpansion, pmOperatorsExpansion, 3 checkmarks on screen (screenshot); Back button closed it; toolbox ends with More Motion, More Events, More Operators.
+- Not verified: gallery extensions loaded by URL (galleries answer 403 in the test app), a failing load (unchanged: alert, no checkmark), other libraries still closing (code path unchanged, actor check only).
+
 ### Session 291 — Single "===" block (2026-11-16)
 - Asked: add a single "===" block that ties in like the rest (shared code).
 - Changed: section 275. GUI: src/lib/blocks.js defines operator_strictEquals ("%1 === %2", inputs OPERAND1/OPERAND2, colours_operators, output_boolean); make-toolbox-xml.js lists it after operator_notequal with text shadows ("" and "50"). VM: scratch3_operators.js strictEquals (args.OPERAND1 === args.OPERAND2), registered as operator_strictEquals and used by expandableCompare for "E"; irgen.js operator_strictEquals -> op.strictEquals (the node section 274 made for the modular "==="); jsgen.js op.strictEquals compares rawValue of both sides instead of asUnknown, so a fixed "5" stays text as in the interpreter (before, compiled "5" === (2+3) was true while interpreted was false).

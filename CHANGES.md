@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 291 — Single "===" block (2026-11-16)
-- Asked: add a single "===" block that shares code like the other single/modular pairs.
-- Changed: section 275 (VM e3e26f3, GUI fefe77b): new "===" block after "≠"; same interpreter function and compiler node as the modular comparison's "==="; compiled code now compares the values as the interpreter gets them. To reverse: `git revert` the merge.
-- Verified: 9 cases (text/text, case, number 5 vs text "5", "5" vs "5.0", empty, modular "===" chains) right compiled, compiled without folding and interpreted; compiler proofs all ok (block-eq 0 unexpected differences, fuzz nothing new, regress 0 verdicts changed); block shows in the palette. · Not verified: nothing else open.
+### Session 292 — Extension library stays open (2026-11-16)
+- Asked: adding an extension should not return to the editor; the tile gets a checkmark so many can be added quickly; leave the library by hand.
+- Changed: section 276 (GUI 0e27d62): extension library no longer closes on click, re-renders after a load so the checkmark appears, ignores repeat clicks while loading. To reverse: `git revert` the merge.
+- Verified: in the test app clicked More Motion twice, More Events, More Operators: library stayed open, 3 checkmarks, each loaded once; Back closed it and the 3 categories were in the toolbox. · Not verified: gallery (URL) extensions (no galleries in the test app), a failed load (unchanged path: alert, no checkmark).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
