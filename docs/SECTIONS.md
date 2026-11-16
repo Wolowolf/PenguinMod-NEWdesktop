@@ -264,3 +264,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 276 extension library stays open after adding an extension; the tile's checkmark shows it was added (GUI)
 - 277 one shared maker for modular and single operator blocks; "mod" symbol in modular maths; square −/+ buttons (Blocks, VM, GUI)
 - 278 extensions can declare modular blocks and their singles (shared maker); Bitwise: singles + one modular bitwise block (Blocks, VM, GUI)
+- 279 switch blocks renamed check / is / otherwise / is, also run next / stop checking; modular "check" block; they also run interpreted (Blocks, VM, GUI)
