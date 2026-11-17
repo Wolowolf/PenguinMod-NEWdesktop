@@ -267,3 +267,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 279 switch blocks renamed check / is / otherwise / is, also run next / stop checking; modular "check" block; they also run interpreted (Blocks, VM, GUI)
 - 280 "or else" / "if is true then": typed text stays text when compiled; inputs passed on unchanged when interpreted (VM)
 - 281 modular "if then else" reporter (+ adds else if; compiled: only the chosen value runs); modular "or else" and "|| / ??" chains (Blocks, VM, GUI)
+- 282 modular Big Decimals maths, compare, max/min and bitwise blocks ("^" shown); True Fantom Math modular ≈ / ≉ chain (VM)

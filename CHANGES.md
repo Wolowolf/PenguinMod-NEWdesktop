@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 298 — Modular "if then else" reporter and "or else" chains (2026-11-17)
-- Asked: modular "if <> then () else ()" reporter (+ adds "else if" pairs), modular Operators Expansion "or else" and Sharktilities "|| / ??" chains, singles made by the shared code. Chosen by the user: the compiled single now works out only the chosen value (it worked out all three).
-- Changed: section 281 (Blocks 6025a05, VM 1e8b8f6, GUI 192bf12). To reverse: `git revert` the merge.
-- Verified: `bench\s298\logic-check.cjs` (VM in Node, 35 cases, a logging custom reporter / spied join): modular = nested singles in value and inputs worked out, compiled and interpreted; compiled only the chosen value / up to the first filled "or else" runs, interpreted all (as the singles). Test app: palette, labels, −/+, menus, answers, undo/redo, save → reload identical. verify-compiler: fuzz ×3 nothing new, regression unchanged, block-eq auto 571 blocks identical in every mode. · Not verified: real mouse clicks on −/+ (called directly).
+### Session 299 — Modular Big Decimals blocks and True Fantom ≈ / ≉ chain (2026-11-17)
+- Asked: Big Decimals: "^" instead of "to the power of"; modular maths, compare chain, max/min and bitwise blocks (singles by the shared code, big numbers kept); True Fantom Math: own modular ≈ / ≉ chain. Chosen: max/min has a menu per gap (no new plumbing, like every other modular block, "x max 0 min 100" clamps).
+- Changed: section 282 (VM 2ea7750). To reverse: `git revert` the merge.
+- Verified: `bench\s299\logic-check.cjs` (VM in Node, 35 cases incl. 2^53+1, 2^64−1, 1<<70): modular = nested singles, compiled = interpreted. Test app: palette, menus, −/+, undo/redo, 15 chains right compiled and interpreted, save → reload identical. block-eq auto (full, base was s295): 1,308 + 571 page blocks identical in every mode. · Not verified: real mouse clicks on −/+ (called directly); setup-state scan not run (its acorn copy is missing).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
