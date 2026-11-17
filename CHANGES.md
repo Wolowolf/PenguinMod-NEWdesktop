@@ -14,10 +14,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 300 — Modular 3D Math vectors / quaternions and Random Utils "one of" (2026-11-17)
-- Asked: 3D Math: modular V3 and V2 + − * / (* / before + −) and quaternion + − * (order kept, * first), "conjugate" as its own block, singles locked via the shared code; Random Utils: "50% chance of A or B" becomes the single of a modular "one of A, B, C…" with equal chances from runtime.pmRandom.
-- Changed: section 283 (VM 0ff16bf): 3DMath.js, random_utils.js, block lists. To reverse: `git revert` the merge.
-- Verified: `bench\s300\logic-check.cjs` (VM in Node, 28 checks): modular = nested singles, compiled = interpreted, i*j = k and j*i = −k, "one of" with 2 inputs = "50% chance" for the same random numbers, even spread over 30,000 and 50,000 picks (chi² 1.2 and 12.8). Test app: palette, menus, −/+, undo/redo, 13 answers right compiled and interpreted, save → reload identical. block-eq auto against s299: 126 blocks identical in every mode. · Not verified: real mouse clicks on −/+ (called directly).
+### Session 301 — 3D Math V2 subtraction answers two numbers (2026-11-17)
+- Asked: fix "V2: [a] − [b]" answering a third number (found in Session 300).
+- Cause: `subV2` built `[a0 − b0, a1 − b1, a2 − b2]`; 2D vectors have no a2 / b2, so the third was NaN, shown as null (Node check in Session 300: "[1,2] + [3,4] × [2,2] − [1,1] / [1,2]" gave [6,9.5,null]).
+- Changed: section 284 (VM 8a63a6c), `3DMath.js` subV2. To reverse: `git revert` the merge.
+- Verified: `bench\s301\logic-check.cjs` (31 checks): that chain now [6,9.5], [5,7] − [1,2] = [4,5], 3-number inputs give 2 numbers like +, bad text [0,0]; modular = singles, compiled = interpreted. Test app: single and modular V2 − right compiled and interpreted. block-eq auto against s300: 77 3D Math blocks identical in every mode.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
