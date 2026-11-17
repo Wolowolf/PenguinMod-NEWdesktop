@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `docs/STATE.md` and `docs/SECTIONS.md` win where they differ. `tweak.mjs finish` puts every session’s full entry on top of the change log (since Session 262; `/CHANGES.md` keeps only a short copy of the last one). The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 296 — "or else" answers the same compiled and interpreted (2026-11-17)
+- Asked: fix Operators Expansion's "A or else B" and its sibling answering a number compiled but text interpreted for typed text (found in Session 294); start automatically after the modular-switch conversation merged (PR 339).
+- Cause: the blocks' own compiler code used `asUnknown()`, which writes typed text that looks like a number as a number. Shown by the test app before the fix: compiled "-2.5 or else b" = number -2.5 (interpreted: text), and "0 or else b" = b (interpreted: 0). Second difference found: interpreted, the inputs were turned into text first, so a variable holding the number 0 or false counted as filled in.
+- Changed: section 280 (VM aa11edc), `pm_operatorsExpansion/index.js`: typed text stays text when compiled; inputs are passed on unchanged when interpreted. To reverse: `git revert` the merge.
+- Verified: test app, 100 blocks (17 typed texts incl. "0", "", "-0", "NaN", quotes, line break; variables holding 0, 5, -2.5, "0", "", text, true, false, NaN; nested; inside + and join): value and type as expected in compiled, no-inline, no-folding and interpreted, 100/100 each (before the fix 78/100 compiled). block-eq for the extension (ONLY, 3 modes): 25 blocks identical in every mode. After a power cut mid-build: git fsck of the repo and the 6 checkouts clean, rebuilt. · Not verified: the full block-eq (auto wanted everything only because the inventory has no `source` for built-in extensions; the change is two blocks of one extension).
+- Result after build: assumed working
+
 ### Session 295 — Switch renamed to check / is / otherwise; modular "check" block (2026-11-17)
 - Asked: tweak modular-switch: (1) block texts switch → "check (value)", case → "is (x)", default → "otherwise", next case → "is (x), also run next" in every language file that has them; (2) a modular C-block "check": + adds an "is ( )" branch, the last branch can be "otherwise", each "is" branch has a menu "is" / "is, also run next"; saved like control_expandableIf; run as the single blocks (compiler and interpreter); (3) check that exitCase works inside it, rename consistently if needed.
 - Changed: section 279.
