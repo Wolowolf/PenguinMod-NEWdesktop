@@ -14,11 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 301 — 3D Math V2 subtraction answers two numbers (2026-11-17)
-- Asked: fix "V2: [a] − [b]" answering a third number (found in Session 300).
-- Cause: `subV2` built `[a0 − b0, a1 − b1, a2 − b2]`; 2D vectors have no a2 / b2, so the third was NaN, shown as null (Node check in Session 300: "[1,2] + [3,4] × [2,2] − [1,1] / [1,2]" gave [6,9.5,null]).
-- Changed: section 284 (VM 8a63a6c), `3DMath.js` subV2. To reverse: `git revert` the merge.
-- Verified: `bench\s301\logic-check.cjs` (31 checks): that chain now [6,9.5], [5,7] − [1,2] = [4,5], 3-number inputs give 2 numbers like +, bad text [0,0]; modular = singles, compiled = interpreted. Test app: single and modular V2 − right compiled and interpreted. block-eq auto against s300: 77 3D Math blocks identical in every mode.
+### Session 302 — Modular simultaneously run, colour mix, path length and polygon (2026-11-17)
+- Asked: Extra Controls "simultaneously run" with + branches (finishes when all have finished); Color Master "mix A, B, C…" with equal shares; Graphics 2D modular path length and a polygon block with triangle / quadrangle as its locked singles.
+- Changed: section 285 (VM 5ded05a, Blocks d187020): the shared maker makes point pairs, a trailing menu input, colour inputs and C blocks with −/+ branches; new blocks "simultaneously run and wait", "mix [A] and [B] and …", "length from (x,y) to (x,y) to …", "polygon (x,y)… 's [area]". The old "simultaneously run" is unchanged (it does not wait). To reverse: `git revert` the merge.
+- Verified: test app, compiled and interpreted, before and after save + reload: every modular block = its single (10 pairs incl. odd inputs), fixed answers right (3 colours #555555, path 11, 5-point area 125); branches with waits and "stop this script" finish in order b, c, a, then the block ends; −/+ limits, undo/redo. block-eq auto (3 extensions + Bitwise): 58 blocks identical in every mode.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
