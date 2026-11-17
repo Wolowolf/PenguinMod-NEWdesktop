@@ -14,12 +14,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 296 — "or else" answers the same compiled and interpreted (2026-11-17)
-- Asked: fix Operators Expansion's "A or else B" and its sibling answering a number compiled but text interpreted for typed text (found in Session 294); start automatically after the modular-switch conversation merged (PR 339).
-- Cause: the blocks' own compiler code used `asUnknown()`, which writes typed text that looks like a number as a number (test app before the fix: compiled "0 or else b" = b, interpreted 0). Also: interpreted, inputs were turned into text first, so a variable holding the number 0 counted as filled in.
-- Changed: section 280 (VM aa11edc), `pm_operatorsExpansion/index.js`: typed text stays text when compiled; inputs are passed on unchanged when interpreted. To reverse: `git revert` the merge.
-- Verified: test app, 100 blocks (typed texts, variables, nested, inside + and join): value and type as expected in compiled, no-inline, no-folding and interpreted, 100/100 each (78/100 compiled before); block-eq for the extension: 25 blocks identical in every mode; after a power cut mid-build git fsck clean, rebuilt. · Not verified: the full block-eq (auto wanted everything only because built-in extensions have no `source` in the inventory).
-- Result after build: assumed working
+### Session 297 — Queue for conversations that must wait for each other (2026-11-17)
+- Asked: a consistent, cheap way to open two or more conversations at once so each waits for the one before it, safe against the usage limit or a restart.
+- Changed: `tweak.mjs` (outside the repo; old copy `tweak.mjs.bak-queue`): every `start` takes a numbered ticket in `PenguinMod-test\queue\`; not its turn: `STOPPED: not your turn`, then `start <name> --wait` in the background waits by itself (looks every minute, asks GitHub every 5 minutes) and starts the tweak; `ship` passes the turn on after its merge; new `queue` and `unqueue <name>`. `CLAUDE.md` (workflow step 1 and the several-changes rule), `docs/STATE.md`, `docs/PROCEDURES.md`. To reverse: `git revert` the merge and copy `tweak.mjs.bak-queue` over `tweak.mjs`.
+- Verified: `bench\queue-test.sh` in a throwaway repo: three tweaks start in order, a dead wait is not overtaken, running the command again keeps the place, a cut-off after the start only repeats the start information, an uncommitted file blocks, `unqueue`; live: this session waited 17 min behind tweak/or-else-answer-type (started without a ticket) and started by itself after PR 340 merged. · Not verified: whether the app wakes a conversation whose wait ends while the usage limit is reached (saying "continue" runs the same command again).
+- Result after build: assumed working (only .md files: builds nothing)
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
 
