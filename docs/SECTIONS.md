@@ -272,3 +272,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 284 3D Math "V2: [a] − [b]" answers two numbers, not a third null (VM)
 - 285 Modular Extra Controls "simultaneously run and wait", Color Master "mix A and B and …", Graphics 2D path length and polygon (VM, Blocks)
 - 286 Single or modular blocks addon: palette shows only single or only modular (−/+) blocks, built-in and extensions (GUI)
+- 287 −/+ buttons stacked (C-blocks: side by side) and full block height, no gap; Editor Tweaks "Expandable Button Size" removed (Blocks, GUI)

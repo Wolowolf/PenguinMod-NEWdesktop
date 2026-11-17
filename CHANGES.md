@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 303 — Single or modular blocks addon (2026-11-17)
-- Asked: an addon showing only single or only modular blocks (built-in and extensions), also hiding Controls Expansion "if … else if" and Extra Controls "if/else [ID]" in modular mode.
-- Changed: section 286 (GUI 1a2ed4f): new addon "Single or modular blocks", off by default, setting default "only modular blocks". Core "if" / "if else" and "stop checking" stay in both modes. Search (Insert blocks by name) only finds shown blocks. To reverse: `git revert` the merge.
-- Verified: test app: modular mode on load; switched live from the Addons page with Operators open (category kept) and Bitwise, Controls Expansion, Extra Controls loaded; Big Decimals and 3D Math loaded later filtered; search "join" gives one result, the shown kind; switching while on Costumes redraws on return; reload keeps both settings. · Not verified: live disable/enable of the addon.
+### Session 304 — Stacked −/+ buttons (2026-11-17)
+- Asked: −/+ buttons on top of each other, touching the block's top and bottom with no gap; on C-blocks side by side, no gap, full height; delete Editor Tweaks "Expandable Button Size (0-500%)" and its code.
+- Changed: section 287 (Blocks 672ed37, GUI 3a61ba6). To reverse: `git revert` the merge.
+- Verified: test app: modular math reporter, boolean, "if then else" reporter show + over − filling the block height inside the round/pointed ends; expandable if and switch C-blocks show − + touching, full arm height; pressing + and − redraws correctly, − stops at one branch. · Not verified: right-to-left languages, the Editor Tweaks addon switched on after the change (setting gone from its manifest, build OK).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
