@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 304 — Stacked −/+ buttons (2026-11-17)
-- Asked: −/+ buttons on top of each other, touching the block's top and bottom with no gap; on C-blocks side by side, no gap, full height; delete Editor Tweaks "Expandable Button Size (0-500%)" and its code.
-- Changed: section 287 (Blocks 672ed37, GUI 3a61ba6). To reverse: `git revert` the merge.
-- Verified: test app: modular math reporter, boolean, "if then else" reporter show + over − filling the block height inside the round/pointed ends; expandable if and switch C-blocks show − + touching, full arm height; pressing + and − redraws correctly, − stops at one branch. · Not verified: right-to-left languages, the Editor Tweaks addon switched on after the change (setting gone from its manifest, build OK).
+### Session 305 — Small UI tweaks (2026-11-17)
+- Asked: counters linked to theme colours; no scrollbars on code area and palette; no line left of the play button; small square zoom buttons bottom right; fix the find bar; backpack items edge to edge; sprite info as three pairs ([eye][name], x [][] y, ⇪ [][] ⟳).
+- Changed: section 288 (GUI d821eb3). To reverse: `git revert` the merge.
+- Verified: test app (light and dark): find bar list shows and lists "when flag clicked" (cause: centring transform put it under the code area); scrollbars gone, wheel scrolls palette and code area; zoom squares in the corner, + and − change the zoom; line starts below the header; backpack tiles full height sharing a border; sprite info pairs; mouse position and clone counter in ink, orange when full. · Not verified: right-to-left layout, a real backpack with 2+ items (checked with a copied tile).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
