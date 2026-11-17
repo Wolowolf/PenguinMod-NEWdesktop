@@ -271,3 +271,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 283 Modular 3D Math V3 / V2 + − * / and quaternion + − * blocks, "Q: conjugate of"; Random Utils "one of A, B, C…" (VM)
 - 284 3D Math "V2: [a] − [b]" answers two numbers, not a third null (VM)
 - 285 Modular Extra Controls "simultaneously run and wait", Color Master "mix A and B and …", Graphics 2D path length and polygon (VM, Blocks)
+- 286 Single or modular blocks addon: palette shows only single or only modular (−/+) blocks, built-in and extensions (GUI)
