@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 299 — Modular Big Decimals blocks and True Fantom ≈ / ≉ chain (2026-11-17)
-- Asked: Big Decimals: "^" instead of "to the power of"; modular maths, compare chain, max/min and bitwise blocks (singles by the shared code, big numbers kept); True Fantom Math: own modular ≈ / ≉ chain. Chosen: max/min has a menu per gap (no new plumbing, like every other modular block, "x max 0 min 100" clamps).
-- Changed: section 282 (VM 2ea7750). To reverse: `git revert` the merge.
-- Verified: `bench\s299\logic-check.cjs` (VM in Node, 35 cases incl. 2^53+1, 2^64−1, 1<<70): modular = nested singles, compiled = interpreted. Test app: palette, menus, −/+, undo/redo, 15 chains right compiled and interpreted, save → reload identical. block-eq auto (full, base was s295): 1,308 + 571 page blocks identical in every mode. · Not verified: real mouse clicks on −/+ (called directly); setup-state scan not run (its acorn copy is missing).
+### Session 300 — Modular 3D Math vectors / quaternions and Random Utils "one of" (2026-11-17)
+- Asked: 3D Math: modular V3 and V2 + − * / (* / before + −) and quaternion + − * (order kept, * first), "conjugate" as its own block, singles locked via the shared code; Random Utils: "50% chance of A or B" becomes the single of a modular "one of A, B, C…" with equal chances from runtime.pmRandom.
+- Changed: section 283 (VM 0ff16bf): 3DMath.js, random_utils.js, block lists. To reverse: `git revert` the merge.
+- Verified: `bench\s300\logic-check.cjs` (VM in Node, 28 checks): modular = nested singles, compiled = interpreted, i*j = k and j*i = −k, "one of" with 2 inputs = "50% chance" for the same random numbers, even spread over 30,000 and 50,000 picks (chi² 1.2 and 12.8). Test app: palette, menus, −/+, undo/redo, 13 answers right compiled and interpreted, save → reload identical. block-eq auto against s299: 126 blocks identical in every mode. · Not verified: real mouse clicks on −/+ (called directly).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
