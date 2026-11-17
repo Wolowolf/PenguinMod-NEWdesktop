@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 302 — Modular simultaneously run, colour mix, path length and polygon (2026-11-17)
-- Asked: Extra Controls "simultaneously run" with + branches (finishes when all have finished); Color Master "mix A, B, C…" with equal shares; Graphics 2D modular path length and a polygon block with triangle / quadrangle as its locked singles.
-- Changed: section 285 (VM 5ded05a, Blocks d187020): the shared maker makes point pairs, a trailing menu input, colour inputs and C blocks with −/+ branches; new blocks "simultaneously run and wait", "mix [A] and [B] and …", "length from (x,y) to (x,y) to …", "polygon (x,y)… 's [area]". The old "simultaneously run" is unchanged (it does not wait). To reverse: `git revert` the merge.
-- Verified: test app, compiled and interpreted, before and after save + reload: every modular block = its single (10 pairs incl. odd inputs), fixed answers right (3 colours #555555, path 11, 5-point area 125); branches with waits and "stop this script" finish in order b, c, a, then the block ends; −/+ limits, undo/redo. block-eq auto (3 extensions + Bitwise): 58 blocks identical in every mode.
+### Session 303 — Single or modular blocks addon (2026-11-17)
+- Asked: an addon showing only single or only modular blocks (built-in and extensions), also hiding Controls Expansion "if … else if" and Extra Controls "if/else [ID]" in modular mode.
+- Changed: section 286 (GUI 1a2ed4f): new addon "Single or modular blocks", off by default, setting default "only modular blocks". Core "if" / "if else" and "stop checking" stay in both modes. Search (Insert blocks by name) only finds shown blocks. To reverse: `git revert` the merge.
+- Verified: test app: modular mode on load; switched live from the Addons page with Operators open (category kept) and Bitwise, Controls Expansion, Extra Controls loaded; Big Decimals and 3D Math loaded later filtered; search "join" gives one result, the shown kind; switching while on Costumes redraws on return; reload keeps both settings. · Not verified: live disable/enable of the addon.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
