@@ -268,3 +268,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 280 "or else" / "if is true then": typed text stays text when compiled; inputs passed on unchanged when interpreted (VM)
 - 281 modular "if then else" reporter (+ adds else if; compiled: only the chosen value runs); modular "or else" and "|| / ??" chains (Blocks, VM, GUI)
 - 282 modular Big Decimals maths, compare, max/min and bitwise blocks ("^" shown); True Fantom Math modular ≈ / ≉ chain (VM)
+- 283 Modular 3D Math V3 / V2 + − * / and quaternion + − * blocks, "Q: conjugate of"; Random Utils "one of A, B, C…" (VM)
