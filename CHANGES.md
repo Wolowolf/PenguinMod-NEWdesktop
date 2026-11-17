@@ -14,10 +14,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 295 — Switch renamed to check / is / otherwise; modular "check" block (2026-11-17)
-- Asked: rename switch/case/default/next case; a modular C-block "check" (+ adds "is" branches, last can be "otherwise", per-branch menu "is" / "is, also run next"), saved like the modular if, run with the single blocks' code; exit block must work inside.
-- Changed: section 279 (Blocks a087937, VM dbfcf14, GUI 7c41565): texts (also "exit case" → "stop checking"; no language files have them); `control_expandableSwitch`: + adds an "is" branch above "otherwise", "otherwise" is a choice in the last branch's menu; compiled as the singles' switch/case nodes; the check blocks got interpreter code (they had none). Fixed on the way: "escape loop" in a check left only the check, "stop checking" in a loop in a branch left only the loop (labelled switch). To reverse: `git revert` the merge.
-- Verified: test app: 17 structures × modular/single, 230 runs each in compiled and interpreted (fall-through, otherwise, no match, empty, nested, stop checking, continue/escape in loops, number vs text), all as expected and equal, again after save + reload; mouse: +, menu; +/−/menu/undo/redo/20 adds/30 removes/duplicate with editor = VM; verify-compiler: all 6 steps ok; block-eq (everything): new vs old 0, new vs interp only the 3 known. · Not verified: packaged game, the planned single/modular addon.
+### Session 296 — "or else" answers the same compiled and interpreted (2026-11-17)
+- Asked: fix Operators Expansion's "A or else B" and its sibling answering a number compiled but text interpreted for typed text (found in Session 294); start automatically after the modular-switch conversation merged (PR 339).
+- Cause: the blocks' own compiler code used `asUnknown()`, which writes typed text that looks like a number as a number (test app before the fix: compiled "0 or else b" = b, interpreted 0). Also: interpreted, inputs were turned into text first, so a variable holding the number 0 counted as filled in.
+- Changed: section 280 (VM aa11edc), `pm_operatorsExpansion/index.js`: typed text stays text when compiled; inputs are passed on unchanged when interpreted. To reverse: `git revert` the merge.
+- Verified: test app, 100 blocks (typed texts, variables, nested, inside + and join): value and type as expected in compiled, no-inline, no-folding and interpreted, 100/100 each (78/100 compiled before); block-eq for the extension: 25 blocks identical in every mode; after a power cut mid-build git fsck clean, rebuilt. · Not verified: the full block-eq (auto wanted everything only because built-in extensions have no `source` in the inventory).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)

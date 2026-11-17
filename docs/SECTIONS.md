@@ -265,3 +265,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 277 one shared maker for modular and single operator blocks; "mod" symbol in modular maths; square −/+ buttons (Blocks, VM, GUI)
 - 278 extensions can declare modular blocks and their singles (shared maker); Bitwise: singles + one modular bitwise block (Blocks, VM, GUI)
 - 279 switch blocks renamed check / is / otherwise / is, also run next / stop checking; modular "check" block; they also run interpreted (Blocks, VM, GUI)
+- 280 "or else" / "if is true then": typed text stays text when compiled; inputs passed on unchanged when interpreted (VM)
