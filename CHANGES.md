@@ -14,11 +14,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 297 — Queue for conversations that must wait for each other (2026-11-17)
-- Asked: a consistent, cheap way to open two or more conversations at once so each waits for the one before it, safe against the usage limit or a restart.
-- Changed: `tweak.mjs` (outside the repo; old copy `tweak.mjs.bak-queue`): every `start` takes a numbered ticket in `PenguinMod-test\queue\`; not its turn: `STOPPED: not your turn`, then `start <name> --wait` in the background waits by itself (looks every minute, asks GitHub every 5 minutes) and starts the tweak; `ship` passes the turn on after its merge; new `queue` and `unqueue <name>`. `CLAUDE.md` (workflow step 1 and the several-changes rule), `docs/STATE.md`, `docs/PROCEDURES.md`. To reverse: `git revert` the merge and copy `tweak.mjs.bak-queue` over `tweak.mjs`.
-- Verified: `bench\queue-test.sh` in a throwaway repo: three tweaks start in order, a dead wait is not overtaken, running the command again keeps the place, a cut-off after the start only repeats the start information, an uncommitted file blocks, `unqueue`; live: this session waited 17 min behind tweak/or-else-answer-type (started without a ticket) and started by itself after PR 340 merged. · Not verified: whether the app wakes a conversation whose wait ends while the usage limit is reached (saying "continue" runs the same command again).
-- Result after build: assumed working (only .md files: builds nothing)
+### Session 298 — Modular "if then else" reporter and "or else" chains (2026-11-17)
+- Asked: modular "if <> then () else ()" reporter (+ adds "else if" pairs), modular Operators Expansion "or else" and Sharktilities "|| / ??" chains, singles made by the shared code. Chosen by the user: the compiled single now works out only the chosen value (it worked out all three).
+- Changed: section 281 (Blocks 6025a05, VM 1e8b8f6, GUI 192bf12). To reverse: `git revert` the merge.
+- Verified: `bench\s298\logic-check.cjs` (VM in Node, 35 cases, a logging custom reporter / spied join): modular = nested singles in value and inputs worked out, compiled and interpreted; compiled only the chosen value / up to the first filled "or else" runs, interpreted all (as the singles). Test app: palette, labels, −/+, menus, answers, undo/redo, save → reload identical. verify-compiler: fuzz ×3 nothing new, regression unchanged, block-eq auto 571 blocks identical in every mode. · Not verified: real mouse clicks on −/+ (called directly).
+- Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
 
