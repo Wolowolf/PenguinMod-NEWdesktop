@@ -274,3 +274,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 286 Single or modular blocks addon: palette shows only single or only modular (−/+) blocks, built-in and extensions (GUI)
 - 287 −/+ buttons stacked (C-blocks: side by side) and full block height, no gap; Editor Tweaks "Expandable Button Size" removed (Blocks, GUI)
 - 288 Small UI tweaks: counters in theme ink, no code-area/palette scrollbars, stage line, square zoom buttons, find bar fix, backpack, sprite info pairs (GUI)
+- 289 Compact layout: editor always fits the window, eye + name on sprite tiles, edge-to-edge categories, zoom row, joined stage buttons (GUI)

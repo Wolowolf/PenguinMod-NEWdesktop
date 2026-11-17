@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 305 — Small UI tweaks (2026-11-17)
-- Asked: counters linked to theme colours; no scrollbars on code area and palette; no line left of the play button; small square zoom buttons bottom right; fix the find bar; backpack items edge to edge; sprite info as three pairs ([eye][name], x [][] y, ⇪ [][] ⟳).
-- Changed: section 288 (GUI d821eb3). To reverse: `git revert` the merge.
-- Verified: test app (light and dark): find bar list shows and lists "when flag clicked" (cause: centring transform put it under the code area); scrollbars gone, wheel scrolls palette and code area; zoom squares in the corner, + and − change the zoom; line starts below the header; backpack tiles full height sharing a border; sprite info pairs; mouse position and clone counter in ink, orange when full. · Not verified: right-to-left layout, a real backpack with 2+ items (checked with a copied tile).
+### Session 306 — Compact layout (2026-11-18)
+- Asked: remove the ~10 px strips beside the stage column; eye + name box onto each sprite tile (out of sprite info); categories and ADD without side margins; no halo around the find bar; top-right stage buttons touching; zoom buttons in a row in the code area's corner, as high as ADD.
+- Changed: section 289 (GUI 092cccd). To reverse: `git revert` the merge.
+- Verified: test app: a 1370x600 window had a 640 px page and a 15 px scrollbar strip (cause: editor min-height 640); now page = window at 1370x600 and 900x480, stage column ends at the window edge; tile eye hides a non-selected sprite without selecting it, name box renames (duplicate name refused, long name ellipsis), dragging a tile still reorders, dragging from the name box doesn't; zoom row 19.2 px squares flush with corner, ADD 19.2 px; header buttons touch; find dropdown box-shadow none. · Not verified: right-to-left layout, light theme, the left strip on your exact screen size.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)

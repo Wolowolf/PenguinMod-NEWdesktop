@@ -3,6 +3,15 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `docs/STATE.md` and `docs/SECTIONS.md` win where they differ. `tweak.mjs finish` puts every session’s full entry on top of the change log (since Session 262; `/CHANGES.md` keeps only a short copy of the last one). The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 306 — Compact layout (2026-11-18)
+- Asked: six layout changes (strips beside stage column, eye + name on sprite tiles, category side margins, find bar halo, stage buttons touching, zoom buttons as a row as high as ADD).
+- Cause of the strips: playground/interface.css `.editor {min-width:1024px; min-height:640px}`. With a window under 640 css px tall (e.g. 1370x600: scrollHeight 640, clientWidth 1355) the page scrolled and its dark scrollbar made the right strip; at under ~940 px wide the editor-wrapper's 600 px flex-basis with flex-shrink 0 pushed the stage column past the edge (900x480: column 683..1024). Reproduced only after the user's outlined screenshots; earlier tries at 1100–1500 wide and 700–950 tall showed no strip.
+- After: 1370x600 → page 1370x600, blocks 0..1015, column 1015..1370; 900x480 → page 900x480, blocks 0..559, column 559..900.
+- Sprite tiles: Sprite2's eye clicked → Sprite2 hidden, editing target stays Sprite1; clicked again → visible; renamed to "Sprite1" → VM refuses, box shows Sprite2; renamed to a long name → saved, ellipsis; tile drag from 905,535 to 815,535 → vm.reorderTarget(2,1); drag starting in the name box → no assetDrag, no reorder, box focused.
+- Zoom: three groups at y 904.5..923.7, x 746.1..801.7, blocks area ends 800.6 / 922.7 (backpack header starts 922.7); ADD 19.2 high. Header: profiler and fullscreen buttons touch. Find bar dropdown computed box-shadow: none.
+- Extensions: GUI layout only, no engine part touched.
+- Not verified: RTL, light theme, the gamepad and second-screen buttons (not enabled in the test app).
+
 ### Session 305 — Small UI tweaks (2026-11-17)
 - Asked: seven small UI tweaks (counters colours, scrollbars, line left of play, square zoom buttons, find bar fix, backpack edge to edge, sprite info pairs).
 - Changed: section 288 (GUI d821eb3): editor-counters clones.css, mouse-pos.css, _runtime_entry.js, 300cats.svg removed; pm-theme-uses.css; stage-resize-handle.css; pm-zoom-buttons.js; custom-zoom style.css; find-bar userstyle.css; backpack.css; sprite-info.jsx/.css. Colours: counters = Ink (frame), full clone count = status warn (section 223); zoom buttons keep Lines (ring), Controls (face), Ink dim (symbol).
