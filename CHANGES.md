@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 318 — Shared shape tools and tool containers (2026-11-18)
-- Asked: code sharing 7/9: one shared shape-tool maker and one shared mode container for Paint's shape tools (rect, rounded rect, oval, arrow, triangle, Shapes) and the bitmap ones (rect, oval, fill, select); same drawing and behaviour.
-- Changed: section 301 (Paint 7f0771f): shape-tool.js + bit-shape-tool.js bases, make-mode-container.jsx for all 10 buttons; rounded-rect-tool.js deleted. To reverse: `git revert` the merge.
-- Verified: test app, old vs new build, script bench/paint-shape-tools.steps (50 cases: plain/Shift/Alt/Ctrl drags, tiny shapes, moving, live corner/sides/fill/thickness changes, undo, bitmap select/fill, tool switching): all 122 recorded lines (paper project, selection, costume bytes) identical; canvas screenshots byte-identical · Not verified: real keyboard Ctrl+Z and modifier keys (sent as page key events), zoom change while a bitmap shape is selected.
+### Session 319 — Shared gamepad, event target, download and camera code (2026-11-18)
+- Asked: code sharing 8/9: one copy each of the gamepad addon (gamepadlib, userscript), event-target, download helper and camera code for editor and packager; all must still work in both.
+- Changed: section 302: VM src/web-shared/ holds the single copies; GUI and packager import them, their copies deleted (GUI keeps only the gamepad settings editor). To reverse: `git revert` the merge.
+- Verified: test app, bench/share-io-check.mjs in the editor and in a packaged HTML game with gamepad support: fake gamepad (button -> key A, right stick moves mouse and virtual cursor, trigger -> mouse down/up), fake camera (frame arrives, stream released), downloads (sprite export, game list export saved); gamepad settings window opens, stores/removes its stage comment. Idea 8: -994 code lines · Not verified: a real gamepad or camera, pointerlock gamepad mode in games, Electron/zip game targets.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
