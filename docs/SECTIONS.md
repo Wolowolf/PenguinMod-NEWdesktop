@@ -286,3 +286,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 298 shared picture helpers (VM util/image-util.js: data URLs, canvas skins, text drawing) for 13 extensions and tw-external (VM)
 - 299 shared sprite menus and menu-value lookup (runtime getSpriteNames / getSpriteMenu / getTargetFromMenu) for 24 extensions (VM)
 - 300 one shared Box and BufferedInput (kept in Paint, used by Paint and GUI); GUI copies and Paint's unused ComingSoon removed (Paint, GUI)
+- 301 one shared shape-tool base (vector + bitmap) and one shared tool-button container for 10 paint tools (Paint)
