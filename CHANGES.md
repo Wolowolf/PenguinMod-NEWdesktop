@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 315 — Shared picture helpers (2026-11-18)
-- Asked: code sharing 4/9: shared VM helpers for readAsDataURL, canvas bitmap skins and fillText text drawing; extensions moved onto them; identical looks.
-- Changed: section 298 (VM 2f7af86): new util/image-util.js (blobToDataURL, setCanvasSkin, drawText, textCanvas); 13 extensions + tw-external use it. Left alone: Files-Expanded (one reader for 3 modes); Render's text-wrapper not used (it wraps lines and caches widths, none of these wraps text). To reverse: `git revert` the merge.
-- Verified: in the test app, old vs new code: 1,628 cases (pen text, simple3D text textures with/without border, Iris glyphs, Lily "?", odd fonts/texts/widths, data URLs of 6 blob kinds, skins created/refreshed) 0 differ; real pen printText 5 cases pixel-identical on pen's own canvas; Iris Text makes and refreshes its skin (resolution 3, smoothing rule on); block-eq (ONLY = the changed extensions): 210 blocks in 11 extensions identical in every mode · Not verified: FileReader error paths (kept by reading the code), VideoSharing / GIF / recording with real media.
+### Session 316 — Shared sprite menus and lookup (2026-11-18)
+- Asked: code sharing 5/9: one shared runtime helper for the extensions' sprite menus and one for "find sprite by name"; menu contents and order unchanged per extension.
+- Changed: section 299 (VM 7126005): runtime getSpriteNames, getSpriteMenu, getTargetFromMenu; 24 extensions build their sprite menus with them, 15 resolve menu values with getTargetFromMenu (27 places). To reverse: `git revert` the merge.
+- Verified: in the test app, old build vs new build, every menu of the 24 extensions + 8 lookup functions with 11 odd values, 3 cases (editing a sprite / the stage / no sprites left; renamed + reordered sprites, clones): 390 entries, 0 differ apart from fresh sprite IDs in a menu not touched; block-eq (ONLY = the 24 extensions): 422 blocks + 163 page blocks identical in every mode; the 5 extensions that differed from the old full run (layer numbers, pen state: fewer extensions loaded) identical old vs new with the same set loaded · Not verified: lighting's settings dialog by hand.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
