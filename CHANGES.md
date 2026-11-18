@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 310 — Shared definitions for Sensing, Control (2026-11-18)
-- Asked: section 291's mechanism for Events, Control, Sensing and My Blocks, identical timing in every mode, blocks left where sharing costs speed or timing; unused code removed, compiler proofs, equality test, speed vs BENCH-BASELINE.
-- Changed: section 293 (VM 08d1ed3): shared/sensing.js (28), control.js (8); 35 methods + 7 helper strings removed (VM diff +218 −367 incl. new files). Left: all Events and My Blocks, Control branches / loops / waits / stops, delete clone, throw, "of" / "set of", ask and wait. Docs: EXTENSION-INTEGRATION, EXTENSION-RISKS, BENCH-BASELINE. To reverse: `git revert` the merge.
-- Verified: compiled code of 108 of 109 bench projects identical (project 8: "distance to" passes the sprite); new core-eq.mjs --sc before = after (same 39 known differences, state, clones, no errors); verify-compiler s293 all 6 ok; block-eq found Hyper Sense V2 calling getAnswer (kept, rerun 0 differ); unit tests ok except 2 that fail on the old code too; ScratchBench geomean 1.002 / 0.994. · Not verified: packaged games with the compiler off.
+### Session 311 — Shared definitions for extension blocks (2026-11-18)
+- Asked: move the extension blocks the compiler handles apart from their function onto section 291's mechanism; list per extension first; remove unused code; block-eq auto and compiler proofs.
+- Changed: section 294 (VM 9e57a82): shared/ext-expansions.js (34 blocks), ext-pure.js (31); pure-inline.js, 37 helper strings, pmsList and the extensions' own copies removed (VM diff +237 −759 plus 283 new lines). Left (already one definition or structure): direct calls, pen, branches/loops, Temporary Variables, My Blocks+, modular "or else". Still to do (own session): Variables Expanded, Extra Timers, Clones+, "is broadcast received". To reverse: `git revert` the merge.
+- Verified: compiled code before = after for 109 bench projects and every script of core-eq --expansion, pure-inline-eq, datainline, name-search, clones-var checks (6,129 scripts), except 6 "true [empty operator]" scripts now direct calls (same answer); block-eq auto: 0 differ (1 known Temporary Variables case); verify-compiler s294 all 6 ok; unit tests as before. · Not verified: packaged games with the compiler off.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
