@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 324 — Share copied code in Paint and paint-snap (2026-11-18)
-- Asked: share the copies bench\dup-funcs.cjs finds between the paint-snap addon and Paint, and inside Paint (colour indicators, rect reducers, input HOCs, brush/eraser, select tools, line/pen, compound-path/group, colour picker, selection.js).
-- Changed: section 307 (Paint d450221, GUI d586b64): paint-snap uses Paint's helpers and scale-drag methods (its helpers.js deleted); one shared copy for each listed pair. Savable duplicate lines 234 -> 26. To reverse: `git revert` the merge.
-- Verified: test app, new bench\s324-paint.steps (snap move/scale, scale/skew/alt/shift/flip, line/pen joins, select all, group, vector + bitmap brush/eraser, fill/outline pickers incl. gradient 2nd colour and readout, stroke width / brush size / costume name inputs, bitmap select + fill) and paint-shape-tools.steps: old vs new identical (241/242, the other a save-timing line that matched on a rerun), screenshots byte-identical; snap to centre on a 960x360 stage · Not verified: nothing else known.
+### Session 325 — Extensions on the editor's sound engine (2026-11-19)
+- Asked: Beat Sync, Recording V2, Tune Shark V3 and Speech to Text should use runtime.audioEngine.audioContext instead of their own; leave Dictation alone.
+- Changed: section 308 (VM 582efb4): Recording V2 uses the engine's context (getter). Beat Sync and Tune Shark V3 already did; Speech to Text never loads (unused file). To reverse: `git revert` the merge.
+- Verified: test app with Chromium's fake microphone: no new AudioContext when loading the 3 extensions; record for 2.5 s gave a 34 KB WAV and loudness 27 (unchanged by mute); pause/play during recording continues; Tune Shark plays through the engine's volume (peak 0.32, half volume 0.16, muted 0); Beat Sync on the engine context; the same in a packaged HTML game · Not verified: a real microphone.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
