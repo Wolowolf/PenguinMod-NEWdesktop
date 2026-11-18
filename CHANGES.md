@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 316 — Shared sprite menus and lookup (2026-11-18)
-- Asked: code sharing 5/9: one shared runtime helper for the extensions' sprite menus and one for "find sprite by name"; menu contents and order unchanged per extension.
-- Changed: section 299 (VM 7126005): runtime getSpriteNames, getSpriteMenu, getTargetFromMenu; 24 extensions build their sprite menus with them, 15 resolve menu values with getTargetFromMenu (27 places). To reverse: `git revert` the merge.
-- Verified: in the test app, old build vs new build, every menu of the 24 extensions + 8 lookup functions with 11 odd values, 3 cases (editing a sprite / the stage / no sprites left; renamed + reordered sprites, clones): 390 entries, 0 differ apart from fresh sprite IDs in a menu not touched; block-eq (ONLY = the 24 extensions): 422 blocks + 163 page blocks identical in every mode; the 5 extensions that differed from the old full run (layer numbers, pen state: fewer extensions loaded) identical old vs new with the same set loaded · Not verified: lighting's settings dialog by hand.
+### Session 317 — Shared Box and BufferedInput (2026-11-18)
+- Asked: code sharing 6/9: remove Paint's copies of GUI's Box, ComingSoon and BufferedInput HOC; one shared version; paint editor looks and works the same.
+- Changed: section 300 (Paint 08a17be, GUI a8059ed): Box and BufferedInput live once in Paint, the GUI imports them from scratch-paint/src (Paint cannot import from the GUI: the GUI depends on Paint); GUI copies deleted; Paint's ComingSoon was unused and is deleted (GUI keeps its own). To reverse: `git revert` the merge.
+- Verified: test app, old build vs new build, same fresh project, costume tab + fill colour picker open: whole-page structure (tags, classes, styles, input values) identical apart from 3 state lines (an open block dropdown, a hover class); same results for hue field, invalid input, hex field, costume rename, sprite x (valid, invalid, negative); picker screenshots match · Not verified: eyedropper magnifier (needs real mouse movement over the canvas).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
