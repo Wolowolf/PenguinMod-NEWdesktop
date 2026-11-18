@@ -292,3 +292,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 304 one shared definition for the blocks that remember a lookup (Variables Expanded lists / search, Extra Timers, Clones+ variables, broadcast received) (VM)
 - 305 GIF Manager decodes with the omggif inside its encoder bundle; its 380 KB gif-frames decoder bundle removed (VM)
 - 306 more shared code: XML escape, font menus, base64, sound lookup, opcode ids, speech packs, list menu, id pool; Bluetooth files removed (VM, packager)
+- 307 shared copied code in Paint and paint-snap (scale drag, helpers, colour slots, corner reducers, inputs, brush/eraser, select drag) (Paint, GUI)

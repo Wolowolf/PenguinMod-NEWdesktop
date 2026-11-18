@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 323 — Share more copied code in the VM and packager (2026-11-18)
-- Asked: share the copies found by bench\dup-funcs.cjs: XML / font-menu helpers, packager minifier, Bluetooth files, 6 cross-file pairs, 5 in-file repeats, base64 code.
-- Changed: section 306 (VM 5b127b9, packager ffe631f): one shared copy each (xml-escape, FontManager.getFontMenu, base64-util, sound lookup, opcode ids, speech packs + credits, list menu, id pool, Cast test); in-file repeats call one body; unused Bluetooth / Scratch Link files removed. Duplicated functions 618 -> 299 lines. To reverse: `git revert` the merge.
-- Verified: Node: base64 (11 sizes up to 300 KB, Unicode), XML escape and the packager minifier on 111 projects identical to the old copies. Test app: 16 extensions load; font menus show a custom font; sound lookup equal to the old one for 11 inputs; Encoding / Files Expanded base64; pen image blocks; delete + restore sprite; save + reload keeps assets; list menus; credits providers; equality test: new vs old 0 of 1,317 + 571 page blocks differ · Not verified: Popup Phoenix / Speech Bubbles / Printing text on screen, MIDI and Google sign-in calls (their shared helpers were compared in Node).
+### Session 324 — Share copied code in Paint and paint-snap (2026-11-18)
+- Asked: share the copies bench\dup-funcs.cjs finds between the paint-snap addon and Paint, and inside Paint (colour indicators, rect reducers, input HOCs, brush/eraser, select tools, line/pen, compound-path/group, colour picker, selection.js).
+- Changed: section 307 (Paint d450221, GUI d586b64): paint-snap uses Paint's helpers and scale-drag methods (its helpers.js deleted); one shared copy for each listed pair. Savable duplicate lines 234 -> 26. To reverse: `git revert` the merge.
+- Verified: test app, new bench\s324-paint.steps (snap move/scale, scale/skew/alt/shift/flip, line/pen joins, select all, group, vector + bitmap brush/eraser, fill/outline pickers incl. gradient 2nd colour and readout, stroke width / brush size / costume name inputs, bitmap select + fill) and paint-shape-tools.steps: old vs new identical (241/242, the other a save-timing line that matched on a rerun), screenshots byte-identical; snap to centre on a 960x360 stage · Not verified: nothing else known.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
