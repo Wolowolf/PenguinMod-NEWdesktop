@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 308 — Shared block definitions (2026-11-18)
-- Asked: one shared mechanism so each Operators and Variables/Lists block is defined once for interpreter and compiler, compiled code no slower, unused code removed, proofs, equality test, speed, docs.
-- Changed: section 291 (VM fd237cc): `src/blocks/shared/`; interpreter, jsgen.js and jsexecute.js use it; ~320 lines fewer. Rules in `docs/EXTENSION-INTEGRATION.md` "Shared block definitions". To reverse: `git revert` the merge.
-- Verified: compiled code of 109 bench projects byte-for-byte identical before/after; compiler proofs all 6 steps ok (regression fails = baseline's); block-eq auto: new vs interpreted 0 differ (one new-vs-old difference was random, gone on rerun); VM unit tests 255 ok; ScratchBench 72.8k (s272: 69.6k), project 41 204 ms (older 241). · Not verified: packaged games with the compiler off (interpreter now needs `new Function`, as the compiler always did).
+### Session 309 — Shared definitions for Motion, Looks, Sound (2026-11-18)
+- Asked: section 291's mechanism for the Motion, Looks and Sound blocks; no slower compiled code, unused code removed, compiler proofs, equality test, speed vs BENCH-BASELINE.
+- Changed: section 292 (VM e0c2d65): shared/motion.js, looks.js, sound.js; index.js format extended; 46 methods + 6 helper strings removed (VM diff −238 lines). Docs: EXTENSION-INTEGRATION, EXTENSION-RISKS, BENCH-BASELINE. To reverse: `git revert` the merge.
+- Verified: compiled code of 109 bench projects and of all moved blocks (22.8 MB) byte-identical, both dumped in freshly built apps; new core-eq.mjs --mls: compiled = old, vs interpreted only the 132 known "pick random" inputs (7 layer differences gone); verify-compiler s292 all 6 ok, block-eq auto 0 in every pair; unit tests ok (blocks_sound_tw fails as before); ScratchBench non-scheduler geomean 0.999 / 1.004. · Not verified: packaged games with the compiler off (as section 291).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
