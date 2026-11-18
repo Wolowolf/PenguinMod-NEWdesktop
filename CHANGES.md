@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 317 — Shared Box and BufferedInput (2026-11-18)
-- Asked: code sharing 6/9: remove Paint's copies of GUI's Box, ComingSoon and BufferedInput HOC; one shared version; paint editor looks and works the same.
-- Changed: section 300 (Paint 08a17be, GUI a8059ed): Box and BufferedInput live once in Paint, the GUI imports them from scratch-paint/src (Paint cannot import from the GUI: the GUI depends on Paint); GUI copies deleted; Paint's ComingSoon was unused and is deleted (GUI keeps its own). To reverse: `git revert` the merge.
-- Verified: test app, old build vs new build, same fresh project, costume tab + fill colour picker open: whole-page structure (tags, classes, styles, input values) identical apart from 3 state lines (an open block dropdown, a hover class); same results for hue field, invalid input, hex field, costume rename, sprite x (valid, invalid, negative); picker screenshots match · Not verified: eyedropper magnifier (needs real mouse movement over the canvas).
+### Session 318 — Shared shape tools and tool containers (2026-11-18)
+- Asked: code sharing 7/9: one shared shape-tool maker and one shared mode container for Paint's shape tools (rect, rounded rect, oval, arrow, triangle, Shapes) and the bitmap ones (rect, oval, fill, select); same drawing and behaviour.
+- Changed: section 301 (Paint 7f0771f): shape-tool.js + bit-shape-tool.js bases, make-mode-container.jsx for all 10 buttons; rounded-rect-tool.js deleted. To reverse: `git revert` the merge.
+- Verified: test app, old vs new build, script bench/paint-shape-tools.steps (50 cases: plain/Shift/Alt/Ctrl drags, tiny shapes, moving, live corner/sides/fill/thickness changes, undo, bitmap select/fill, tool switching): all 122 recorded lines (paper project, selection, costume bytes) identical; canvas screenshots byte-identical · Not verified: real keyboard Ctrl+Z and modifier keys (sent as page key events), zoom change while a bitmap shape is selected.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
