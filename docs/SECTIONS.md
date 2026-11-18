@@ -290,3 +290,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 302 one shared gamepad library + controls, event target, download helper and camera provider for editor and packaged games (VM, GUI, packager)
 - 303 Iris Text draws on the renderer's WebGL context; one shader loader (renderer's twgl) for Iris and Simple 3D; Lighting's GL setup once (VM)
 - 304 one shared definition for the blocks that remember a lookup (Variables Expanded lists / search, Extra Timers, Clones+ variables, broadcast received) (VM)
+- 305 GIF Manager decodes with the omggif inside its encoder bundle; its 380 KB gif-frames decoder bundle removed (VM)

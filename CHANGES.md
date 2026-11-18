@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 321 — Shared definitions for the lookup blocks (2026-11-18)
-- Asked: move the remaining extension blocks with separate compiled code (Variables Expanded data / search, Extra Timers, Clones+ variables, "is broadcast received") onto the shared definitions; a "site" lookup part (once per compiled script, per call interpreted); remove unused code; proofs.
-- Changed: section 304 (VM 5905ad0): shared/ext-lookups.js (43 blocks, 46 helpers moved from jsexecute.js), `sites` in shared/index.js, jsgen / irgen write the shared text, extension methods are one-liners, getVarObjectFromName removed (VM +735 −1051 incl. the 515-line new file). To reverse: `git revert` the merge.
-- Verified: compiled code before = after for 109 bench projects and every recorded script of the data / search / clones checks (only an unused helper class pmdNameAny no longer added); their answers before = after in every mode; block-eq auto s321: new vs old 0, page test 0 in every mode, new vs interp only the 2 known; verify-compiler s321 all 6 ok · Not verified: packaged games.
+### Session 322 — GIF Manager uses the GIF decoder it already has (2026-11-18)
+- Asked: share code: GIF Manager's bundled copies of libraries.
+- Changed: section 305 (VM 87fd741): the 380 KB gif-frames decoder bundle removed from GIF-Manager.js; frames read with the omggif GifReader inside its own encoder bundle, JPEGs from the browser's canvas at full quality (464 KB -> 80 KB). To reverse: `git revert` the merge.
+- Verified: test app, 50 block calls on test GIFs (sub-rectangle frames, transparency, disposal, one-frame, truncated, PNG, bad address, frame numbers 0..4, 1.5, Infinity, -3) + encode-then-split round trip: every count / text answer equal to the old version, round trip identical; frame pictures closer to the true pixels than before (mean error 0.0-0.3 vs old 1.0-14.2); a truncated GIF froze the old version's page, the new one answers "Invalid GIF" / 0 · Not verified: packaged games.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
