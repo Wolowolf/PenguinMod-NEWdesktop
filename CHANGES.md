@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 311 — Shared definitions for extension blocks (2026-11-18)
-- Asked: move the extension blocks the compiler handles apart from their function onto section 291's mechanism; list per extension first; remove unused code; block-eq auto and compiler proofs.
-- Changed: section 294 (VM 9e57a82): shared/ext-expansions.js (34 blocks), ext-pure.js (31); pure-inline.js, 37 helper strings, pmsList and the extensions' own copies removed (VM diff +237 −759 plus 283 new lines). Left (already one definition or structure): direct calls, pen, branches/loops, Temporary Variables, My Blocks+, modular "or else". Still to do (own session): Variables Expanded, Extra Timers, Clones+, "is broadcast received". To reverse: `git revert` the merge.
-- Verified: compiled code before = after for 109 bench projects and every script of core-eq --expansion, pure-inline-eq, datainline, name-search, clones-var checks (6,129 scripts), except 6 "true [empty operator]" scripts now direct calls (same answer); block-eq auto: 0 differ (1 known Temporary Variables case); verify-compiler s294 all 6 ok; unit tests as before. · Not verified: packaged games with the compiler off.
+### Session 312 — Shared library unpacker (2026-11-18)
+- Asked: code sharing 1/9: one shared VM helper for the fzstd + base85 unpacker copied in Zip and Face Sensing's detector; check whether Zip can use the VM's JSZip; same behaviour.
+- Changed: section 295 (VM ae5817a): new extension-support/packed-library.js; zip.js and face-detector.js use it (−1,612 +~815 lines). Zip already used the VM's JSZip: nothing to change. Local block-eq.mjs auto now maps a file used only by extension files to those extensions. To reverse: `git revert` the merge.
+- Verified: test app: Zip round trip (create, write, get base64, reopen, read text/hex/data: URL with MIME application/json and text/plain); Face Sensing loads without the detector (window.faceDetection undefined); the detector loader then unpacks and runs (estimateFaces on a blank image: 0 faces); block-eq auto (Zip + Face Sensing, every mode + page test): 0 differ. · Not verified: face blocks with a real camera.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
