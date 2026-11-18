@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 306 — Compact layout (2026-11-18)
-- Asked: remove the ~10 px strips beside the stage column; eye + name box onto each sprite tile (out of sprite info); categories and ADD without side margins; no halo around the find bar; top-right stage buttons touching; zoom buttons in a row in the code area's corner, as high as ADD.
-- Changed: section 289 (GUI 092cccd). To reverse: `git revert` the merge.
-- Verified: test app: a 1370x600 window had a 640 px page and a 15 px scrollbar strip (cause: editor min-height 640); now page = window at 1370x600 and 900x480, stage column ends at the window edge; tile eye hides a non-selected sprite without selecting it, name box renames (duplicate name refused, long name ellipsis), dragging a tile still reorders, dragging from the name box doesn't; zoom row 19.2 px squares flush with corner, ADD 19.2 px; header buttons touch; find dropdown box-shadow none. · Not verified: right-to-left layout, light theme, the left strip on your exact screen size.
+### Session 307 — Stage column gap (2026-11-18)
+- Asked: the 10/11 px strips beside the stage column were still there after section 289 (always, any window or stage size, no scrollbar).
+- Changed: section 290 (GUI 7f4a23b). To reverse: `git revert` the merge.
+- Verified: in the user's own app (started with a debug port): stage column 743.6..1100 with padding 8px left and right from the hide-flyout addon rule (the test app has that addon off, hence no strip there); with the rule's padding removed live: code area 0..759.6, column 759.6..1100, screenshot shows no strips. · Not verified: a fresh build of this change in the test app (the live CSS edit is the same one-line change).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
