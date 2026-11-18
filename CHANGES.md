@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 314 — Shared colour toolkit (2026-11-18)
-- Asked: code sharing 3/9: VM util/color.js (plus a shared clamp) as the one colour toolkit for the GUI, the packager and extensions with their own hex parsing / clamp; identical results.
-- Changed: section 297 (VM 2dddb88, GUI 6d6a6a6, packager b26d43c): Color.hexPairs + Color.strictHexToRgb; 6 extensions' hex parsers, Color-Master's dec2Hex/hex2DEC and the clamps in 20 extension files use Color / MathUtil.clamp; unused GUI copy deleted; packager colors.js deleted (darken uses the VM's Color). Left alone (would change results or are not copies): Layer-Control, spritesheeter, Dictation, My-Blocks-Plus, HSV maths, pixel loops. To reverse: `git revert` the merge.
-- Verified: old vs new code, 30.3 million values (all 16.7 million #rrggbb for the packager, 20 million odd/random colour strings, every clamp bound with NaN, ±0, ±Infinity, strings, null), 0 differ; test app: all 21 extensions load, Color-Master/lighting/Pen+ give the expected values; block-eq (ONLY = the 21 extensions; auto picked "everything" only because util/color.js is engine code, and its existing lines are unchanged): 472 blocks + 217 page blocks identical in every mode, 0 differ · Not verified: the packager's list colour in a packaged game (build OK, function proven equal).
+### Session 315 — Shared picture helpers (2026-11-18)
+- Asked: code sharing 4/9: shared VM helpers for readAsDataURL, canvas bitmap skins and fillText text drawing; extensions moved onto them; identical looks.
+- Changed: section 298 (VM 2f7af86): new util/image-util.js (blobToDataURL, setCanvasSkin, drawText, textCanvas); 13 extensions + tw-external use it. Left alone: Files-Expanded (one reader for 3 modes); Render's text-wrapper not used (it wraps lines and caches widths, none of these wraps text). To reverse: `git revert` the merge.
+- Verified: in the test app, old vs new code: 1,628 cases (pen text, simple3D text textures with/without border, Iris glyphs, Lily "?", odd fonts/texts/widths, data URLs of 6 blob kinds, skins created/refreshed) 0 differ; real pen printText 5 cases pixel-identical on pen's own canvas; Iris Text makes and refreshes its skin (resolution 3, smoothing rule on); block-eq (ONLY = the changed extensions): 210 blocks in 11 extensions identical in every mode · Not verified: FileReader error paths (kept by reading the code), VideoSharing / GIF / recording with real media.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
