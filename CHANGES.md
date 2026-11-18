@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 319 — Shared gamepad, event target, download and camera code (2026-11-18)
-- Asked: code sharing 8/9: one copy each of the gamepad addon (gamepadlib, userscript), event-target, download helper and camera code for editor and packager; all must still work in both.
-- Changed: section 302: VM src/web-shared/ holds the single copies; GUI and packager import them, their copies deleted (GUI keeps only the gamepad settings editor). To reverse: `git revert` the merge.
-- Verified: test app, bench/share-io-check.mjs in the editor and in a packaged HTML game with gamepad support: fake gamepad (button -> key A, right stick moves mouse and virtual cursor, trigger -> mouse down/up), fake camera (frame arrives, stream released), downloads (sprite export, game list export saved); gamepad settings window opens, stores/removes its stage comment. Idea 8: -994 code lines · Not verified: a real gamepad or camera, pointerlock gamepad mode in games, Electron/zip game targets.
+### Session 320 — Iris Text on the renderer's WebGL context, shared shader loader (2026-11-18)
+- Asked: code sharing 9/9: let Iris Text, Lighting, Pen+ and Simple 3D share the renderer's WebGL context and shader setup where safe; say first if one can't without changing its look; drawing must look the same.
+- Changed: section 303 (VM 4b04c77): Iris draws on the renderer's context into its own skin texture (no second context, no canvas copies); new util/gl-program.js (renderer's twgl) for Iris and Simple 3D; Pen+'s unused compiler removed; Lighting's GL setup once. Not shared: Simple 3D (own GL state, antialiasing option), Lighting (worker thread); Pen+ already shared. To reverse: `git revert` the merge.
+- Verified: test app, old vs new build: Iris 24 steps x 2 sprites (texture pixels, size, centre, filtering, stage pixels) identical; touching differs only where 2 Iris sprites updated together (old shared-canvas bug fixed); Simple 3D 5 + Lighting 8 pictures identical (worker, main thread, resize); hooks-render-check 28 ok; edge cases no GL errors; block-eq 182 blocks identical · Not verified: context loss, packaged games, other GPUs.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
