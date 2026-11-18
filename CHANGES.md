@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 322 — GIF Manager uses the GIF decoder it already has (2026-11-18)
-- Asked: share code: GIF Manager's bundled copies of libraries.
-- Changed: section 305 (VM 87fd741): the 380 KB gif-frames decoder bundle removed from GIF-Manager.js; frames read with the omggif GifReader inside its own encoder bundle, JPEGs from the browser's canvas at full quality (464 KB -> 80 KB). To reverse: `git revert` the merge.
-- Verified: test app, 50 block calls on test GIFs (sub-rectangle frames, transparency, disposal, one-frame, truncated, PNG, bad address, frame numbers 0..4, 1.5, Infinity, -3) + encode-then-split round trip: every count / text answer equal to the old version, round trip identical; frame pictures closer to the true pixels than before (mean error 0.0-0.3 vs old 1.0-14.2); a truncated GIF froze the old version's page, the new one answers "Invalid GIF" / 0 · Not verified: packaged games.
+### Session 323 — Share more copied code in the VM and packager (2026-11-18)
+- Asked: share the copies found by bench\dup-funcs.cjs: XML / font-menu helpers, packager minifier, Bluetooth files, 6 cross-file pairs, 5 in-file repeats, base64 code.
+- Changed: section 306 (VM 5b127b9, packager ffe631f): one shared copy each (xml-escape, FontManager.getFontMenu, base64-util, sound lookup, opcode ids, speech packs + credits, list menu, id pool, Cast test); in-file repeats call one body; unused Bluetooth / Scratch Link files removed. Duplicated functions 618 -> 299 lines. To reverse: `git revert` the merge.
+- Verified: Node: base64 (11 sizes up to 300 KB, Unicode), XML escape and the packager minifier on 111 projects identical to the old copies. Test app: 16 extensions load; font menus show a custom font; sound lookup equal to the old one for 11 inputs; Encoding / Files Expanded base64; pen image blocks; delete + restore sprite; save + reload keeps assets; list menus; credits providers; equality test: new vs old 0 of 1,317 + 571 page blocks differ · Not verified: Popup Phoenix / Speech Bubbles / Printing text on screen, MIDI and Google sign-in calls (their shared helpers were compared in Node).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
