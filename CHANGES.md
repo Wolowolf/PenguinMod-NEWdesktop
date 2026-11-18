@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 320 — Iris Text on the renderer's WebGL context, shared shader loader (2026-11-18)
-- Asked: code sharing 9/9: let Iris Text, Lighting, Pen+ and Simple 3D share the renderer's WebGL context and shader setup where safe; say first if one can't without changing its look; drawing must look the same.
-- Changed: section 303 (VM 4b04c77): Iris draws on the renderer's context into its own skin texture (no second context, no canvas copies); new util/gl-program.js (renderer's twgl) for Iris and Simple 3D; Pen+'s unused compiler removed; Lighting's GL setup once. Not shared: Simple 3D (own GL state, antialiasing option), Lighting (worker thread); Pen+ already shared. To reverse: `git revert` the merge.
-- Verified: test app, old vs new build: Iris 24 steps x 2 sprites (texture pixels, size, centre, filtering, stage pixels) identical; touching differs only where 2 Iris sprites updated together (old shared-canvas bug fixed); Simple 3D 5 + Lighting 8 pictures identical (worker, main thread, resize); hooks-render-check 28 ok; edge cases no GL errors; block-eq 182 blocks identical · Not verified: context loss, packaged games, other GPUs.
+### Session 321 — Shared definitions for the lookup blocks (2026-11-18)
+- Asked: move the remaining extension blocks with separate compiled code (Variables Expanded data / search, Extra Timers, Clones+ variables, "is broadcast received") onto the shared definitions; a "site" lookup part (once per compiled script, per call interpreted); remove unused code; proofs.
+- Changed: section 304 (VM 5905ad0): shared/ext-lookups.js (43 blocks, 46 helpers moved from jsexecute.js), `sites` in shared/index.js, jsgen / irgen write the shared text, extension methods are one-liners, getVarObjectFromName removed (VM +735 −1051 incl. the 515-line new file). To reverse: `git revert` the merge.
+- Verified: compiled code before = after for 109 bench projects and every recorded script of the data / search / clones checks (only an unused helper class pmdNameAny no longer added); their answers before = after in every mode; block-eq auto s321: new vs old 0, page test 0 in every mode, new vs interp only the 2 known; verify-compiler s321 all 6 ok · Not verified: packaged games.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
