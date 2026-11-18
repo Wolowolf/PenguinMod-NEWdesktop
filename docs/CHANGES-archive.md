@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `docs/STATE.md` and `docs/SECTIONS.md` win where they differ. `tweak.mjs finish` puts every session’s full entry on top of the change log (since Session 262; `/CHANGES.md` keeps only a short copy of the last one). The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 307 — Stage column gap (2026-11-18)
+- Asked: the 10/11 px strips beside the stage column were still there after section 289 (always, any window or stage size, no scrollbar).
+- Changed: section 290 (GUI 7f4a23b). To reverse: `git revert` the merge.
+- Verified: in the user's own app (started with a debug port): stage column 743.6..1100 with padding 8px left and right from the hide-flyout addon rule (the test app has that addon off, hence no strip there); with the rule's padding removed live: code area 0..759.6, column 759.6..1100, screenshot shows no strips. · Not verified: a fresh build of this change in the test app (the live CSS edit is the same one-line change).
+- Result after build: assumed working
+
 ### Session 306 — Compact layout (2026-11-18)
 - Asked: six layout changes (strips beside stage column, eye + name on sprite tiles, category side margins, find bar halo, stage buttons touching, zoom buttons as a row as high as ADD).
 - Cause of the strips: playground/interface.css `.editor {min-width:1024px; min-height:640px}`. With a window under 640 css px tall (e.g. 1370x600: scrollHeight 640, clientWidth 1355) the page scrolled and its dark scrollbar made the right strip; at under ~940 px wide the editor-wrapper's 600 px flex-basis with flex-shrink 0 pushed the stage column past the edge (900x480: column 683..1024). Reproduced only after the user's outlined screenshots; earlier tries at 1100–1500 wide and 700–950 tall showed no strip.
