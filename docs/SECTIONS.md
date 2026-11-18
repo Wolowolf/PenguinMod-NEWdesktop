@@ -283,3 +283,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 295 one shared library unpacker (base85 + fzstd) for Zip and Face Sensing instead of a copy in each (VM)
 - 296 one shared easing table (tween curves) for Tween and Iris Text instead of a copy in each (VM)
 - 297 one shared colour toolkit (VM util/color.js) and clamp (MathUtil) for 20 extensions, the packager; unused GUI copy removed (VM, GUI, packager)
+- 298 shared picture helpers (VM util/image-util.js: data URLs, canvas skins, text drawing) for 13 extensions and tw-external (VM)
