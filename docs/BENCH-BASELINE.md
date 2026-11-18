@@ -361,6 +361,9 @@ Before/after, same build, `--uncapped`, before = `--set pmNoTouchingGrid`:
 
 The "off" column still has the cost added to every move (two counters, `_skin` accessor), so it cannot show that cost; 25 against the Session 195 figures is the only hint (not compared, other builds). A first version made 49 worse (50 → 90 ms, every question visited the clones several times and sorted them); it now compares the list directly when the cells near the asker hold more entries than the whole list. 49's gain comes from skipping the `filter` and the preparing, not from the grid. GC in 50 goes from 7 to 12 ms/s (longest pause 5 → 13 ms). Not improved: touching color, "touching point", lists under 64, lists asked fewer than 32 times per frame.
 
+## Shared definitions for Motion, Looks, Sound (Session 309, section 292)
+Compiled code byte-for-byte identical before / after (109 bench projects, every moved block), so compiled speed is unchanged by construction; measured anyway, before = fresh build of VM `fd237cc`, after = the change, same day. ScratchBench (warp timer off, 2 pairs; raw `bench\scratch-bench\results\s309-*.json`): the 39 non-scheduler tests geometric mean 0.999 / 1.004, every checksum the same; total 66,534 / 67,063 → 72,689 / 72,505 only through the `sched_*` tests (they count frame-loop rounds and move with the PC's state). `bench.mjs --runs 3` on 21 projects (raw `bench\results\2026-11-18_051528_s309-before.json`, `..._054048_s309-after.json`): no project slower; 4, 40, 114 "faster" by 10–13% work ms at the 60 FPS limit with identical code (noise of the JS engine's warm-up).
+
 ## Ranking of the remaining ideas (Session 176; next after Session 179: clone deletion, seen in project 32)
 
 The sizes of costs are measured; every gain below is a guess until built.
