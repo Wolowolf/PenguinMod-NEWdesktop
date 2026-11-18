@@ -281,3 +281,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 293 one shared definition per Sensing / Control block (no branches, waits or hats) for interpreter and compiler; compiled code unchanged (VM)
 - 294 one shared definition for the extension blocks with inline code (Operators / Motion / Sensing Expansion, small pure blocks); compiled code unchanged (VM)
 - 295 one shared library unpacker (base85 + fzstd) for Zip and Face Sensing instead of a copy in each (VM)
+- 296 one shared easing table (tween curves) for Tween and Iris Text instead of a copy in each (VM)
