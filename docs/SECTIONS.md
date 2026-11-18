@@ -287,3 +287,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 299 shared sprite menus and menu-value lookup (runtime getSpriteNames / getSpriteMenu / getTargetFromMenu) for 24 extensions (VM)
 - 300 one shared Box and BufferedInput (kept in Paint, used by Paint and GUI); GUI copies and Paint's unused ComingSoon removed (Paint, GUI)
 - 301 one shared shape-tool base (vector + bitmap) and one shared tool-button container for 10 paint tools (Paint)
+- 302 one shared gamepad library + controls, event target, download helper and camera provider for editor and packaged games (VM, GUI, packager)
