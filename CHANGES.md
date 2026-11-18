@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 309 — Shared definitions for Motion, Looks, Sound (2026-11-18)
-- Asked: section 291's mechanism for the Motion, Looks and Sound blocks; no slower compiled code, unused code removed, compiler proofs, equality test, speed vs BENCH-BASELINE.
-- Changed: section 292 (VM e0c2d65): shared/motion.js, looks.js, sound.js; index.js format extended; 46 methods + 6 helper strings removed (VM diff −238 lines). Docs: EXTENSION-INTEGRATION, EXTENSION-RISKS, BENCH-BASELINE. To reverse: `git revert` the merge.
-- Verified: compiled code of 109 bench projects and of all moved blocks (22.8 MB) byte-identical, both dumped in freshly built apps; new core-eq.mjs --mls: compiled = old, vs interpreted only the 132 known "pick random" inputs (7 layer differences gone); verify-compiler s292 all 6 ok, block-eq auto 0 in every pair; unit tests ok (blocks_sound_tw fails as before); ScratchBench non-scheduler geomean 0.999 / 1.004. · Not verified: packaged games with the compiler off (as section 291).
+### Session 310 — Shared definitions for Sensing, Control (2026-11-18)
+- Asked: section 291's mechanism for Events, Control, Sensing and My Blocks, identical timing in every mode, blocks left where sharing costs speed or timing; unused code removed, compiler proofs, equality test, speed vs BENCH-BASELINE.
+- Changed: section 293 (VM 08d1ed3): shared/sensing.js (28), control.js (8); 35 methods + 7 helper strings removed (VM diff +218 −367 incl. new files). Left: all Events and My Blocks, Control branches / loops / waits / stops, delete clone, throw, "of" / "set of", ask and wait. Docs: EXTENSION-INTEGRATION, EXTENSION-RISKS, BENCH-BASELINE. To reverse: `git revert` the merge.
+- Verified: compiled code of 108 of 109 bench projects identical (project 8: "distance to" passes the sprite); new core-eq.mjs --sc before = after (same 39 known differences, state, clones, no errors); verify-compiler s293 all 6 ok; block-eq found Hyper Sense V2 calling getAnswer (kept, rerun 0 differ); unit tests ok except 2 that fail on the old code too; ScratchBench geomean 1.002 / 0.994. · Not verified: packaged games with the compiler off.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)

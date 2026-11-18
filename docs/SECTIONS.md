@@ -278,3 +278,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 290 No empty strips beside the stage column when the hide-flyout addon is on (GUI)
 - 291 one shared definition per Operators / Variables / Lists block for interpreter and compiler; compiled code unchanged (VM)
 - 292 one shared definition per Motion / Looks / Sound block for interpreter and compiler; compiled code unchanged (VM)
+- 293 one shared definition per Sensing / Control block (no branches, waits or hats) for interpreter and compiler; compiled code unchanged (VM)
