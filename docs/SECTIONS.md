@@ -298,3 +298,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 310 Scratch's unused Speech to Text extension and its diff-match-patch package removed (VM)
 - 311 Lighting's gray darkness layer off until one of its blocks runs (VM)
 - 312 culling inside scripts: off-screen parts of partly visible scripts hidden, a dragged stack's off-screen part taken out (GUI)
+- 313 unused reporter shapes removed (leaf, plus, bumped, indented, scrapped, arrow, ticket, custom shape registration) (Blocks, VM)
