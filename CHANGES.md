@@ -14,11 +14,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 342 — Docs and memory cleanup (2026-11-19)
-- Asked: delete obsolete docs and memory (plans that are fully done); list the rules Claude follows.
-- Changed: `docs/COMPILER-STUDY.md` deleted (its experiments A, L, C and all its open limits were built: sections 236, 240–246; raw notes stay in `PenguinMod-test\bench\compiler-study\`), its pointers in `docs/STATE.md` and `docs/PROCEDURES.md` removed; `docs/EXTENSION-INTEGRATION.md` finished step checklist cut to one paragraph; `docs/BENCH-BASELINE.md` outdated Session 179 recommendation removed; `docs/STATE.md` section count 243 → 324. Memory (outside the repo): finished plans removed (modular blocks, type shapes, code-sharing baseline) and the end-goal note that CLAUDE.md already holds; roadmap note no longer says the Artifact tool is off. To reverse: `git revert` the merge.
-- Verified: no doc outside the archive still names the deleted file · Not verified: nothing to run (`.md` only, builds nothing).
-- Result after build: no build (`.md` only)
+### Session 343 — Type into the field itself (2026-11-19)
+- Asked: typing into an input should happen in the existing field, not in a square box redrawn on top.
+- Changed: section 325 (PenguinMod-Blocks f9a4ead): the field editor is see-through and exactly over the field, uses the field text's font and colour, hides the field's own text while typing, clipped to the code area. Also `tweak.mjs` (local, not in the repo): an empty tweak branch that's no longer in the queue no longer blocks the queue. To reverse: `git revert` the merge.
+- Verified: test app at zoom 0.5 and 1.6: editor box = field box to 0.1 px, no border or halo, typed text in the field; real click opens it, clicking away saves "123" to the VM and shows the field text again; a long text is clipped at the code-area edge · Not verified: text fields with a dropdown arrow, the custom-block editor's inputs, angle fields.
+- Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
 

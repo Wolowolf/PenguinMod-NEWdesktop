@@ -311,3 +311,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 322 type shapes of the PenguinMod gallery extensions: 90 text-only reporters square, 23 number-only inputs round (VM)
 - 323 Gamepad "any" pad and "any" button work again (arguments no longer turned into numbers) (VM)
 - 324 modular blocks can give their inputs a shape (modular.shape); Big Decimal operator and comparison inputs round (VM, Blocks)
+- 325 typing into a number or text field happens in the field itself, no separate box drawn on top (Blocks)
