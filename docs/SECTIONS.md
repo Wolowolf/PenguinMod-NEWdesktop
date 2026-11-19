@@ -302,3 +302,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 314 octagon, custom shapes, 14 unused notches, custom value saving removed; Crypto, Rigidbodies round (Blocks, VM, GUI, pm + sp galleries)
 - 315 block shapes show value types: hexagon Boolean, round number/mixed, square text; drop by shape fit, input drawn behind smaller reporters (Blocks, GUI)
 - 316 removed 10 small interface languages (rap an ab ast oc gd fy eo ja-Hira nso) from menu and build (GUI)
+- 317 removed 25 more small-overlap interface languages (cy ga mi nn gl ca eu qu be af is tn fil sk hr et lv lt xh az uz kk mn da es-419); 45 left (GUI)
