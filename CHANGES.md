@@ -14,11 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 329 — Culling inside scripts (2026-11-19)
-- Asked: plan a Canvas 2D drawing of blocks; after the plan, chose "try SVG culling first".
-- Found: scratch-blocks already hides whole off-screen scripts. Left: long scripts partly on screen, and dragging them (1,000 blocks: 850 ms per frame, nearly all paint).
-- Changed: section 312 (GUI 779d906): off-screen blocks of visible scripts hide their own drawing; a dragged stack's part below the screen is taken out of the page until the drop. To reverse: `git revert` the merge.
-- Verified (test app, bench\blocks-trace.mjs, 5 scripts × 1,000 blocks): drag 854 → 13 ms per frame, scroll p95 53 → 27 ms, pan 53 → 27 ms, zoom p95 307 → 227 ms; 200 × 25 blocks and the empty project unchanged. Pixels equal to no culling (≤ 2 colour levels) at 12 zoom/scroll positions, mid-drag, right-to-left; drag, snap, scroll/zoom while dragging, delete in palette, undo, collapsed/comment/disabled blocks, typing in a field, run bar, full screen, Pen icons, SVG/PNG export · Not verified: backpack (no server), Ctrl/Alt drag, double-click, tooltips, drag between sprites, workspace search.
+### Session 330 — Unused reporter shapes removed (2026-11-19)
+- Asked: delete every unused block shape everywhere; say which optimisation this opens; say if anything still uses arrays, maps etc. without showing it.
+- Changed: section 313 (Blocks 38610c7, VM 41e431b): leaf, plus, bumped, indented, scrapped, arrow, ticket and custom shape registration removed; unknown shapes fall back to the default. Kept: square (stack blocks, polygon/custom inputs), octagonal (Crypto, Rigidbodies), custom notches (unused, offered separately). To reverse: `git revert` the merge.
+- Verified (test app): only shapes 1, 2, 3, 6 exist, custom table holds only 6; Crypto and Rigidbodies blocks draw octagonal in the palette and inside number/text inputs; hexagon, round, square blocks normal; a test extension with shapes 4, 5, "leaf" and input shape 9 draws round, no console errors · Not verified: block-eq (shapes only reach the Blocks library's drawing, never block answers), Block shape addon with its size settings changed.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
