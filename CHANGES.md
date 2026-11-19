@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 347 — No blurred shadows, flat colours (2026-11-20)
-- Asked: GUI CSS pass: remove blurred shadows (1 px Lines border where needed), gradients to flat colours, list what remains; CSS containment split off into its own session (gui-contain).
-- Changed: section 329 (GUI d4172aa, Blocks 0efe900, Paint cdb6756, Packager ad9ee41): ~35 blurred shadows removed, 3 new Lines borders, category label outline unblurred, received-blocks flash a solid ring; costume list fade removed, trim stripes, checkerboards, better-comments and studio shimmer flat. To reverse: `git revert` the merge and the fork commits.
-- Verified: test app: CSSOM scan of all loaded sheets finds no blurred shadow, backdrop blur or gradient left; File menu, block dropdown (shadow none, border), costume list, category labels and packager cards (shadow none, 1 px border) checked by screenshot or computed style · Not verified: addon styles not loaded by default (middle-click popup, onion skin, snap, paint tool panel), light theme (not the CI build or installer: builds are assumed to work)
+### Session 348 — CSS containment for editor panels (2026-11-20)
+- Asked: carefully add CSS containment to the editor's panels where safe; test every menu, tooltip, dropdown and popup that could reach outside a panel.
+- Changed: section 330 (GUI 1534fe1): contain: strict on the code area and the costume/sound editor area. Left out: stage, stage header, sprite/stage selector, costume/sound list, menu bar (fixed context menus/tooltips inside, fullscreen, dropdowns hanging out). To reverse: `git revert` the merge and the fork commit.
+- Verified: test app: File and Addons menus, block dropdown, code-area right-click menu (hit past the code area's edge), Find dropdown, paint fill picker and both More menus (one reaching onto the stage), sound Modify dialog, fullscreen stage and back, block drags (workspace, onto sprite), stage resize handle both ways (code area and Blockly svg follow), panel sizes unchanged · Not verified: light theme, text-tool font menu, monitor menus (stage not contained), real window resizing (not the CI build or installer: builds are assumed to work)
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)

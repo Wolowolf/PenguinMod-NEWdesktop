@@ -316,3 +316,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 327 empty text/mixed input slots use the block corner size (sharp by default) instead of fixed rounded corners (GUI)
 - 328 drop highlight as plain outline, no palette button shadow, zoom buttons without pictures, Block shape corner size setting removed (Blocks, GUI)
 - 329 no blurred shadows (1 px Lines borders where needed), gradients to flat colours (GUI, Blocks, Paint, Packager)
+- 330 CSS containment (contain: strict) for the code area and the costume/sound editor area (GUI)
