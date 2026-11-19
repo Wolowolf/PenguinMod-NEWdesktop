@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 332 — Block shapes show value types (2026-11-19)
-- Asked: shape-sorter shapes (hexagon Boolean, round number/mixed, square text), drop rule = shapes, input drawn behind smaller reporters, audit every block. Split: this tweak = mechanism + core, PenguinMod and custom blocks; built-in extensions and gallery extensions are later tweaks.
-- Changed: section 315 (Blocks 0a4d547, GUI d735fe8); 13 core text reporters square, 5 list INDEX inputs square, distance/direction-to coordinates and finger menus round, text/colour/menu inputs square. To reverse: `git revert` the merge.
-- Verified (test app): shapes and drop rule per block, real drags (join refused by "steps", < and answer accepted), input drawn behind (round/square, white), hidden when equal, width follows the reporter, drag out restores the field, undo of a loaded mismatch, custom block inputs, save + reload, coloured-text theme · Not verified: right-to-left layout.
+### Session 333 — Remove 10 small interface languages (2026-11-19)
+- Asked: delete Rapa Nui, Aragonese, Abkhaz, Asturian, Occitan, Scottish Gaelic, Frisian, Esperanto, Japanese Hiragana, Northern Sotho fully; then list languages whose speakers also speak another one (to cut more later).
+- Changed: section 316 (GUI 8d60d10): webpack loader drops them from the language list, locale data and all translation files; leftovers removed from locale-utils.js, translate-video.js. To reverse: `git revert` the merge.
+- Verified (test app): language menu 70 options, none of the 10; Redux locales 70 keys; German and Japanese switch fine (screenshot); no removed language name left in the built JS · Not verified: right-to-left layout, packaged game, other languages on screen.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
