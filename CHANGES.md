@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 330 — Unused reporter shapes removed (2026-11-19)
-- Asked: delete every unused block shape everywhere; say which optimisation this opens; say if anything still uses arrays, maps etc. without showing it.
-- Changed: section 313 (Blocks 38610c7, VM 41e431b): leaf, plus, bumped, indented, scrapped, arrow, ticket and custom shape registration removed; unknown shapes fall back to the default. Kept: square (stack blocks, polygon/custom inputs), octagonal (Crypto, Rigidbodies), custom notches (unused, offered separately). To reverse: `git revert` the merge.
-- Verified (test app): only shapes 1, 2, 3, 6 exist, custom table holds only 6; Crypto and Rigidbodies blocks draw octagonal in the palette and inside number/text inputs; hexagon, round, square blocks normal; a test extension with shapes 4, 5, "leaf" and input shape 9 draws round, no console errors · Not verified: block-eq (shapes only reach the Blocks library's drawing, never block answers), Block shape addon with its size settings changed.
+### Session 331 — Octagon, custom shapes, unused notches and custom value saving removed (2026-11-19)
+- Asked: make Crypto and Rigidbodies round, remove the octagon, the custom shape table, the unused custom notches and the dead custom value saving.
+- Changed: section 314 (Blocks a9f4adb, VM 9edefd9, GUI 6061d9f, galleries 4e47020 eab0db9); only round, hexagon and square remain; switchCase notch kept (switch/case blocks). To reverse: `git revert` the merge.
+- Verified (test app): only shapes 1–3, CUSTOM_SHAPES and outputLeftPadding_ gone, notches [switchCase]; Crypto and Rigidbodies reporters round (14 round, 2 Boolean); case block inside switch with its notch; Rigidbodies body inside its own input; real drags (stack snap, reporter out of and into an input); save + reload keeps a variable and a list; no console errors · Not verified: offline galleries (not in the test app; files syntax-checked), Block shape addon with changed sizes, block-eq (no calculation changed).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
