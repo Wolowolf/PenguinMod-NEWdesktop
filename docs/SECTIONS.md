@@ -309,4 +309,5 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 320 matrix, empty, polygon input types removed (My Blocks+, Crypto keys now text); custom object monitor displays gone (VM, Blocks, GUI, pm + sp galleries)
 - 321 type shapes of the SharkPool gallery extensions: 83 text-only reporters square, 6 number-only inputs round (VM)
 - 322 type shapes of the PenguinMod gallery extensions: 90 text-only reporters square, 23 number-only inputs round (VM)
-- 322 Gamepad "any" pad and "any" button work again (arguments no longer turned into numbers) (VM)
+- 323 Gamepad "any" pad and "any" button work again (arguments no longer turned into numbers) (VM)
+- 324 modular blocks can give their inputs a shape (modular.shape); Big Decimal operator and comparison inputs round (VM, Blocks)

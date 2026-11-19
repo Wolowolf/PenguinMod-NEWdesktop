@@ -14,11 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 339 — Gamepad "any" pad and button fixed (2026-11-19)
-- Asked: fix the bug found in Session 338: Gamepad's "any" pad and "any" button never matched.
-- Cause: the pad and button menus are number-typed, so the extension manager turned "any" into 0 before the extension's `=== "any"` check (shown with a fake navigator.getGamepads: pad any connected = false, pad 1 = true).
-- Changed: section 322 (VM 288d5f7): 9 Gamepad arguments (all pad menus, button-down's button) are no longer converted. To reverse: `git revert` the merge.
-- Verified (test app, fake gamepads on pads 1 and 3): any/1/3 connected true, 2 false; button any on any / on 1 true, any on 3 false, button 2 true ("2" and 2), button 1 false, "abc" false; value, axis, details and direction with pad any answer pad 1's values; the compiler's direct call converts none of the 9; button-down input still square; block-eq Gamepad 5 + 9 page blocks identical in every mode · Not verified: a real gamepad.
+### Session 341 — Modular blocks with round inputs; Big Decimal operators round (2026-11-19)
+- Asked: follow-up of Session 339: let modular blocks take an input shape so Big Decimal's operator blocks get round inputs.
+- Changed: section 324 (VM 70f4d40, Blocks 6d32f51): extensions can set `modular.shape`; Big Decimal's 14 operator/comparison singles and 4 modular blocks now have round inputs. Gamepad "any" fix renumbered to section 323 / Session 340 (it had been merged with the same numbers as the PenguinMod type shapes). To reverse: `git revert` the merge.
+- Verified (test app): Big Decimal singles 2 / 2 on NUM and NUM2, modular blocks round on 3 inputs and on a 4th added with +, other modular blocks (one of, V3) still square; drop rule join -> round input true, vector -> false; block-eq Big Decimal 23 blocks identical in every mode · Not verified: a real mouse drag.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)

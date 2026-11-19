@@ -3,10 +3,21 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `docs/STATE.md` and `docs/SECTIONS.md` win where they differ. `tweak.mjs finish` puts every session’s full entry on top of the change log (since Session 262; `/CHANGES.md` keeps only a short copy of the last one). The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
-### Session 339 — Gamepad "any" pad and button fixed (2026-11-19)
+### Session 341 — Modular blocks with round inputs; Big Decimal operators round (2026-11-19)
+- Asked: the follow-up offered in Session 339 (the user chose "Yes, do it here"): make modular blocks support round inputs so Big Decimal's operator blocks can use them.
+- Cause of the gap: blocks declared with `modular` (singles with `locked` too) are built by scratch-blocks' `Blockly.scratchBlocksUtils.modularBlock` (section 277/278), which made the inputs with appendValueInput + setCheck only, never setShape; runtime.js passed no shape in the settings, so an argument's `shape` was ignored (Session 339: NUM drawn 3 with shape 2 declared).
+- Changed: Blocks dist/vertical.js and dist/web/vertical.js: `o.shape && a.setShape(o.shape)` in the single block's init loop and in addInput_ (used on load via domToMutation and by the + button); comment before modularBlock. VM runtime.js: `if (modular.shape) settings.shape = modular.shape;` next to the other settings. Big Decimal: `shape: Scratch.BlockShape.ROUND` in MATH_MODULAR, COMPARE_MODULAR, MAXMIN_MODULAR, BITWISE_MODULAR (the singles spread these, so + - * / ^ mod, < ≤ > ≥ = ≠, max/min, bitwise singles and the math / compare / max-min / bitwise modular blocks). pointsBlock and branchesBlock (points / branch modular blocks) take no shape: no block needs one.
+- Numbering fix: the Gamepad "any" tweak was started while Session 339 was running and was merged as section 322 / Session 339 too; renumbered to 323 / Session 340 in Gamepad-Expanded.js comments (9), docs/SECTIONS.md, SECTIONS-details.md and this archive (its VM commit message keeps "Section 322": history is not rewritten).
+- Other modular blocks with a text shadow, left square (their inputs react to text): Random Utils one of, 3D Math V2/V3/quaternion chains, Operators Expansion or else, Sharktilities type chain, TurboWarp Math approx.
+- Verified (test app, hidden, production build): flyout Big Decimal + - * / ^ mod < ≤ > ≥ = ≠ max/min bitwise round NUM and round NUM2 (2 2), round 2 2, unary 2; modular blocks made from XML with inputcount 3 (load path, domToMutation): math, compare, max-min, bitwise inputs 2 2 2, after + a 4th input 2 with its text shadow; Random Utils one of and 3D Math V3 chain 3 3 3 and 3 after +. shapeFits_: + -> Big Decimal + NUM true, join -> modular NUM4 true, new V3 -> modular NUM1 false.
+- block-eq: auto planned everything (runtime.js changed); limited with ONLY to Big Decimal, the only extension whose blocks change: 23 blocks (68 jobs, singles and modular) identical in new / interp / old (1 job ends in the same error in both); no page blocks (log bench/block-eq-s341.log).
+- Extension check: only how inputs are drawn and what fits them; nothing runs differently (the shape setting is read when the block is drawn); the equality test agrees.
+- Result after build: assumed working
+
+### Session 340 — Gamepad "any" pad and button fixed (2026-11-19)
 - Asked: fix the bug found in Session 338: Gamepad's "any" pad and "any" button never matched.
 - Cause: the pad and button menus are number-typed, so the extension manager turned "any" into 0 before the extension's `=== "any"` check (shown with a fake navigator.getGamepads: pad any connected = false, pad 1 = true).
-- Changed: section 322 (VM 288d5f7): 9 Gamepad arguments (all pad menus, button-down's button) are no longer converted. To reverse: `git revert` the merge.
+- Changed: section 323 (VM 288d5f7): 9 Gamepad arguments (all pad menus, button-down's button) are no longer converted. To reverse: `git revert` the merge.
 - Verified (test app, fake gamepads on pads 1 and 3): any/1/3 connected true, 2 false; button any on any / on 1 true, any on 3 false, button 2 true ("2" and 2), button 1 false, "abc" false; value, axis, details and direction with pad any answer pad 1's values; the compiler's direct call converts none of the 9; button-down input still square; block-eq Gamepad 5 + 9 page blocks identical in every mode · Not verified: a real gamepad.
 - Result after build: assumed working
 
