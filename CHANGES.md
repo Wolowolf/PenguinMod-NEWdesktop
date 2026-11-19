@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 334 — Remove 25 more interface languages (2026-11-19)
-- Asked: remove groups 1 and 2 of the "speakers also speak a bigger language" list.
-- Changed: section 317 (GUI 3319d28): 25 more languages added to the build-time trim list; their leftovers deleted (translation json, es-419 reuse line, wide-locale entry, sheet script). Kept Serbian, Zulu, Bokmal, Swedish, Slovenian, Spain Spanish. To reverse: `git revert` the merge.
-- Verified (test app): first build crashed the editor ("Cannot convert undefined or null to object": the es-419 reuse line) and was fixed; then menu 45 options, none removed; es, sr, ar, he (right-to-left), zh-tw, sl, nb, zu, ht select and load their texts · Not verified: a packaged game, other languages on screen, the CI build; a "setRecyclingEnabled of null" console error appeared while switching languages by script (not checked whether it also happens before this change).
+### Session 333 — Type shapes corrected: mixed reporters, custom number inputs (2026-11-19)
+- Asked: join, letter of, letters from–to, replace all/first, list contents can give numbers, so they are mixed (round); an input that reacts to text (other than errors, 0, null) is square, otherwise round or hexagon. Also correct the method for the two extension audits.
+- Changed: section 316 (Blocks 981f48a): those reporters plus upper/lower case, stringify and error message round; square only new line, tab, tint colour, list as array; custom block %n inputs square. To reverse: `git revert` the merge.
+- Verified (test app): the 13 reporters' shapes, custom block inputs %n square / %s square / %b hexagon, join now fits "move steps", new line refused, join fits a custom %n input; no console errors · Not verified: right-to-left layout.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
