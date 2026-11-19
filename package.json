@@ -14,10 +14,10 @@
     "productName": "PenguinMod Desktop",
     "fileAssociations": [
       {
-        "ext": "pmp",
-        "name": "Penguinmod Project",
-        "description": "Penguinmod Project File",
-        "mimeType": "application/x-pmp",
+        "ext": "2DC",
+        "name": "2DC Project",
+        "description": "2DC Project File",
+        "mimeType": "application/x-2dc",
         "icon": "app/logo.ico"
       }
     ],
