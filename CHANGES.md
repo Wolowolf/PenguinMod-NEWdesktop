@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 345 — Sharp empty text slots (2026-11-19)
-- Asked: the empty slot in "set [ ] to value" had rounded corners while blocks are square; keep the square/round input rules.
-- Changed: section 327 — GUI e1d0f44 (`block-shape-text/shape.js`: empty square slot follows the corner setting). To reverse: `git revert` the merge and the fork commit.
-- Verified: test app: slot path `m 0,0 h 48 v 32 h -48 z` (was `A 4,4` arcs) on procedures_set; slot shapes by type unchanged (none/Number/String/mixed → square, Boolean → hexagon, number-only table entries → round pill); path function checked in node for corner 4, 12 and a small padding · Not verified: changing the corner setting in the app's addon page (store not reachable from the page) (not the CI build or installer: builds are assumed to work)
+### Session 346 — Cheaper UI, part 2 (2026-11-19)
+- Asked: do the 3 missed changes from section 309, delete the Block shape addon's "Corner size" setting (always square), add design rules to CLAUDE.md, write prompts for the remaining drawing ideas.
+- Changed: section 328 (Blocks 48c42a9, GUI 84a3b7b): drop highlight = 3 px outline instead of a blur filter, no palette button shadow rect, zoom buttons are hit rects + drawn shapes (pictures deleted), Editor Tweaks glow setting removed, zebra striping no longer stacks the filter, Corner size setting removed. CLAUDE.md "Cheap drawing" rule. To reverse: `git revert` the merge and the fork commits.
+- Verified: test app: reporter and input highlights white 3px outline, 0 replacement filters, 0 zoom images, 3 hit rects hit by elementFromPoint, a real click on zoom-in zoomed 0.675 → 0.81, 0 button shadow rects, block paths without corner commands, screenshots checked · Not verified: Block shape addon switched off at runtime; light theme (not the CI build or installer: builds are assumed to work)
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
