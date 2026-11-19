@@ -398,3 +398,18 @@ Real cold starts (process started afresh on the hidden desktop, RTX 4060), not p
 ## Finer number facts in the compiler (Session 265, section 246)
 
 ScratchBench in the test app, warp timer off, switch `runtime.pmNoNumberFacts` on / off, alternating, after a warm-up (raw: `bench\scratch-bench\results\s265-*.json`): total 62,765 / 63,057 → 64,436 / 64,707 points (1.03 times both pairs), every checksum the same. First pair per test: app_life 1.31, math_compare 1.30, loops_ifelse 1.23, list_replace 1.21, list_read 1.19, algo_sieve 1.19, math_arith 1.09; math_trig 0.90 (its code is unchanged: noise of a single test); the rest within 5%. Code changed in 58 of 328 scripts of the VM regression projects (60 with the warp timer off) and 10 of 85 of ScratchBench.
+
+## Code-area drawing (Session 329, section 312; `bench\blocks-trace.mjs`)
+
+Window 1100 × 800 CSS px (scale 1.4), 75 Hz screen (13.3 ms frames), one run each, build before = GUI `ed51730`, after = section 312. Raw: `benchesults\blocks-trace_before.json`, `blocks-trace_final.json`. Frame interval p50 / p95 in ms; busy = main thread ms in the phase.
+
+| project | phase | before p50 / p95, busy | after p50 / p95, busy |
+|---|---|---|---|
+| 5 × 1,000 blocks | scroll (120 wheel steps) | 13.4 / 53.4, 6,759 (paint 6,079) | 13.4 / 26.9, 3,900 (paint 1,084) |
+| 5 × 1,000 blocks | drag a whole script (60 moves) | 854 / 894, 52,568 (paint 48,871) | 13.4 / 26.8, 1,821 |
+| 5 × 1,000 blocks | pan (60 moves) | 53.4 / 80.1, 3,878 | 26.6 / 40.2, 2,191 |
+| 5 × 1,000 blocks | zoom (40 Ctrl+wheel) | 13.5 / 307, 5,542 | 13.4 / 227, 4,507 |
+| 200 × 25 blocks | all phases | unchanged (scripts were already hidden whole by scratch-blocks) | |
+| default (empty) | all phases | unchanged | |
+
+Load: 5 × 1,000 blocks 7.7 s, 200 × 25 blocks 2.1–2.9 s, both before and after (noise between runs about ±1 s); DOM nodes and heap unchanged (about 106,000 nodes, 65 MB). Found while measuring, not changed: (1) zoom cost is Chrome laying out every displayed SVG text again at the new scale (a forced layout inside `Toolbox.getWidth`'s `offsetWidth`, section 11, only moves it: caching that width changed nothing); (2) loading 5 scripts of 1,000 blocks takes 3–4 × as long as 200 scripts of 25 (not investigated: probably every added block redraws the blocks above it); (3) Chrome walks a group's whole DOM subtree, hidden parts included, when the group's display changes or when the drag surface moves (35 ms per move for 1,000 dragged blocks), which is why section 312 hides leaves and takes the dragged part out.

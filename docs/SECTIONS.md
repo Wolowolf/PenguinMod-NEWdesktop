@@ -297,3 +297,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 309 lighter drawing: square corners, triangle notches/hats, path arrows, run bar not glow, 1-square grid, solid drop ghost, fewer shadows (Blocks, GUI)
 - 310 Scratch's unused Speech to Text extension and its diff-match-patch package removed (VM)
 - 311 Lighting's gray darkness layer off until one of its blocks runs (VM)
+- 312 culling inside scripts: off-screen parts of partly visible scripts hidden, a dragged stack's off-screen part taken out (GUI)
