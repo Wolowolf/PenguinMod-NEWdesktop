@@ -13,10 +13,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 326 — Lighter drawing (2026-11-19)
-- Asked: research every way to cut drawing cost, then do every change without drawbacks (choices by card) and list the rest.
-- Changed: section 309 (Blocks 65db413, GUI ed51730): square corners and boxes, triangle notches, triangle hat tops (corner to corner), dropdown arrows as paths, run/error glow replaced by a yellow/red bar on the script's left side, grid as one square per cell, solid drop ghost (Lines colour), no shadows/blur on dragged/hovered sprites, comment previews, crossed-out emoji; placeholders display:none; unchanged block outlines not rewritten. To reverse: `git revert` the merge.
-- Verified: test app with the Block shape addon on and off: block paths square with triangle notches and full-width hat triangles, no arc in stack/C/hat/define paths, 0 glow filters, grid = 1 rect, bar appears on green flag (height = stack) and goes on stop, error bar red, drop ghost = --ui-edge at opacity 1, no console errors · Not verified: switching the Block shape addon off while the editor is open; blocks2image export look.
+### Session 327 — Remove unused Speech to Text (2026-11-19)
+- Asked: delete Scratch's Speech to Text, which never loads (found in Session 325).
+- Changed: section 310 (VM 53f7a4e): `scratch3_speech2text` deleted, with the `diff-match-patch` package only it used. To reverse: `git revert` the merge.
+- Verified: test app: build OK (5.3 min), editor loads, loading `speech2text` gives "Unknown extension", Recording V2 still loads on the engine's context; the built editor files contain neither name · Not verified: nothing else known.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)

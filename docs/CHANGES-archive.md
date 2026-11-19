@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `docs/STATE.md` and `docs/SECTIONS.md` win where they differ. `tweak.mjs finish` puts every session’s full entry on top of the change log (since Session 262; `/CHANGES.md` keeps only a short copy of the last one). The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 327 — Remove unused Speech to Text (2026-11-19)
+- Asked: delete Scratch's Speech to Text, which never loads (found in Session 325).
+- Changed: section 310 (VM 53f7a4e): `scratch3_speech2text` deleted, with the `diff-match-patch` package only it used. To reverse: `git revert` the merge.
+- Verified: test app: build OK (5.3 min), editor loads, loading `speech2text` gives "Unknown extension", Recording V2 still loads on the engine's context; the built editor files contain neither name · Not verified: nothing else known.
+- Result after build: assumed working
+
 ### Session 326 — Lighter drawing (2026-11-19)
 - Asked: research how every block type, field, font, box, flyout and the rest of the UI can be drawn as cheaply as possible (web + code), then apply every change without drawbacks, asking with choice cards where there were options, and list the remaining changes from biggest gain to smallest with their drawbacks.
 - Choices: corners square; notch triangle; hat top one triangle corner to corner, peak in the middle, slope 4 times flatter than the notch (5 points); dropdown arrow triangle path; run glow = thick plain line along the script's flat left side; grid kept but optimised (looks about the same, used by Snap scripts to grid); drop ghost solid; removed all four shadow/blur effects (dragged sprite, sprite hover, comment preview blur, crossed-out emoji blur).
