@@ -312,3 +312,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 323 Gamepad "any" pad and "any" button work again (arguments no longer turned into numbers) (VM)
 - 324 modular blocks can give their inputs a shape (modular.shape); Big Decimal operator and comparison inputs round (VM, Blocks)
 - 325 typing into a number or text field happens in the field itself, no separate box drawn on top (Blocks)
+- 326 projects are .2DC files only: save, open dialog, restore-point export, packager hand-off, Windows double-click (GUI, Packager, app)

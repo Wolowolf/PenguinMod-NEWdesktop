@@ -876,16 +876,16 @@ app.commandLine.appendSwitch('disable-renderer-backgrounding');
 // No clean-up just to give memory back, which paused a project that makes little garbage for 16-20 ms about 26 s after it started. Normal clean-ups still run when memory fills up.
 app.commandLine.appendSwitch('js-flags', '--no-memory-reducer');
 
-// One app process (Session 235): opening a project file while the app is open (double-clicking a .pmp) started a
+// One app process (Session 235): opening a project file while the app is open (double-clicking a .2DC) started a
 // second copy, which couldn't use the first one's stored settings (their folder is locked by the first copy) and lost
 // its own. Now the running app opens the file in a new window; starting the app again without a file shows its window.
 const editorWindows = new Set();
 let windowsMade = 0;
-// The project file of a command line: the first argument that is an existing file (switches, and the app folder of an
-// unpackaged start, are skipped).
+// The project file of a command line: the first argument that is an existing .2DC file (any letter case; switches,
+// other files and the app folder of an unpackaged start are skipped).
 function projectFileFromArgs(args, cwd) {
   for (const arg of args) {
-    if (!arg || arg.startsWith("-")) continue;
+    if (!arg || arg.startsWith("-") || !/\.2dc$/i.test(arg)) continue;
     const full = path.resolve(cwd || process.cwd(), arg);
     if (fs.statSync(full, { throwIfNoEntry: false })?.isFile()) return full;
   }
