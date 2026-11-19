@@ -296,3 +296,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 308 Recording V2 on the editor's sound engine context instead of its own AudioContext (VM)
 - 309 lighter drawing: square corners, triangle notches/hats, path arrows, run bar not glow, 1-square grid, solid drop ghost, fewer shadows (Blocks, GUI)
 - 310 Scratch's unused Speech to Text extension and its diff-match-patch package removed (VM)
+- 311 Lighting's gray darkness layer off until one of its blocks runs (VM)

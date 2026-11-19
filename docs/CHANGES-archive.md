@@ -3,6 +3,14 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `docs/STATE.md` and `docs/SECTIONS.md` win where they differ. `tweak.mjs finish` puts every session’s full entry on top of the change log (since Session 262; `/CHANGES.md` keeps only a short copy of the last one). The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 328 — Lighting no longer grays the stage on load (2026-11-19)
+- Asked: loading the Lighting extension made the stage instantly gray-ish ("probably the ambient light settings"); fix it.
+- Cause: upstream design, not a fork regression: `FRAG_SRC` main() starts every pixel at `u_ambient * u_opacity` (ambient #333333, bgOpacity 1) and the canvas has CSS opacity 0.85 (shadowOpacity), drawn whenever `this.visible` (true by default), so the whole stage is covered from loading on. Section 303 only changed the GL setup.
+- Changed: section 311 (PenguinMod-Vm 0c5e843), `lighting.js`: `_inUse` flag; constructor wraps every `getInfo()` block method (opcode or func) so the first call sets it and calls `_markDirty()`; worker message `visible: this.visible && this._inUse` and main-thread `if (this.visible && this._inUse)`. To reverse: `git revert` the merge.
+- Verified (test app, -StepsFile): build OK; after `loadExtensionURL("g1nxLighting")`: mode worker, overlay 496x279 at the stage's position, pixel 0,0,0,0, `_inUse=false`, screenshot white stage; after `setAmbient({COLOR:"#333333"})`: pixel 51,51,51,255, `_inUse=true`, screenshot dark gray stage. Fresh start: `_primitives.g1nxLighting_clearLights` (the path blocks use) turns `_inUse` true. Serialize saves only render settings, not lights, so a loaded project shows nothing until its blocks run (intended).
+- Extensions: only this extension's own overlay changed; no engine part (compiler, frame loop, renderer) touched.
+- Not verified: nothing else known.
+
 ### Session 327 — Remove unused Speech to Text (2026-11-19)
 - Asked: delete Scratch's Speech to Text, which never loads (found in Session 325).
 - Changed: section 310 (VM 53f7a4e): `scratch3_speech2text` deleted, with the `diff-match-patch` package only it used. To reverse: `git revert` the merge.
