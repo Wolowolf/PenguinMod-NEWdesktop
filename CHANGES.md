@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 331 — Octagon, custom shapes, unused notches and custom value saving removed (2026-11-19)
-- Asked: make Crypto and Rigidbodies round, remove the octagon, the custom shape table, the unused custom notches and the dead custom value saving.
-- Changed: section 314 (Blocks a9f4adb, VM 9edefd9, GUI 6061d9f, galleries 4e47020 eab0db9); only round, hexagon and square remain; switchCase notch kept (switch/case blocks). To reverse: `git revert` the merge.
-- Verified (test app): only shapes 1–3, CUSTOM_SHAPES and outputLeftPadding_ gone, notches [switchCase]; Crypto and Rigidbodies reporters round (14 round, 2 Boolean); case block inside switch with its notch; Rigidbodies body inside its own input; real drags (stack snap, reporter out of and into an input); save + reload keeps a variable and a list; no console errors · Not verified: offline galleries (not in the test app; files syntax-checked), Block shape addon with changed sizes, block-eq (no calculation changed).
+### Session 332 — Block shapes show value types (2026-11-19)
+- Asked: shape-sorter shapes (hexagon Boolean, round number/mixed, square text), drop rule = shapes, input drawn behind smaller reporters, audit every block. Split: this tweak = mechanism + core, PenguinMod and custom blocks; built-in extensions and gallery extensions are later tweaks.
+- Changed: section 315 (Blocks 0a4d547, GUI d735fe8); 13 core text reporters square, 5 list INDEX inputs square, distance/direction-to coordinates and finger menus round, text/colour/menu inputs square. To reverse: `git revert` the merge.
+- Verified (test app): shapes and drop rule per block, real drags (join refused by "steps", < and answer accepted), input drawn behind (round/square, white), hidden when equal, width follows the reporter, drag out restores the field, undo of a loaded mismatch, custom block inputs, save + reload, coloured-text theme · Not verified: right-to-left layout.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
