@@ -300,3 +300,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 312 culling inside scripts: off-screen parts of partly visible scripts hidden, a dragged stack's off-screen part taken out (GUI)
 - 313 unused reporter shapes removed (leaf, plus, bumped, indented, scrapped, arrow, ticket, custom shape registration) (Blocks, VM)
 - 314 octagon, custom shapes, 14 unused notches, custom value saving removed; Crypto, Rigidbodies round (Blocks, VM, GUI, pm + sp galleries)
+- 315 block shapes show value types: hexagon Boolean, round number/mixed, square text; drop by shape fit, input drawn behind smaller reporters (Blocks, GUI)
