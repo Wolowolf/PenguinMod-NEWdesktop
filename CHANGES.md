@@ -14,11 +14,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 335 — Type shapes of the built-in engine extensions (2026-11-19)
-- Asked: classify every block of the built-in engine extensions by the type-shape rules and fix wrong ones.
-- Changed: section 318 (VM a28e6f6): 7 reporters that never give a number square (rotation style, simplify ratio, grab color, 3 Prism data URLs, tailgating position JSON); drum, instrument and mouse button menus round; pen font weight square. The 13 shipped extensions only; the 3 gallery folders are the next audit. To reverse: `git revert` the merge.
-- Verified (test app): all 11 changed shapes, shapeFits_ (grab color refused by move steps, accepted by say; rotation style refused by drum, tempo and join accepted; JSON position fits font weight, not font size); real drags: grab color refused by the drum input, tempo snapped in; block-eq (7 extensions): 82 blocks + 14 page blocks identical in every mode · Not verified: right-to-left layout.
-- Open question: jwProto's placeholder reporter "..." always answers "" (square by the rule) but is meant to stand in anywhere: left round.
+### Session 336 — Type shapes of the TurboWarp gallery extensions (2026-11-19)
+- Asked: classify every block of the bundled gallery extensions by the type-shape rules and fix wrong ones. Split by VM folder (about 600 reporters, 1,800 inputs in all): TurboWarp here; SharkPool and PenguinMod are their own tweaks (proposed as sessions).
+- Changed: section 319 (VM ee72258): 36 reporters that never give a number square (JSON lists/objects, data URLs, zip paths, case of, 2g/3g/4g, connection type, blend mode, Simple 3D texture status and font, Pen+ version); 12 inputs round (finger ID and open-window number menus, Steam DLC ID, Simple 3D anisotropy, primitive size, alpha test). To reverse: `git revert` the merge.
+- Found: the engine turns every number/angle/note argument into a number before an extension sees it, so number inputs are round by themselves; only number menus needed a shape.
+- Verified (test app): 57 shapes in the palette (all changed blocks + controls), drop rule (case of refused by move steps, fits say; join fits the Steam ID; add fits the finger menu), real drags (case of refused by move steps, reverse text snapped into the Steam ID), a saved mismatch still loads; block-eq: 249 blocks + 144 page blocks identical in every mode · Not verified: right-to-left layout.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
