@@ -10,14 +10,13 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 - **Ideas offered, not applied** (offer when relevant):
   - Make the stage's WebGL context after the rest of the first render: at most ~700 ms off the editor's start (`docs/BENCH-BASELINE.md` "Start-up").
   - Loading like a game engine: "load on first use" is done (sections 162, 164, 165). Not chosen so far: scenes, asset groups, sprites on demand, streaming.
-  - Square off the block shapes (needs a `scratch-blocks` patch, riskier).
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 325 — Extensions on the editor's sound engine (2026-11-19)
-- Asked: Beat Sync, Recording V2, Tune Shark V3 and Speech to Text should use runtime.audioEngine.audioContext instead of their own; leave Dictation alone.
-- Changed: section 308 (VM 582efb4): Recording V2 uses the engine's context (getter). Beat Sync and Tune Shark V3 already did; Speech to Text never loads (unused file). To reverse: `git revert` the merge.
-- Verified: test app with Chromium's fake microphone: no new AudioContext when loading the 3 extensions; record for 2.5 s gave a 34 KB WAV and loudness 27 (unchanged by mute); pause/play during recording continues; Tune Shark plays through the engine's volume (peak 0.32, half volume 0.16, muted 0); Beat Sync on the engine context; the same in a packaged HTML game · Not verified: a real microphone.
+### Session 326 — Lighter drawing (2026-11-19)
+- Asked: research every way to cut drawing cost, then do every change without drawbacks (choices by card) and list the rest.
+- Changed: section 309 (Blocks 65db413, GUI ed51730): square corners and boxes, triangle notches, triangle hat tops (corner to corner), dropdown arrows as paths, run/error glow replaced by a yellow/red bar on the script's left side, grid as one square per cell, solid drop ghost (Lines colour), no shadows/blur on dragged/hovered sprites, comment previews, crossed-out emoji; placeholders display:none; unchanged block outlines not rewritten. To reverse: `git revert` the merge.
+- Verified: test app with the Block shape addon on and off: block paths square with triangle notches and full-width hat triangles, no arc in stack/C/hat/define paths, 0 glow filters, grid = 1 rect, bar appears on green flag (height = stack) and goes on stop, error bar red, drop ghost = --ui-edge at opacity 1, no console errors · Not verified: switching the Block shape addon off while the editor is open; blocks2image export look.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
