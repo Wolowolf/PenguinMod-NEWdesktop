@@ -301,3 +301,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 313 unused reporter shapes removed (leaf, plus, bumped, indented, scrapped, arrow, ticket, custom shape registration) (Blocks, VM)
 - 314 octagon, custom shapes, 14 unused notches, custom value saving removed; Crypto, Rigidbodies round (Blocks, VM, GUI, pm + sp galleries)
 - 315 block shapes show value types: hexagon Boolean, round number/mixed, square text; drop by shape fit, input drawn behind smaller reporters (Blocks, GUI)
+- 316 removed 10 small interface languages (rap an ab ast oc gd fy eo ja-Hira nso) from menu and build (GUI)
