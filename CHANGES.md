@@ -14,11 +14,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 341 — Modular blocks with round inputs; Big Decimal operators round (2026-11-19)
-- Asked: follow-up of Session 339: let modular blocks take an input shape so Big Decimal's operator blocks get round inputs.
-- Changed: section 324 (VM 70f4d40, Blocks 6d32f51): extensions can set `modular.shape`; Big Decimal's 14 operator/comparison singles and 4 modular blocks now have round inputs. Gamepad "any" fix renumbered to section 323 / Session 340 (it had been merged with the same numbers as the PenguinMod type shapes). To reverse: `git revert` the merge.
-- Verified (test app): Big Decimal singles 2 / 2 on NUM and NUM2, modular blocks round on 3 inputs and on a 4th added with +, other modular blocks (one of, V3) still square; drop rule join -> round input true, vector -> false; block-eq Big Decimal 23 blocks identical in every mode · Not verified: a real mouse drag.
-- Result after build: assumed working
+### Session 342 — Docs and memory cleanup (2026-11-19)
+- Asked: delete obsolete docs and memory (plans that are fully done); list the rules Claude follows.
+- Changed: `docs/COMPILER-STUDY.md` deleted (its experiments A, L, C and all its open limits were built: sections 236, 240–246; raw notes stay in `PenguinMod-test\bench\compiler-study\`), its pointers in `docs/STATE.md` and `docs/PROCEDURES.md` removed; `docs/EXTENSION-INTEGRATION.md` finished step checklist cut to one paragraph; `docs/BENCH-BASELINE.md` outdated Session 179 recommendation removed; `docs/STATE.md` section count 243 → 324. Memory (outside the repo): finished plans removed (modular blocks, type shapes, code-sharing baseline) and the end-goal note that CLAUDE.md already holds; roadmap note no longer says the Artifact tool is off. To reverse: `git revert` the merge.
+- Verified: no doc outside the archive still names the deleted file · Not verified: nothing to run (`.md` only, builds nothing).
+- Result after build: no build (`.md` only)
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
 

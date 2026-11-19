@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `docs/STATE.md` and `docs/SECTIONS.md` win where they differ. `tweak.mjs finish` puts every session’s full entry on top of the change log (since Session 262; `/CHANGES.md` keeps only a short copy of the last one). The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 342 — Docs and memory cleanup (2026-11-19)
+- Asked: delete obsolete docs and memory (plans that are fully done); list the rules Claude follows.
+- Changed: `docs/COMPILER-STUDY.md` deleted (its experiments A, L, C and all its open limits were built: sections 236, 240–246; raw notes stay in `PenguinMod-test\bench\compiler-study\`), its pointers in `docs/STATE.md` and `docs/PROCEDURES.md` removed; `docs/EXTENSION-INTEGRATION.md` finished step checklist cut to one paragraph; `docs/BENCH-BASELINE.md` outdated Session 179 recommendation removed; `docs/STATE.md` section count 243 → 324. Memory (outside the repo): finished plans removed (modular blocks, type shapes, code-sharing baseline) and the end-goal note that CLAUDE.md already holds; roadmap note no longer says the Artifact tool is off. To reverse: `git revert` the merge.
+- Verified: no doc outside the archive still names the deleted file · Not verified: nothing to run (`.md` only, builds nothing).
+- Result after build: no build (`.md` only)
+
 ### Session 341 — Modular blocks with round inputs; Big Decimal operators round (2026-11-19)
 - Asked: the follow-up offered in Session 339 (the user chose "Yes, do it here"): make modular blocks support round inputs so Big Decimal's operator blocks can use them.
 - Cause of the gap: blocks declared with `modular` (singles with `locked` too) are built by scratch-blocks' `Blockly.scratchBlocksUtils.modularBlock` (section 277/278), which made the inputs with appendValueInput + setCheck only, never setShape; runtime.js passed no shape in the settings, so an argument's `shape` was ignored (Session 339: NUM drawn 3 with shape 2 declared).

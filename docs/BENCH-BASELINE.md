@@ -367,7 +367,7 @@ Compiled code byte-for-byte identical before / after (109 bench projects, every 
 ## Shared definitions for Sensing, Control (Session 310, section 293)
 Compiled code identical before / after for 108 of 109 bench projects (project 8: "distance to" passes the sprite to its helper), so compiled speed is unchanged by construction; measured anyway, before = fresh build of VM `e0c2d65`, after = the change, same day. ScratchBench (warp timer off, 2 pairs; raw `bench\scratch-bench\results\s310-*.json`): the 39 non-scheduler tests geometric mean 1.002 / 0.994, every checksum the same; total 67,223 / 67,709 → 66,966 / 66,940. `bench.mjs --runs 3` on 21 projects (raw `bench\results\2026-11-18_065147_s310-before.json`, `..._073646_s310-after.json`): no real change except 54-answers-in-vars +4.0% "SLOWER (real)" with identical compiled code and no Sensing or Control block; measured again (`..._081313_s310-after-54.json`): +2.0%, no real change (noise).
 
-## Ranking of the remaining ideas (Session 176; next after Session 179: clone deletion, seen in project 32)
+## Ranking of the remaining ideas (Session 176)
 
 The sizes of costs are measured; every gain below is a guess until built.
 
@@ -384,7 +384,6 @@ The sizes of costs are measured; every gain below is a guess until built.
 | done | A custom block calling itself calls its own function by name (section 248, Session 267) | ScratchBench algo_fib +22–29%, algo_ack +13–20% (3 pairs in the app); one call 4.2 → 3.5 ns (fib), 5.6 → 4.7 ns (ack). Not worth it, measured: leaving out the `thread.spoofing` check (±0) and remembering other custom blocks' functions (app_ast ±0) | measured |
 | 9 | Worker for rendering | at most draw's 2.1 ms in 25 | gain limit measured: small now; large change |
 
-Recommendation (Session 179): cheaper clone deletion first (part of rank 3), measured with 32 at ×2; then rank 2, measured with 25.
 
 ## Start-up (Session 187)
 Real cold starts (process started afresh on the hidden desktop, RTX 4060), not page reloads: a reload is 370 ms and hides most of this. Tools: `docs/PROCEDURES.md` "Start-up".
