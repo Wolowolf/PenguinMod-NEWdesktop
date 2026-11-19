@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 346 — Cheaper UI, part 2 (2026-11-19)
-- Asked: do the 3 missed changes from section 309, delete the Block shape addon's "Corner size" setting (always square), add design rules to CLAUDE.md, write prompts for the remaining drawing ideas.
-- Changed: section 328 (Blocks 48c42a9, GUI 84a3b7b): drop highlight = 3 px outline instead of a blur filter, no palette button shadow rect, zoom buttons are hit rects + drawn shapes (pictures deleted), Editor Tweaks glow setting removed, zebra striping no longer stacks the filter, Corner size setting removed. CLAUDE.md "Cheap drawing" rule. To reverse: `git revert` the merge and the fork commits.
-- Verified: test app: reporter and input highlights white 3px outline, 0 replacement filters, 0 zoom images, 3 hit rects hit by elementFromPoint, a real click on zoom-in zoomed 0.675 → 0.81, 0 button shadow rects, block paths without corner commands, screenshots checked · Not verified: Block shape addon switched off at runtime; light theme (not the CI build or installer: builds are assumed to work)
+### Session 347 — No blurred shadows, flat colours (2026-11-20)
+- Asked: GUI CSS pass: remove blurred shadows (1 px Lines border where needed), gradients to flat colours, list what remains; CSS containment split off into its own session (gui-contain).
+- Changed: section 329 (GUI d4172aa, Blocks 0efe900, Paint cdb6756, Packager ad9ee41): ~35 blurred shadows removed, 3 new Lines borders, category label outline unblurred, received-blocks flash a solid ring; costume list fade removed, trim stripes, checkerboards, better-comments and studio shimmer flat. To reverse: `git revert` the merge and the fork commits.
+- Verified: test app: CSSOM scan of all loaded sheets finds no blurred shadow, backdrop blur or gradient left; File menu, block dropdown (shadow none, border), costume list, category labels and packager cards (shadow none, 1 px border) checked by screenshot or computed style · Not verified: addon styles not loaded by default (middle-click popup, onion skin, snap, paint tool panel), light theme (not the CI build or installer: builds are assumed to work)
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)

@@ -315,3 +315,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 326 projects are .2DC files only: save, open dialog, restore-point export, packager hand-off, Windows double-click (GUI, Packager, app)
 - 327 empty text/mixed input slots use the block corner size (sharp by default) instead of fixed rounded corners (GUI)
 - 328 drop highlight as plain outline, no palette button shadow, zoom buttons without pictures, Block shape corner size setting removed (Blocks, GUI)
+- 329 no blurred shadows (1 px Lines borders where needed), gradients to flat colours (GUI, Blocks, Paint, Packager)
