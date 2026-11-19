@@ -14,10 +14,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 333 — Type shapes corrected: mixed reporters, custom number inputs (2026-11-19)
-- Asked: join, letter of, letters from–to, replace all/first, list contents can give numbers, so they are mixed (round); an input that reacts to text (other than errors, 0, null) is square, otherwise round or hexagon. Also correct the method for the two extension audits.
-- Changed: section 316 (Blocks 981f48a): those reporters plus upper/lower case, stringify and error message round; square only new line, tab, tint colour, list as array; custom block %n inputs square. To reverse: `git revert` the merge.
-- Verified (test app): the 13 reporters' shapes, custom block inputs %n square / %s square / %b hexagon, join now fits "move steps", new line refused, join fits a custom %n input; no console errors · Not verified: right-to-left layout.
+### Session 335 — Type shapes of the built-in engine extensions (2026-11-19)
+- Asked: classify every block of the built-in engine extensions by the type-shape rules and fix wrong ones.
+- Changed: section 318 (VM a28e6f6): 7 reporters that never give a number square (rotation style, simplify ratio, grab color, 3 Prism data URLs, tailgating position JSON); drum, instrument and mouse button menus round; pen font weight square. The 13 shipped extensions only; the 3 gallery folders are the next audit. To reverse: `git revert` the merge.
+- Verified (test app): all 11 changed shapes, shapeFits_ (grab color refused by move steps, accepted by say; rotation style refused by drum, tempo and join accepted; JSON position fits font weight, not font size); real drags: grab color refused by the drum input, tempo snapped in; block-eq (7 extensions): 82 blocks + 14 page blocks identical in every mode · Not verified: right-to-left layout.
+- Open question: jwProto's placeholder reporter "..." always answers "" (square by the rule) but is meant to stand in anywhere: left round.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
