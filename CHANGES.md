@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 333 — Remove 10 small interface languages (2026-11-19)
-- Asked: delete Rapa Nui, Aragonese, Abkhaz, Asturian, Occitan, Scottish Gaelic, Frisian, Esperanto, Japanese Hiragana, Northern Sotho fully; then list languages whose speakers also speak another one (to cut more later).
-- Changed: section 316 (GUI 8d60d10): webpack loader drops them from the language list, locale data and all translation files; leftovers removed from locale-utils.js, translate-video.js. To reverse: `git revert` the merge.
-- Verified (test app): language menu 70 options, none of the 10; Redux locales 70 keys; German and Japanese switch fine (screenshot); no removed language name left in the built JS · Not verified: right-to-left layout, packaged game, other languages on screen.
+### Session 334 — Remove 25 more interface languages (2026-11-19)
+- Asked: remove groups 1 and 2 of the "speakers also speak a bigger language" list.
+- Changed: section 317 (GUI 3319d28): 25 more languages added to the build-time trim list; their leftovers deleted (translation json, es-419 reuse line, wide-locale entry, sheet script). Kept Serbian, Zulu, Bokmal, Swedish, Slovenian, Spain Spanish. To reverse: `git revert` the merge.
+- Verified (test app): first build crashed the editor ("Cannot convert undefined or null to object": the es-419 reuse line) and was fixed; then menu 45 options, none removed; es, sr, ar, he (right-to-left), zh-tw, sl, nb, zu, ht select and load their texts · Not verified: a packaged game, other languages on screen, the CI build; a "setRecyclingEnabled of null" console error appeared while switching languages by script (not checked whether it also happens before this change).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)

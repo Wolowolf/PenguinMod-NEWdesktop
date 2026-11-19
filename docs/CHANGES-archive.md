@@ -3,6 +3,13 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `docs/STATE.md` and `docs/SECTIONS.md` win where they differ. `tweak.mjs finish` puts every session’s full entry on top of the change log (since Session 262; `/CHANGES.md` keeps only a short copy of the last one). The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 334 — Remove 25 more interface languages (2026-11-19)
+- Asked: remove groups 1 and 2 (25 languages) of the overlap list from Session 333.
+- Cause of the first failure: `tw-translations/index.js` did `Object.assign(editorMessages['es-419'], …)`; with es-419 gone that is `Object.assign(undefined)`, which stopped the editor from loading (shown by `ReduxStore is not defined` and `Uncaught TypeError: Cannot convert undefined or null to object` in app-err.log). Line removed.
+- Changed: section 317 (GUI 3319d28): REMOVED list of the loader (35 codes now), localeMap lines are dropped too; generated-translations.json lost ca, lt, ja-hira (423 lines); `!to-csv-files.js` lost es-419, hr, da, sk; locale-utils.js lost ca. Extensions: no calculation or optimisation touched.
+- Verified (test app): loader on all 7 package files leaves none of the removed codes; editor + packager build OK; Redux locales 45 keys and menu 45 options, none removed; sr, es, ar, he (right-to-left true), zh-tw, sl, nb, zu, ht select and give 559–799 texts · Not verified: packaged game, other languages on screen, CI build; the console error "Cannot read properties of null (reading 'setRecyclingEnabled')" appeared after switching languages by script (not compared with before).
+- Result after build: assumed working
+
 ### Session 333 — Remove 10 small interface languages (2026-11-19)
 - Asked: delete Rapa Nui (rap), Aragonese (an), Abkhaz (ab), Asturian (ast), Occitan (oc), Scottish Gaelic (gd), Frisian (fy), Esperanto (eo), Japanese Hiragana (ja-Hira), Northern Sotho (nso) fully; then list languages whose speakers also speak another one.
 - Cause/approach: the languages come from the npm package @turbowarp/scratch-l10n (not our code), so they are cut while bundling by `src/lib/tw-l10n-trim-loader.js`; `webpack.config.js` aliases the package to its `src/index.js` (the prebuilt dist cannot be trimmed) and adds it to the babel include (UglifyJS 1.3 has no ES2015).
