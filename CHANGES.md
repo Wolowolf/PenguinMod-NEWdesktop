@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 344 — Own project file ending .2DC (2026-11-19)
-- Asked: drop .sb3 and .pm, keep only .pmp renamed to .2DC: save name, open dialog, restore points, packager hand-off, Windows double-click.
-- Changed: section 326 — GUI c4da854 (save/open/restore-point/packager names, other endings refused with a message), Packager cfe2456 (error text), `package.json` (.2DC association), `app/electron-main.js` (command line opens only *.2DC). File contents unchanged. To reverse: `git revert` the merge and both fork commits.
-- Verified: test app with stubbed pickers: .sb3/.pm/.pmp/no ending refused (title unchanged), "My Game.2DC" and "lower.2dc" load with their titles; Save as suggests "lower.2DC" with only .2DC offered; restore-point export saved as restore-point.2DC; packager got the project ("lower"); a second app start on the hidden desktop opened Marker.2DC in a new window, ignored Marker.sb3/.pmp · Not verified: real Windows double-click and the installer's .2DC association (not the CI build or installer: builds are assumed to work); in-app updates don't run the installer, so they likely don't register .2DC.
+### Session 345 — Sharp empty text slots (2026-11-19)
+- Asked: the empty slot in "set [ ] to value" had rounded corners while blocks are square; keep the square/round input rules.
+- Changed: section 327 — GUI e1d0f44 (`block-shape-text/shape.js`: empty square slot follows the corner setting). To reverse: `git revert` the merge and the fork commit.
+- Verified: test app: slot path `m 0,0 h 48 v 32 h -48 z` (was `A 4,4` arcs) on procedures_set; slot shapes by type unchanged (none/Number/String/mixed → square, Boolean → hexagon, number-only table entries → round pill); path function checked in node for corner 4, 12 and a small padding · Not verified: changing the corner setting in the app's addon page (store not reachable from the page) (not the CI build or installer: builds are assumed to work)
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
