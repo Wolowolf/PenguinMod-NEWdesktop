@@ -14,11 +14,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 339 — Type shapes of the PenguinMod gallery extensions (2026-11-19)
-- Asked: classify every block of the 23 PenguinMod gallery extensions by the type-shape rules and fix wrong ones (last of three gallery parts).
-- Changed: section 322 (VM 4634ee1): 90 reporters that never give a number square (3D Math vectors/quaternions, Crypto keys/UUID, JSON lists/objects, data URLs, Iris Text markup, note names, language code, tilt word, "12%"); 23 inputs round (Box2D point maths, 3D Math yaw/pitch/roll, Big Decimal precision/round/random/unary). To reverse: `git revert` the merge.
-- Found (not changed): Big Decimal's 14 operator/comparison blocks and its 4 modular blocks are built by the editor's modular block maker, which ignores input shapes, so their number-only inputs stay square.
-- Verified (test app): 127 flyout shapes as expected, drop rule (shapeFits_) for 10 pairs; block-eq 321 + 136 page blocks identical in every mode · Not verified: a real mouse drag.
+### Session 339 — Gamepad "any" pad and button fixed (2026-11-19)
+- Asked: fix the bug found in Session 338: Gamepad's "any" pad and "any" button never matched.
+- Cause: the pad and button menus are number-typed, so the extension manager turned "any" into 0 before the extension's `=== "any"` check (shown with a fake navigator.getGamepads: pad any connected = false, pad 1 = true).
+- Changed: section 322 (VM 288d5f7): 9 Gamepad arguments (all pad menus, button-down's button) are no longer converted. To reverse: `git revert` the merge.
+- Verified (test app, fake gamepads on pads 1 and 3): any/1/3 connected true, 2 false; button any on any / on 1 true, any on 3 false, button 2 true ("2" and 2), button 1 false, "abc" false; value, axis, details and direction with pad any answer pad 1's values; the compiler's direct call converts none of the 9; button-down input still square; block-eq Gamepad 5 + 9 page blocks identical in every mode · Not verified: a real gamepad.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
