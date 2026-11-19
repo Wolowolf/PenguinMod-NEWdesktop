@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `docs/STATE.md` and `docs/SECTIONS.md` win where they differ. `tweak.mjs finish` puts every session’s full entry on top of the change log (since Session 262; `/CHANGES.md` keeps only a short copy of the last one). The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 345 — Sharp empty text slots (2026-11-19)
+- Asked: the empty slot in "set [ ] to value" had rounded corners while blocks are square; keep the square/round input rules.
+- Changed: section 327 — GUI e1d0f44 (`block-shape-text/shape.js`: empty square slot follows the corner setting). To reverse: `git revert` the merge and the fork commit.
+- Verified: test app: slot path `m 0,0 h 48 v 32 h -48 z` (was `A 4,4` arcs) on procedures_set; slot shapes by type unchanged (none/Number/String/mixed → square, Boolean → hexagon, number-only table entries → round pill); path function checked in node for corner 4, 12 and a small padding · Not verified: changing the corner setting in the app's addon page (store not reachable from the page) (not the CI build or installer: builds are assumed to work)
+- Result after build: assumed working
+
 ### Session 344 — Own project file ending .2DC (2026-11-19)
 - Asked: delete support for .sb3 and .pm, keep only .pmp but rename it .2DC (own format to change freely later; no compatibility with Scratch, PenguinMod or TurboWarp wanted). Change the save name, the open dialog's endings, restore points, the packager hand-off, and the Windows double-click link.
 - Reading chosen: the ending is the gate. File contents stay the same zip (project.json + assets), so a renamed .sb3 still opens; .sprite3/.pms sprites and "Load from a folder" / "Export project to folder" (unzipped folder, no ending) are unchanged. The packager's internal project types ("sb3", "pm", "pmp" from content detection in @turbowarp/sbdl, which only ever returns sb/sb2/sb3) were left alone; only its user-visible error text changed.

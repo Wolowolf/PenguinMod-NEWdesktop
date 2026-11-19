@@ -313,3 +313,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 324 modular blocks can give their inputs a shape (modular.shape); Big Decimal operator and comparison inputs round (VM, Blocks)
 - 325 typing into a number or text field happens in the field itself, no separate box drawn on top (Blocks)
 - 326 projects are .2DC files only: save, open dialog, restore-point export, packager hand-off, Windows double-click (GUI, Packager, app)
+- 327 empty text/mixed input slots use the block corner size (sharp by default) instead of fixed rounded corners (GUI)
