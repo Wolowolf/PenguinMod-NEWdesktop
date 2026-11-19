@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `docs/STATE.md` and `docs/SECTIONS.md` win where they differ. `tweak.mjs finish` puts every session’s full entry on top of the change log (since Session 262; `/CHANGES.md` keeps only a short copy of the last one). The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 343 — CLAUDE.md: bugs and extension-check rules (2026-11-19)
+- Asked: change the bugs rule (check it is really a bug, if sure fix it and report at the end; stop after 4 failed fixes) and run the extension check only for changes linked to what extensions rely on (not general UI tweaks).
+- Changed: `CLAUDE.md` "Working with me": "Extensions" and "Bugs" rules reworded. To reverse: `git revert` the merge.
+- Verified: both rules read as asked · Not verified: nothing to run (`.md` only, builds nothing).
+- Result after build: no build (`.md` only)
+
 ### Session 343 — Type into the field itself (2026-11-19)
 - Asked: when typing into any input, type into the existing field instead of drawing a square field on top (screenshot: move block at high zoom, white square box with border over the round field, old text showing below it).
 - Cause: scratch-blocks FieldTextInput.showEditor_ puts an HTML input in the WidgetDiv with its own background (theme3 inputColor), a 1px border, a 4px fieldShadow halo, a fixed 12pt font and a fixed FIELD_HEIGHT height; resizeEditor_ sizes it from block constants, not from the field as drawn, so at other zooms or shapes it sits off the field.

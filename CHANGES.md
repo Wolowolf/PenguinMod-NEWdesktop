@@ -14,11 +14,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 343 — Type into the field itself (2026-11-19)
-- Asked: typing into an input should happen in the existing field, not in a square box redrawn on top.
-- Changed: section 325 (PenguinMod-Blocks f9a4ead): the field editor is see-through and exactly over the field, uses the field text's font and colour, hides the field's own text while typing, clipped to the code area. Also `tweak.mjs` (local, not in the repo): an empty tweak branch that's no longer in the queue no longer blocks the queue. To reverse: `git revert` the merge.
-- Verified: test app at zoom 0.5 and 1.6: editor box = field box to 0.1 px, no border or halo, typed text in the field; real click opens it, clicking away saves "123" to the VM and shows the field text again; a long text is clipped at the code-area edge · Not verified: text fields with a dropdown arrow, the custom-block editor's inputs, angle fields.
-- Result after build: assumed working
+### Session 343 — CLAUDE.md: bugs and extension-check rules (2026-11-19)
+- Asked: change the bugs rule (check it is really a bug, if sure fix it and report at the end; stop after 4 failed fixes) and run the extension check only for changes linked to what extensions rely on (not general UI tweaks).
+- Changed: `CLAUDE.md` "Working with me": "Extensions" and "Bugs" rules reworded. To reverse: `git revert` the merge.
+- Verified: both rules read as asked · Not verified: nothing to run (`.md` only, builds nothing).
+- Result after build: no build (`.md` only)
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
 
