@@ -3,6 +3,15 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `docs/STATE.md` and `docs/SECTIONS.md` win where they differ. `tweak.mjs finish` puts every session’s full entry on top of the change log (since Session 262; `/CHANGES.md` keeps only a short copy of the last one). The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 346 — Cheaper UI, part 2 (2026-11-19)
+- Asked: do the 3 risk-free changes missed in section 309 (drop highlight, palette button shadow, zoom icons), fully delete "Corner size (0-300%)" from Block shape and text (always square and cheap), write CLAUDE.md rules so future UI changes follow the cheap-drawing decisions (ask before conflicting additions), and write grouped prompts for the remaining ideas from Session 326.
+- Changed (section 328): see the details line. The Editor Tweaks "Toggle Block Glow & Shadows" setting only replaced the drop highlight's filter with a thick stroke and removed the filter element, which no longer exists (calling `.remove()` on it would have thrown): with the plain outline as the default it had nothing left to do, so it was removed with its code. Zebra striping waited for the replacement filter element to stack it with its own filter; the outline is a stroke on the path, so nothing needs stacking. Block shape: corner radius 0 with empty corner strings when enabled (no corner commands at all, e.g. `m 0,0  H 12 l 18 8 …`); when disabled the editor's own square corners with radius 4 come back as before.
+- Colours: drop highlight keeps Blockly's replacement colour (white, fixed as before); zoom face border = Lines (--ui-edge), face = Controls (--ui-surface) as before.
+- Extensions: rendering only, no calculation or timing change.
+- Verified (test app, hidden): highlightForReplacement on x position: stroke rgb(255,255,255) 3px, no filter attribute; highlightShapeForInput on the if condition: same; removing restores 1px and the classes; 0 `filter[id*=Replacement]`; zoom: 0 images, 3 `.blocklyZoomHit` (pointer-events all), 3 groups with one face each, elementFromPoint at the button's centre = the hit rect, real click zoomed 0.675 → 0.81; 0 `.blocklyFlyoutButtonShadow` with 3 flyout buttons; screenshots of highlights and zoom buttons; app-err.log only the existing Pins addon messages; eval modules of both Blocks files parse.
+- Not verified: Block shape addon switched off at runtime (code read only); light theme.
+- Result after build: assumed working
+
 ### Session 345 — Sharp empty text slots (2026-11-19)
 - Asked: the empty slot in "set [ ] to value" had rounded corners while blocks are square; keep the square/round input rules.
 - Changed: section 327 — GUI e1d0f44 (`block-shape-text/shape.js`: empty square slot follows the corner setting). To reverse: `git revert` the merge and the fork commit.
