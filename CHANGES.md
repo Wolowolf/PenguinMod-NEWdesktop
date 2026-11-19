@@ -14,11 +14,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 338 — Type shapes of the SharkPool gallery extensions (2026-11-19)
-- Asked: classify every block of the 29 SharkPool gallery extensions by the type-shape rules and fix wrong ones (second of three gallery parts; PenguinMod is next in the queue).
-- Changed: section 321 (VM 773382c): 83 reporters that never give a number square (JSON lists/objects, data URLs, SVG texts, #rrggbb colours, monitor type, note name, hh:mm:ss, country name, key-bind JSON, clone ID); 6 inputs round (Extra Controls repeat counts, Gamepad button/axis number menus). To reverse: `git revert` the merge.
-- Found (not changed): Gamepad's "any" pad and "any" button never match, because the engine turns the text "any" in these number menus into 0 (checked with a fake gamepad).
-- Verified (test app): 101 flyout/definition shapes as expected, drop rule (shapeFits_) for 9 pairs; block-eq 356 + 156 page blocks identical in every mode · Not verified: a real mouse drag, a real gamepad.
+### Session 339 — Type shapes of the PenguinMod gallery extensions (2026-11-19)
+- Asked: classify every block of the 23 PenguinMod gallery extensions by the type-shape rules and fix wrong ones (last of three gallery parts).
+- Changed: section 322 (VM 4634ee1): 90 reporters that never give a number square (3D Math vectors/quaternions, Crypto keys/UUID, JSON lists/objects, data URLs, Iris Text markup, note names, language code, tilt word, "12%"); 23 inputs round (Box2D point maths, 3D Math yaw/pitch/roll, Big Decimal precision/round/random/unary). To reverse: `git revert` the merge.
+- Found (not changed): Big Decimal's 14 operator/comparison blocks and its 4 modular blocks are built by the editor's modular block maker, which ignores input shapes, so their number-only inputs stay square.
+- Verified (test app): 127 flyout shapes as expected, drop rule (shapeFits_) for 10 pairs; block-eq 321 + 136 page blocks identical in every mode · Not verified: a real mouse drag.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
