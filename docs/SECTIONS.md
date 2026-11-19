@@ -304,3 +304,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 316 removed 10 small interface languages (rap an ab ast oc gd fy eo ja-Hira nso) from menu and build (GUI)
 - 317 removed 25 more small-overlap interface languages (cy ga mi nn gl ca eu qu be af is tn fil sk hr et lv lt xh az uz kk mn da es-419); 45 left (GUI)
 - 316 type shapes corrected: reporters that can give numbers (join, letter of, replace, list contents…) round; custom block number inputs square (Blocks)
+- 318 type shapes of the 13 built-in engine extensions: 7 text-only reporters square, drum/instrument/mouse button menus round, pen font weight square (VM)
