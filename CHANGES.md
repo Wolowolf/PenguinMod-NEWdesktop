@@ -14,11 +14,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 337 — Matrix, empty and polygon inputs removed (2026-11-19)
-- Asked: delete everything about the matrix input and its one use, make Crypto work without "empty" and delete it too, remove both from My Blocks+; re-check arrays/objects for more to delete.
-- Changed: section 320 (VM 4c5553f, Blocks 53e93d2, GUI 6b11c62, pm 1c5c46a + sp da2713b galleries): matrix + polygon types, blocks and field gone; My Blocks+ menu without matrix/empty; Crypto keys are text inputs; custom object monitor displays and "set list to array"'s array branch removed. To reverse: `git revert` the merge.
-- Found: the gallery's "matrix" use was an SVG colour filter, not an input; no extension used matrix or polygon; EMPTY never existed (unknown type = reporter-only slot).
-- Verified (test app): matrix/polygon blocks gone; Crypto keys text (AES round trip, HMAC verify true, empty key ""); My Blocks+ menu norm/num/bool/ang/col/note, new inputs draw; list monitor + editor work; block-eq 1317 + 571 blocks new = old; compiler proofs all ok · Not verified: right-to-left layout, packaged game.
+### Session 338 — Type shapes of the SharkPool gallery extensions (2026-11-19)
+- Asked: classify every block of the 29 SharkPool gallery extensions by the type-shape rules and fix wrong ones (second of three gallery parts; PenguinMod is next in the queue).
+- Changed: section 321 (VM 773382c): 83 reporters that never give a number square (JSON lists/objects, data URLs, SVG texts, #rrggbb colours, monitor type, note name, hh:mm:ss, country name, key-bind JSON, clone ID); 6 inputs round (Extra Controls repeat counts, Gamepad button/axis number menus). To reverse: `git revert` the merge.
+- Found (not changed): Gamepad's "any" pad and "any" button never match, because the engine turns the text "any" in these number menus into 0 (checked with a fake gamepad).
+- Verified (test app): 101 flyout/definition shapes as expected, drop rule (shapeFits_) for 9 pairs; block-eq 356 + 156 page blocks identical in every mode · Not verified: a real mouse drag, a real gamepad.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)

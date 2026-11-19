@@ -307,3 +307,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 318 type shapes of the 13 built-in engine extensions: 7 text-only reporters square, drum/instrument/mouse button menus round, pen font weight square (VM)
 - 319 type shapes of the TurboWarp gallery extensions: 36 text-only reporters square, 12 number-only inputs round (VM)
 - 320 matrix, empty, polygon input types removed (My Blocks+, Crypto keys now text); custom object monitor displays gone (VM, Blocks, GUI, pm + sp galleries)
+- 321 type shapes of the SharkPool gallery extensions: 83 text-only reporters square, 6 number-only inputs round (VM)
