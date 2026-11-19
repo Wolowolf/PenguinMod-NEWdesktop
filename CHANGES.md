@@ -13,10 +13,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 327 — Remove unused Speech to Text (2026-11-19)
-- Asked: delete Scratch's Speech to Text, which never loads (found in Session 325).
-- Changed: section 310 (VM 53f7a4e): `scratch3_speech2text` deleted, with the `diff-match-patch` package only it used. To reverse: `git revert` the merge.
-- Verified: test app: build OK (5.3 min), editor loads, loading `speech2text` gives "Unknown extension", Recording V2 still loads on the engine's context; the built editor files contain neither name · Not verified: nothing else known.
+### Session 328 — Lighting no longer grays the stage on load (2026-11-19)
+- Asked: loading the Lighting extension made the stage gray at once; fix it.
+- Cause: by design the extension draws its ambient colour (#333333 at 85 % opacity) over the whole stage from the moment it loads, even with no lights.
+- Changed: section 311 (VM 0c5e843): that layer stays off until one of the extension's blocks or its Render Settings button runs for the first time. To reverse: `git revert` the merge.
+- Verified: test app: build OK; after loading Lighting the overlay pixel is transparent and the stage white (screenshot); after `set ambient` it is #333333 and the stage dark gray; a block called through the engine's primitive turns it on · Not verified: nothing else known.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
