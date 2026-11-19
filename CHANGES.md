@@ -14,11 +14,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 336 — Type shapes of the TurboWarp gallery extensions (2026-11-19)
-- Asked: classify every block of the bundled gallery extensions by the type-shape rules and fix wrong ones. Split by VM folder (about 600 reporters, 1,800 inputs in all): TurboWarp here; SharkPool and PenguinMod are their own tweaks (proposed as sessions).
-- Changed: section 319 (VM ee72258): 36 reporters that never give a number square (JSON lists/objects, data URLs, zip paths, case of, 2g/3g/4g, connection type, blend mode, Simple 3D texture status and font, Pen+ version); 12 inputs round (finger ID and open-window number menus, Steam DLC ID, Simple 3D anisotropy, primitive size, alpha test). To reverse: `git revert` the merge.
-- Found: the engine turns every number/angle/note argument into a number before an extension sees it, so number inputs are round by themselves; only number menus needed a shape.
-- Verified (test app): 57 shapes in the palette (all changed blocks + controls), drop rule (case of refused by move steps, fits say; join fits the Steam ID; add fits the finger menu), real drags (case of refused by move steps, reverse text snapped into the Steam ID), a saved mismatch still loads; block-eq: 249 blocks + 144 page blocks identical in every mode · Not verified: right-to-left layout.
+### Session 337 — Matrix, empty and polygon inputs removed (2026-11-19)
+- Asked: delete everything about the matrix input and its one use, make Crypto work without "empty" and delete it too, remove both from My Blocks+; re-check arrays/objects for more to delete.
+- Changed: section 320 (VM 4c5553f, Blocks 53e93d2, GUI 6b11c62, pm 1c5c46a + sp da2713b galleries): matrix + polygon types, blocks and field gone; My Blocks+ menu without matrix/empty; Crypto keys are text inputs; custom object monitor displays and "set list to array"'s array branch removed. To reverse: `git revert` the merge.
+- Found: the gallery's "matrix" use was an SVG colour filter, not an input; no extension used matrix or polygon; EMPTY never existed (unknown type = reporter-only slot).
+- Verified (test app): matrix/polygon blocks gone; Crypto keys text (AES round trip, HMAC verify true, empty key ""); My Blocks+ menu norm/num/bool/ang/col/note, new inputs draw; list monitor + editor work; block-eq 1317 + 571 blocks new = old; compiler proofs all ok · Not verified: right-to-left layout, packaged game.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
