@@ -317,3 +317,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 328 drop highlight as plain outline, no palette button shadow, zoom buttons without pictures, Block shape corner size setting removed (Blocks, GUI)
 - 329 no blurred shadows (1 px Lines borders where needed), gradients to flat colours (GUI, Blocks, Paint, Packager)
 - 330 CSS containment (contain: strict) for the code area and the costume/sound editor area (GUI)
+- 331 faster culling checks, typing drawn once per frame, text widths re-measured on font load, Make a Block restores the main workspace (GUI, app)
