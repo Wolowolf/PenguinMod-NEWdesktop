@@ -3,6 +3,12 @@
 > Not read by default: Grep it (e.g. `Session 7`, `updater`, `reverse`). Facts describe the state when written; `docs/STATE.md` and `docs/SECTIONS.md` win where they differ. `tweak.mjs finish` puts every session’s full entry on top of the change log (since Session 262; `/CHANGES.md` keeps only a short copy of the last one). The old sandbox notes, baseline project facts, early known-issue list and the Linux-builds recipe were deleted in Session 80 (they are in git history).
 
 ## Change log (newest first)
+### Session 354 — Font menus accept reporters instead of typing (2026-11-20)
+- Asked: remove the 3 anomalies (fields both menu and text input): Pen "set print font to", Iris Text "set font to" and "font [text] as"; option 1 chosen (normal menu + reporters).
+- Changed: section 335 (VM 8273cef, gallery 30910de): FONT menus `isTypeable` → `acceptReporters: true`; Iris's unused `acceptText` removed. Engine support for typeable menus kept for custom extensions. To reverse: revert both fork commits and `upstream.json`.
+- Verified: both menus build as `field_dropdown` in the category colour; a `join "Ver" "dana"` reporter in the pen slot set the print font to Verdana; Iris set font (Lexend) and font-as (Arial) ran; screenshot normal; block-eq (ONLY pen + Iris): 53 blocks identical in all modes, page test 79/80 identical, the 1 difference is the editor's palette-height storage write timing in Iris "type text" (no font input) · Not verified: typing a font name is no longer possible (by design).
+- Result after build: assumed working
+
 ### Session 353 — Edits redraw only affected blocks (2026-11-20)
 - Asked: fix "each keystroke still redraws every block above the field", the idea noted in CHANGES.md (Sessions 329, 349).
 - Cause: `BlockSvg.render(true)` always called `parent.render(true)`, so any redraw (a keystroke draws a field's block up to 3 × per key) redrew every block up to the top of the script.
