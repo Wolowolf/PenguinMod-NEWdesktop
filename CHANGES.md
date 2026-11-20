@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 354 — Font menus accept reporters instead of typing (2026-11-20)
-- Asked: remove the 3 anomalies (fields both menu and text input): Pen "set print font to", Iris Text "set font to" and "font [text] as"; option 1 chosen (normal menu + reporters).
-- Changed: section 335 (VM 8273cef, gallery 30910de): FONT menus `isTypeable` → `acceptReporters: true`; Iris's unused `acceptText` removed. Engine support for typeable menus kept for custom extensions. To reverse: revert both fork commits and `upstream.json`.
-- Verified: both menus build as `field_dropdown` in the category colour; a `join "Ver" "dana"` reporter in the pen slot set the print font to Verdana; Iris set font (Lexend) and font-as (Arial) ran; screenshot normal; block-eq (ONLY pen + Iris): 53 blocks identical in all modes, page test 79/80 identical, the 1 difference is the editor's palette-height storage write timing in Iris "type text" (no font input) · Not verified: typing a font name is no longer possible (by design).
+### Session 355 — Field types merged, 22 -> 13 (2026-11-20)
+- Asked: reduce the field types as far as possible (delete unused, merge near-copies, fold number and menus into the text box), keeping the reporter/input shape rules.
+- Changed: section 336 (Blocks 288ff5e, VM db0d6cf, GUI 1aab210): checkbox/colour/iconmenu fields and the colour grid library removed; field_number, field_textdropdown, field_numberdropdown, field_input_removable are options of field_input; field_label_serializable an option of field_label; +/- one field_expandable; 3 addons patch FieldTextInput. To reverse: revert the 3 fork commits and upstream.json.
+- Verified: palette snapshot before/after: 397 of 426 entries identical in shape, size, field kind and value (the 29 others only differ by project costume/sound/variable names), 17 extra blocks identical; number pad, numeric restrictors, typeable text and number menus, remove button + reorder arrows, + / -, saved argument label, VM receives edits; no console errors · Not verified: block-eq (auto picks everything because runtime.js changed; the changed code only builds editor JSON for typeable menus, which no shipped extension uses), a real touch screen.
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
