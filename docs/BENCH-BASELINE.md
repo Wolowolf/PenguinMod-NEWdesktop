@@ -428,6 +428,10 @@ Same window and projects as above; before = GUI `1534fe1` (2 runs, `blocks-trace
 
 Where the scroll JS went (before): section 312's walk of every visible script on every check ~1,000 ms, the app's link watcher (`app/preload.js`) scanning all 100,000 elements on every attribute change ~430 ms, the paint-tool-panel addon searching the page on every Redux change ~220 ms, script sizes (`getHeightWidth`, a walk down each script, for the scroll area on every step) ~200 ms. Typing: scratch-blocks draws the block on keypress, input and keyup (3 × per key in Chrome), each drawing every block above it in the script. Text widths: scratch-blocks already keeps every width for the whole session (0 measurements on load and zoom), so caching gained nothing; but 150 of 309 kept widths were wrong after a normal start (measured before the block font loaded), 91 of 233 drawn texts wider than their slot; section 331 re-measures (all at once, 5–8 ms for ~300 widths) when fonts load or styles change. Left: each keystroke still draws every block above the field (~300 drawings 300 blocks down); idea: stop going up when a block's size did not change (probably also why long scripts load 3–4 × slower).
 
+## Code-area drawing, third round (Session 353, section 334; `benchlocks-trace.mjs --phases type`)
+
+Same window, projects and typing as the second round; before = Session 349 after (`blocks-trace_new3.json`), after = section 334 (`blocks-trace_s353.json`, `s353b.json`, 1 run each). A block now asks its parent to redraw only when its size, parent or next block changed, and blocks further up the same stack are skipped. Huge (field 301 blocks down): drawings 17,574 → 176, busy 5.3 → 2.3–2.4 s, frames p50 26.6 → 13.5 ms, p95 107 → 40 ms. Many (field 7 down): drawings 540 → 176, busy 2.9 → 1.8–2.6 s. Load draws every block once before and after (10,022 drawings for huge), so this was not why long scripts load slower.
+
 ## Round pills as rects, light fields (Session 351, nothing kept; `bench\blocks-trace.mjs` `--noshadow` / `--after`, `bench\s351\`)
 
 Same window and projects as above, main at 1686093, 2–3 runs each. Busy = main-thread ms.

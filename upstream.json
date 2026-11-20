@@ -13,7 +13,7 @@
   "PenguinMod-Blocks": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Blocks.git",
     "branch": "desktop",
-    "commit": "947f3b423ad311c0b781b899505d313ee5d682e1"
+    "commit": "dfb33433d0f395c1f0dac50311272d6c6e8f48d2"
   },
   "PenguinMod-Render": {
     "repo": "https://github.com/Wolowolf/PenguinMod-Render.git",
