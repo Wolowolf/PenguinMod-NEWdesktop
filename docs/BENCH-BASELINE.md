@@ -412,3 +412,18 @@ Window 1100 × 800 CSS px (scale 1.4), 75 Hz screen (13.3 ms frames), one run ea
 | default (empty) | all phases | unchanged | |
 
 Load: 5 × 1,000 blocks 7.7 s, 200 × 25 blocks 2.1–2.9 s, both before and after (noise between runs about ±1 s); DOM nodes and heap unchanged (about 106,000 nodes, 65 MB). Found while measuring, not changed: (1) zoom cost is Chrome laying out every displayed SVG text again at the new scale (a forced layout inside `Toolbox.getWidth`'s `offsetWidth`, section 11, only moves it: caching that width changed nothing); (2) loading 5 scripts of 1,000 blocks takes 3–4 × as long as 200 scripts of 25 (not investigated: probably every added block redraws the blocks above it); (3) Chrome walks a group's whole DOM subtree, hidden parts included, when the group's display changes or when the drag surface moves (35 ms per move for 1,000 dragged blocks), which is why section 312 hides leaves and takes the dragged part out.
+
+## Code-area drawing, second round (Session 349, section 331; `bench\blocks-trace.mjs`, `bench\s349\prof.mjs`)
+
+Same window and projects as above; before = GUI `1534fe1` (2 runs, `blocks-trace_base2.json`), after = section 331 (3 runs, `blocks-trace_new2.json`, `new3.json`). Ranges over the runs. Type = 60 digits into a number field, one key every 25 ms (real key events), field 7 blocks down a 25-block script (many) or 301 blocks down a 1,000-block script (huge). Drawings = `BlockSvg.renderDraw_` calls. Scroll JS = JavaScript time in a CPU profile of 120 wheel steps (`s349\prof.mjs scroll`, huge).
+
+| project | phase | before | after |
+|---|---|---|---|
+| 5 × 1,000 | type | wall 12.0 s, busy 11.8 s, frames p50 67–80 / p95 134–147 ms, 54,237 drawings | wall 4.7–5.8 s, busy 4.3–5.3 s, p50 27–54 / p95 80–107 ms, 16,665–18,180 drawings |
+| 200 × 25 | type | busy 3.1–3.4 s, p50 26.7 ms, 1,611 drawings | busy 1.8–2.9 s, p50 13.4–14.1 ms, 504–540 drawings |
+| 5 × 1,000 | scroll | JS 2,350–2,540 ms, busy 4.2–5.0 s, p95 27–40 ms | JS 317 ms, busy 2.6–3.5 s, p95 13.7–26.8 ms |
+| 200 × 25 | scroll | busy 3.8 s | busy 3.4–3.9 s (paint-bound, no clear change) |
+| 5 × 1,000 | zoom | busy 4.7–4.8 s, p95 255–267 ms | busy 3.6–4.0 s, p95 201–240 ms (still Chrome laying out every text) |
+| both | load | 0 text measurements | unchanged (load times within run-to-run noise) |
+
+Where the scroll JS went (before): section 312's walk of every visible script on every check ~1,000 ms, the app's link watcher (`app/preload.js`) scanning all 100,000 elements on every attribute change ~430 ms, the paint-tool-panel addon searching the page on every Redux change ~220 ms, script sizes (`getHeightWidth`, a walk down each script, for the scroll area on every step) ~200 ms. Typing: scratch-blocks draws the block on keypress, input and keyup (3 × per key in Chrome), each drawing every block above it in the script. Text widths: scratch-blocks already keeps every width for the whole session (0 measurements on load and zoom), so caching gained nothing; but 150 of 309 kept widths were wrong after a normal start (measured before the block font loaded), 91 of 233 drawn texts wider than their slot; section 331 re-measures (all at once, 5–8 ms for ~300 widths) when fonts load or styles change. Left: each keystroke still draws every block above the field (~300 drawings 300 blocks down); idea: stop going up when a block's size did not change (probably also why long scripts load 3–4 × slower).

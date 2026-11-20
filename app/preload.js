@@ -48,16 +48,17 @@ window.addEventListener("DOMContentLoaded", async () => {
   `);
 
   // bypass target blank redirect to open in standard tab
-  const enforceSelfTarget = () => {
-    document.querySelectorAll("a[href]").forEach(a => {
-      try {
-        const url = new URL(a.href, window.location.href);
-        const isEditor = url.host === "studio.penguinmod.com" || url.protocol === "editor:";
-        if (isEditor && a.getAttribute("target") !== "_self") {
-          a.setAttribute("target", "_self");
-        }
-      } catch { }
-    });
+  const fixLink = a => {
+    try {
+      const url = new URL(a.href, window.location.href);
+      const isEditor = url.host === "studio.penguinmod.com" || url.protocol === "editor:";
+      if (isEditor && a.getAttribute("target") !== "_self") {
+        a.setAttribute("target", "_self");
+      }
+    } catch { }
+  };
+  const enforceSelfTarget = (root = document) => {
+    root.querySelectorAll("a[href]").forEach(fixLink);
   };
 
   // update progress overlay (shown while the in-app updater downloads and installs)
@@ -115,9 +116,24 @@ window.addEventListener("DOMContentLoaded", async () => {
   document.body.appendChild(controls);
 
   enforceSelfTarget();
-  new MutationObserver(enforceSelfTarget).observe(document.body, {
+  // Only what changed: added elements, and links whose href or target changed. Scanning the whole page on
+  // every change (any attribute anywhere) cost about 4 ms per code-area scroll step with 100,000 elements.
+  new MutationObserver(mutations => {
+    for (const m of mutations) {
+      if (m.type === "attributes") {
+        if (m.target.matches("a[href]")) fixLink(m.target);
+        continue;
+      }
+      for (const node of m.addedNodes) {
+        if (node.nodeType !== 1) continue;
+        if (node.matches("a[href]")) fixLink(node);
+        if (node.firstElementChild) enforceSelfTarget(node);
+      }
+    }
+  }).observe(document.body, {
     childList: true,
     subtree: true,
     attributes: true,
+    attributeFilter: ["href", "target"],
   });
 });
