@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 353 — Edits redraw only affected blocks (2026-11-20)
-- Asked: fix "each keystroke still redraws every block above the field" (idea in CHANGES.md).
-- Changed: section 334 (Blocks): a block asks its parent to redraw only if its size, parent or next block changed; ancestors further up a stack are skipped; collapse/expand redraws the block itself. Also fixed: collapsed blocks showed stray 1 px seam strips from their hidden contents (section 333). To reverse: revert the fork commit and `upstream.json`.
-- Verified: 18 edit cases (field widen/shrink/same size, attach, detach, heal, cap at stack end, reporter in/out, collapse, expand, disable) drawn the same as a fresh reload (original code: 4 cases left stale); typing 301 blocks down: 17,574 → 176 drawings, busy 5.3 → 2.4 s; collapsed block screenshot clean · Not verified: real mouse drags with insertion markers (covered only through connect/disconnect calls); load speed unchanged (load draws each block once).
+### Session 354 — Font menus accept reporters instead of typing (2026-11-20)
+- Asked: remove the 3 anomalies (fields both menu and text input): Pen "set print font to", Iris Text "set font to" and "font [text] as"; option 1 chosen (normal menu + reporters).
+- Changed: section 335 (VM 8273cef, gallery 30910de): FONT menus `isTypeable` → `acceptReporters: true`; Iris's unused `acceptText` removed. Engine support for typeable menus kept for custom extensions. To reverse: revert both fork commits and `upstream.json`.
+- Verified: both menus build as `field_dropdown` in the category colour; a `join "Ver" "dana"` reporter in the pen slot set the print font to Verdana; Iris set font (Lexend) and font-as (Arial) ran; screenshot normal; block-eq (ONLY pen + Iris): 53 blocks identical in all modes, page test 79/80 identical, the 1 difference is the editor's palette-height storage write timing in Iris "type text" (no font input) · Not verified: typing a font name is no longer possible (by design).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
