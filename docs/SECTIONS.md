@@ -318,3 +318,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 329 no blurred shadows (1 px Lines borders where needed), gradients to flat colours (GUI, Blocks, Paint, Packager)
 - 330 CSS containment (contain: strict) for the code area and the costume/sound editor area (GUI)
 - 331 faster culling checks, typing drawn once per frame, text widths re-measured on font load, Make a Block restores the main workspace (GUI, app)
+- 332 palette builds only categories near view (rest when idle), keeps unchanged ones; menu no longer covers palette; Editor Tweaks scroll setting removed (GUI)
