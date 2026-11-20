@@ -14,11 +14,11 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 351 — Round pills and light fields measured, not applied (2026-11-20)
-- Asked: Blocks fork: 1 draw the round pill of round inputs and reporters as a rect with rx = half its height; 2 turn default number/text fields (shadow blocks) into one light shape in the parent block, measuring first and asking before the rewrite if the gain is small.
-- Changed: nothing in the app or forks; docs only (`docs/BENCH-BASELINE.md` "Round pills as rects, light fields", the code-area idea in Open points). Bench helpers: `blocks-trace.mjs` `--noshadow` / `--after`, `bench\s351\`, `bench\patch-round-pill.mjs`.
-- Verified: 1 built and measured: looks the same (edge anti-aliasing only) but 200 × 25 scroll busy +46 %, zoom +61–86 % (same build forced back to paths: back to the old numbers), so undone. 2 a light field saves about 5 % of load at most (the shadows' own SVG work is ~420 ms of 8.5 s), scroll/zoom within noise in an in-page experiment: rewrite not started · Not verified: GPU raster time (not measured).
-- Result after build: docs only, nothing built
+### Session 352 — Blocks without outline, zebra without filter, crisp square shapes (2026-11-20)
+- Asked: remove block outlines in code area and palette; optimise "Alternating nested block colors" to precomputed colours (asked: stays off by default); crispEdges for fully square shapes only; check zoom levels and display scales for gaps or seams.
+- Changed: section 333 (Blocks, GUI): no stroke on blocks, slots, in-block dropdown boxes; a hidden 1 px overlap where blocks touch (stack, C mouths); zebra colours precomputed, CSS removed; crispEdges on square paths/slots, scrollbars, buttons, checkboxes, grid, run bar, zoom buttons, comments. To reverse: revert the two fork commits and `upstream.json`.
+- Verified: seam count (magenta background, 6 display scales × 6 zooms) 50–670 pixels without the overlap, 0 with it (except a scrollbar-edge test artifact); zebra colours equal the browser's filter (#FFAB19→#f5cd41), darker, unnest/renest, menus, in-block dropdown, off/on all correct, no filters left · Not verified: a real mouse drag, real Windows display-scale change (emulated), the search popup still draws outlines (not asked).
+- Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
 
