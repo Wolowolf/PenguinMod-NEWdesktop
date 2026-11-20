@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 355 — Field types merged, 22 -> 13 (2026-11-20)
-- Asked: reduce the field types as far as possible (delete unused, merge near-copies, fold number and menus into the text box), keeping the reporter/input shape rules.
-- Changed: section 336 (Blocks 288ff5e, VM db0d6cf, GUI 1aab210): checkbox/colour/iconmenu fields and the colour grid library removed; field_number, field_textdropdown, field_numberdropdown, field_input_removable are options of field_input; field_label_serializable an option of field_label; +/- one field_expandable; 3 addons patch FieldTextInput. To reverse: revert the 3 fork commits and upstream.json.
-- Verified: palette snapshot before/after: 397 of 426 entries identical in shape, size, field kind and value (the 29 others only differ by project costume/sound/variable names), 17 extra blocks identical; number pad, numeric restrictors, typeable text and number menus, remove button + reorder arrows, + / -, saved argument label, VM receives edits; no console errors · Not verified: block-eq (auto picks everything because runtime.js changed; the changed code only builds editor JSON for typeable menus, which no shipped extension uses), a real touch screen.
+### Session 356 — Hat tops jagged: crisp rule fixed (2026-11-20)
+- Asked: hat block tops look jagged, fix it.
+- Changed: section 337 (Blocks): section 333's crispEdges rule matched every block path (they share the class blocklyBlockBackground with dropdown boxes); now only `rect.blocklyBlockBackground`. To reverse: revert the fork commit and `upstream.json`.
+- Verified: computed shape-rendering of all 662 block paths: 342 slanted ones auto, 103 square ones crispEdges, 217 square auto are empty hidden slot outlines; dropdown boxes crisp; hat top, notches, hexagons, round ends smooth in a 2× screenshot; seam test (6 display scales × 6 zooms) 0 except the known scrollbar-edge line · Not verified: real Windows display-scale change (emulated).
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
