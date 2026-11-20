@@ -322,3 +322,4 @@ One short line per section (at most 160 characters), newest last; `tweak.mjs fin
 - 333 blocks without outline (hidden 1 px overlap against seams), zebra striping with precomputed colours, crisp edges for square shapes (Blocks, GUI)
 - 334 typing and edits redraw only the blocks they affect, not every block above; no stray seam strips on collapsed blocks (Blocks)
 - 335 font menus (Pen print font, Iris Text) are normal dropdowns accepting reporters, not typeable text dropdowns (VM, gallery)
+- 336 field types 22 -> 13: unused checkbox/colour/iconmenu gone; number, menus, removable, saved label, +/- merged into options (Blocks, VM, GUI)
