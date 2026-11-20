@@ -14,10 +14,10 @@ Printed by `tweak.mjs start`; kept short on purpose. Grep-only: `docs/STATE.md` 
 
 ## Last session (written by `tweak.mjs finish`; the full entry is at the top of the archive)
 
-### Session 349 — Code-area drawing, second round (2026-11-20)
-- Asked: three parts (Blocks fork), measured before/after, keep only gains: 1 better off-screen hiding, 2 remember text widths (redo when fonts load), 3 typing draws at most once per frame.
-- Changed: section 331 (GUI 5440951) + `app/preload.js`. Part 1: hiding checks reuse each script's block positions until something is drawn; script sizes reused; app link watcher and paint-tool-panel addon no longer search the whole page on every change. Part 2: widths were already kept for the whole session (0 measurements on load/zoom), so no speed gain; but 150 of 309 were wrong after a normal start: now re-measured when fonts load or styles change. Part 3: typing draws once per frame (was 3 × per key). Found bug: getMainWorkspace() returned a dead workspace after Make a Block; fixed. Done in GUI (the Blocks fork is a compiled bundle; section 312 lives in GUI). To reverse: `git revert` the merge and the fork commit.
-- Verified: 300 blocks down a 1,000-block script, 60 keys: 12.0 s → 4.7–5.8 s, drawings 54,237 → ~17,000; scroll JS 2.4 s → 0.32 s; zoom busy 4.7 → 3.6–4.0 s; load unchanged; section 312 checks, typing/paste/drag/Tab/Esc/Make a Block/find bar, widths 0 wrong · Not verified: minimised window, right-to-left, touch (not the CI build or installer: builds are assumed to work)
+### Session 350 — Lazy block palette (2026-11-20)
+- Asked: build only the palette categories near the visible part, reuse built blocks across sprite switches, no stutter/blank on far jumps, no scroll jumps, keep search/category list/adding extensions; measure before/after; delete Editor Tweaks' "Toggle scrolling animation in the Toolbox".
+- Changed: section 332 (GUI 4f863c7): new `pm-lazy-palette.js`; editor-animations scans the page once per palette build (was once per button: 1.3 s of 4 sprite switches); found bug: with many categories the category list's scroll bar covered 16 px of the palette (titles cut, "ile Grids"), fixed in `Toolbox.getWidth`; setting removed. To reverse: `git revert` the merge and the fork commit.
+- Verified (38 extensions, 49 categories, 858 palette blocks): refresh with nothing changed 130 → 7–18 ms; sprite switch 930 → 200–350 ms (toolbox update 150 → 40–70 ms); heap 100–122 → 60–85 MB; jumps unchanged (~470 ms animation, 0 blank at target); wheel through a cold palette 0 blanks; search, clicks, drag, extensions, language, variables, checkboxes, addon reload, hidden tab, project load · Not verified: right-to-left, touch, Block Pins with real pins (not the CI build or installer: builds are assumed to work)
 - Result after build: assumed working
 
 ## Template (this short entry: at most 1500 characters; the full proof goes into the archive entry)
